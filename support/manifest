@@ -1,0 +1,48 @@
+#!/bin/bash
+
+manifest_type="$1"
+
+if [ -z "$manifest_type" ]; then
+    echo "Usage: $0 <nginx|php>" >&2
+    exit 1
+fi
+
+if [ -z "$S3_BUCKET" ]; then
+    echo "S3_BUCKET must be set" >&2
+    exit 1
+fi
+
+indent() {
+    local expr='s/^/       /'
+
+    if [ $(uname -s) = "Darwin" ]; then
+        sed -l "$expr"
+    else
+        sed -u "$expr"
+    fi
+}
+
+basedir="$( cd -P "$( dirname "$0" )" && pwd )"
+
+# make a temp directory
+tempdir="$( mktemp -t php_XXXX )"
+rm -rf $tempdir
+mkdir -p $tempdir
+pushd $tempdir
+
+echo "-----> Manifest for $manifest_type"
+
+s3cmd ls "s3://$S3_BUCKET/package/" \
+    | awk '{ print $4 }' \
+    | sed "s/^s3:\/\/$S3_BUCKET\/package\///" \
+    | grep "${manifest_type}" \
+    | sed -e "s/${manifest_type}-\([0-9.]*\)\\.tgz/\\1/" \
+    | awk 'BEGIN {FS="."} {printf("%03d.%03d.%03d %s\n",$1,$2,$3,$0)}' | sort -r | cut -d" " -f2 \
+    | tee manifest.${manifest_type} \
+    | indent
+
+echo
+echo "-----> Uploading manifest for ${manifest_type} to S3"
+
+s3cmd put --acl-public --mime-type="text/plain" \
+    manifest.${manifest_type} "s3://$S3_BUCKET"

@@ -1,0 +1,13 @@
+#!/bin/bash
+
+if [ -f "$1/index.php" ]; then
+    echo "PHP" && exit 0
+elif [ -f "$1/composer.json" ]; then
+    echo "PHP (Composer)" && exit 0
+elif [ -f "$1/web/index.php" ]; then
+    echo "PHP (Symfony 2)" && exit 0
+elif [ -f "$1/public/index.php" ]; then
+    echo "PHP (Zend Framework)" && exit 0
+else
+    exit 1
+fi

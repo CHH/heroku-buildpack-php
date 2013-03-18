@@ -1,0 +1,83 @@
+#!/bin/bash
+
+set -e
+
+basedir="$( cd -P "$( dirname "$0" )" && pwd )"
+
+if [ -z "$1" ]; then
+    echo "Usage: $0 <version>" >&2
+    exit 1
+fi
+
+php_version="$1"
+
+if [ -z "$PHP_ZLIB_VERSION" ]; then
+    PHP_ZLIB_VERSION=1.2.7
+fi
+
+echo "-----> Packaging PHP $php_version"
+
+tempdir="$( mktemp -t php_xxxx )"
+rm -rf $tempdir
+mkdir -p $tempdir
+cd $tempdir
+
+echo "-----> Downloading dependency zlib ${zlib_version}"
+
+curl -LO "http://zlib.net/zlib-${PHP_ZLIB_VERSION}.tar.gz"
+tar -xzvf "zlib-${PHP_ZLIB_VERSION}.tar.gz"
+
+echo "-----> Downloading PHP $php_version"
+curl -LO "http://php.net/distributions/php-${php_version}.tar.gz"
+tar -xzvf "php-${php_version}.tar.gz"
+
+build_command=$(cat <<BUILD_CMD
+    mkdir -p "/app/vendor/php/zlib" \
+    && cd zlib-${PHP_ZLIB_VERSION} && ./configure --prefix=/app/vendor/php/zlib && make && make install \
+    && cd ../php-${php_version} && ./configure --prefix=/app/vendor/php \
+    --with-config-file-path=/app/vendor/php/etc \
+    --with-config-file-scan-dir=/app/vendor/php/etc/conf.d \
+    --with-gd \
+    --with-mysql \
+    --with-mysqli \
+    --with-pdo-mysql \
+    --with-pdo-sqlite \
+    --enable-shmop \
+    --enable-zip \
+    --with-jpeg-dir=/usr \
+    --with-png-dir=/usr \
+    --with-zlib=/app/vendor/php/zlib \
+    --with-openssl \
+    --enable-soap \
+    --enable-xmlreader \
+    --with-xmlrpc \
+    --with-curl=/usr \
+    --with-xsl \
+    --enable-fpm \
+    --enable-mbstring \
+    --enable-pcntl \
+    --disable-debug \
+    && make \
+    && make install
+BUILD_CMD
+)
+
+echo "-----> Uploading source to build server"
+
+vulcan build --verbose \
+    --name php \
+    --prefix /app/vendor/php \
+    --source "." \
+    --output "$tempdir/php-$php_version.tgz" \
+    --command "$build_command"
+
+echo "-----> Moving package to S3"
+
+s3cmd put --verbose \
+    --acl-public \
+    "$tempdir/php-${php_version}.tgz" \
+    "s3://$S3_BUCKET/package/php-${php_version}.tgz"
+
+"$basedir/manifest" php
+
+echo "-----> Done building PHP package!"

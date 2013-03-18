@@ -1,0 +1,22 @@
+#!/bin/bash
+
+if [ -z "$S3_BUCKET" ]; then
+    S3_BUCKET="chh-heroku-buildpack-php"
+fi
+
+function indent() {
+    c='s/^/       /'
+    case $(uname) in
+        Darwin) sed -l "$c";;
+        *)      sed -u "$c";;
+    esac
+}
+
+BUILD_DIR="$1"
+CACHE_DIR="$2"
+
+mkdir -p $BUILD_DIR/.profile.d
+
+cat > "$BUILD_DIR" <<SH
+export PATH=/app/vendor/nginx/sbin:/app/vendor/nginx/bin:/app/vendor/php/sbin:/app/vendor/php/bin
+SH

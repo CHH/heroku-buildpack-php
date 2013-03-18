@@ -1,0 +1,71 @@
+#!/bin/bash
+
+set -e
+
+nginx_version="$1"
+
+E_ARG_MISSING=127
+E_S3_BUCKET_MISSING=2
+
+basedir="$( cd -P "$( dirname "$0" )" && pwd )"
+
+if [ -z "$nginx_version" ]; then
+    echo "Usage: $0 <version>" >&2
+    exit $E_ARG_MISSING
+fi
+
+if [ -z "$S3_BUCKET" ]; then
+    echo "Must set S3_BUCKET environment variable" >&2
+    exit $E_S3_BUCKET_MISSING
+fi
+
+if [ -z "$NGINX_ZLIB_VERSION" ]; then
+    NGINX_ZLIB_VERSION=1.2.7
+fi
+
+if [ -z "$NGINX_PCRE_VERSION" ]; then
+    NGINX_PCRE_VERSION=8.32
+fi
+
+zlib_version="$NGINX_ZLIB_VERSION"
+pcre_version="$NGINX_PCRE_VERSION"
+
+tempdir="$( mktemp -t nginx_xxxx )"
+rm -rf $tempdir
+mkdir -p $tempdir
+cd $tempdir
+
+echo "-----> Downloading dependency PCRE ${pcre_version}"
+
+curl -LO "http://sourceforge.net/projects/pcre/files/pcre/${pcre_version}/pcre-${pcre_version}.tar.gz"
+tar -xzvf "pcre-${pcre_version}.tar.gz"
+
+echo "-----> Downloading dependency zlib ${zlib_version}"
+
+curl -LO "http://zlib.net/zlib-${zlib_version}.tar.gz"
+tar -xzvf "zlib-${zlib_version}.tar.gz"
+
+echo "-----> Downloading NGINX ${nginx_version}"
+
+curl -LO "http://nginx.org/download/nginx-${nginx_version}.tar.gz"
+tar -xzvf "nginx-${nginx_version}.tar.gz"
+
+echo "-----> Uploading source to build server"
+
+vulcan build --verbose \
+    --name nginx \
+    --prefix /app/vendor/nginx \
+    --source "$tempdir" \
+    --output "$tempdir/nginx-${nginx_version}.tgz" \
+    --command "cd nginx-${nginx_version} && ./configure --prefix=/app/vendor/nginx --with-http_ssl_module --with-pcre=../pcre-${pcre_version} --with-zlib=../zlib-${zlib_version} && make && make install"
+
+echo "-----> Uploading package to s3://$S3_BUCKET/package/nginx-${nginx_version}.tgz"
+
+s3cmd put --verbose \
+    --acl-public \
+    "$tempdir/nginx-${nginx_version}.tgz" \
+    "s3://$S3_BUCKET/package/nginx-${nginx_version}.tgz"
+
+"$basedir/manifest" nginx
+
+echo "-----> Done building NGINX package!"
