@@ -1,8 +1,25 @@
 #!/bin/bash
 
+set -e
+
+if [ -n "$BUILDPACK_DEBUG" ]; then
+    set -x
+fi
+
 if [ -z "$S3_BUCKET" ]; then
     S3_BUCKET="chh-heroku-buildpack-php"
 fi
+
+PACKAGES_URL="http://${S3_BUCKET}.s3.amazonaws.com/packages"
+
+function fetch_package() {
+    package="$1"
+    location="$3"
+
+    mkdir -p "$location"
+
+    curl -L -S -o - "$package" | tar -xzf - -C "$location"
+}
 
 function indent() {
     c='s/^/       /'
@@ -12,11 +29,42 @@ function indent() {
     esac
 }
 
+function install_composer_deps() {
+    local cwd=$(pwd)
+    local target="$1"
+
+    if [ ! -f "$target/composer.phar" ]; then
+        curl -L "http://getcomposer.org/composer.phar" > "$target/composer.phar"
+    fi
+
+    cd "$target"
+    "/app/vendor/php/bin/php" composer.phar install
+    cd "$cwd"
+}
+
 BUILD_DIR="$1"
 CACHE_DIR="$2"
 
-mkdir -p $BUILD_DIR/.profile.d
+#declare -A engine_versions
+#declare -A engine_defaults
+#declare -A engine_requests
 
-cat > "$BUILD_DIR" <<SH
+#engine_defaults["php"] = "5.4.13"
+#engine_defaults["nginx"] = "1.2.7"
+
+PHP_VERSION=5.4.13
+NGINX_VERSION=1.2.7
+
+NGINX_PACKAGE="http://${S3_BUCKET}.s3.amazonaws.com/packages/nginx-${NGINX_VERSION}.tgz"
+PHP_PACKAGE="http://${S3_BUCKET}.s3.amazonaws.com/packages/php-${PHP_VERSION}.tgz"
+
+fetch_package "$NGINX_PACKAGE" "$BUILD_DIR/vendor/nginx"
+fetch_package "$PHP_VERSION" "$BUILD_DIR/vendor/php"
+
+test ! -d "$BUILD_DIR/.profile.d" && mkdir -p $BUILD_DIR/.profile.d || true
+
+install_composer_deps "$BUILD_DIR"
+
+cat > "$BUILD_DIR/.profile.d/php.sh" <<SH
 export PATH=/app/vendor/nginx/sbin:/app/vendor/nginx/bin:/app/vendor/php/sbin:/app/vendor/php/bin
 SH

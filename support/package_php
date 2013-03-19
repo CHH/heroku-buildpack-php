@@ -58,7 +58,8 @@ build_command=$(cat <<BUILD_CMD
     --enable-pcntl \
     --disable-debug \
     && make \
-    && make install
+    && make install \
+    && /app/vendor/php/bin/pear config-set php_dir /app/vendor/php
 BUILD_CMD
 )
 
