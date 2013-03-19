@@ -13,8 +13,8 @@ fi
 PACKAGES_URL="http://${S3_BUCKET}.s3.amazonaws.com/packages"
 
 function fetch_package() {
-    package="$1"
-    location="$3"
+    local package="$1"
+    local location="$2"
 
     mkdir -p "$location"
 
