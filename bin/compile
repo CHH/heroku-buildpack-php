@@ -129,7 +129,7 @@ mkdir -p "$BUILD_DIR/vendor/php/run"
 
 (tail -f -n 0 $BUILD_DIR/vendor/nginx/logs/*.log $BUILD_DIR/vendor/php/var/log/*.log &)
 
-"$BUILD_DIR/vendor/php/sbin/php-fpm" -p "$BUILD_DIR/vendor/php" -y $BUILD_DIR/conf/php-fpm.conf"
+"$BUILD_DIR/vendor/php/sbin/php-fpm" -p "$BUILD_DIR/vendor/php" -y "$BUILD_DIR/conf/php-fpm.conf"
 "$BUILD_DIR/vendor/nginx/sbin/nginx" -c "$BUILD_DIR/conf/nginx.conf"
 SH
 
