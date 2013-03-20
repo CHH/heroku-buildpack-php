@@ -88,6 +88,8 @@ function package_index_file() {
 BUILD_DIR="$1"
 CACHE_DIR="$2"
 
+cd "$BUILD_DIR"
+
 #declare -A engine_versions
 #declare -A engine_defaults
 #declare -A engine_requests
@@ -110,49 +112,49 @@ echo "-----> Vendoring binaries into slug"
 
 [ ! -d "$BUILD_DIR/vendor" ] && mkdir -p "$BUILD_DIR/vendor"
 
-cp -R -v "$VENDORED_NGINX/" "$BUILD_DIR/vendor/nginx" | indent
-cp -R -v "$VENDORED_PHP/" "$BUILD_DIR/vendor/php" | indent
+cp -R -v "$VENDORED_NGINX/" "vendor/nginx" | indent
+cp -R -v "$VENDORED_PHP/" "vendor/php" | indent
 
 # Test that all packages were fetched and"extracted successfully
-test -d "$BUILD_DIR/vendor/nginx"
-test -d "$BUILD_DIR/vendor/php"
+test -d "vendor/nginx"
+test -d "vendor/php"
 
-mkdir -p "$BUILD_DIR/conf"
+mkdir -p "conf"
 
 render_erb "$basedir/../conf/nginx/default.conf.erb" \
-    socket_path="$BUILD_DIR/vendor/php/run/php-fpm.sock" \
+    socket_path="/app/vendor/php/run/php-fpm.sock" \
     document_root="$(package_document_root)" \
     index_file="$(package_index_file)" \
-    error_log="$BUILD_DIR/vendor/nginx/logs/error.log" \
-    access_log="$BUILD_DIR/vendor/nginx/logs/access.log" \
-    > "$BUILD_DIR/vendor/nginx/conf/nginx.conf"
+    error_log="/app/vendor/nginx/logs/error.log" \
+    access_log="/app/vendor/nginx/logs/access.log" \
+    > "vendor/nginx/conf/nginx.conf"
 
-cp "$basedir/../conf/php/php-fpm.conf" "$BUILD_DIR/conf/php-fpm.conf"
+cp "$basedir/../conf/php/php-fpm.conf" "conf/php-fpm.conf"
 
-test ! -d "$BUILD_DIR/.profile.d" && mkdir -p $BUILD_DIR/.profile.d || true
+test ! -d ".profile.d" && mkdir -p .profile.d || true
 
-cat > "$BUILD_DIR/.profile.d/php.sh" <<SH
-export PATH=/sbin:/bin:/usr/sbin:/usr/bin:$BUILD_DIR/bin:$BUILD_DIR/vendor/nginx/sbin:$BUILD_DIR/vendor/php/sbin:$BUILD_DIR/vendor/php/bin:$BUILD_DIR/vendor/composer/bin
+cat > ".profile.d/php.sh" <<SH
+export PATH=/sbin:/bin:/usr/sbin:/usr/bin:/app/bin:/app/vendor/nginx/sbin:/app/vendor/php/sbin:/app/vendor/php/bin
 SH
 
 install_composer_deps "$BUILD_DIR"
 
-mkdir -p "$BUILD_DIR/bin"
+mkdir -p "bin"
 
-cat > "$BUILD_DIR/bin/run" <<SH
+cat > "bin/run" <<SH
 #!/usr/bin/env bash
 
-mkdir -p vendor/nginx/logs
-mkdir -p vendor/php/var/log
-mkdir -p vendor/php/run
+mkdir -p /app/vendor/nginx/logs
+mkdir -p /app/vendor/php/var/log
+mkdir -p /app/vendor/php/run
 
-touch vendor/nginx/logs/access.log vendor/nginx/logs/error.log
-touch vendor/php/var/log/error.log
+touch /app/vendor/nginx/logs/access.log /app/vendor/nginx/logs/error.log
+touch /app/vendor/php/var/log/error.log
 
-(tail -f -n 0 vendor/nginx/logs/*.log vendor/php/var/log/*.log &)
+(tail -f -n 0 /app/vendor/nginx/logs/*.log /app/vendor/php/var/log/*.log &)
 
-./vendor/php/sbin/php-fpm" -p "vendor/php" -y "conf/php-fpm.conf"
-./vendor/nginx/sbin/nginx" -p "vendor/nginx"
+/app/vendor/php/sbin/php-fpm" -p "/app/vendor/php" -y "/app/conf/php-fpm.conf"
+/app/vendor/nginx/sbin/nginx" -p "/app/vendor/nginx"
 SH
 
-chmod a+x "$BUILD_DIR/bin/run"
+chmod a+x "bin/run"
