@@ -139,22 +139,20 @@ install_composer_deps "$BUILD_DIR"
 
 mkdir -p "$BUILD_DIR/bin"
 
-cat > "$BUILD_DIR/bin/start.sh" <<SH
+cat > "bin/run" <<SH
 #!/usr/bin/env bash
-mkdir -p $BUILD_DIR/vendor/nginx/logs
-mkdir -p $BUILD_DIR/vendor/php/var/log
-touch $BUILD_DIR/vendor/nginx/logs/access.log $BUILD_DIR/vendor/nginx/logs/error.log
-touch $BUILD_DIR/vendor/php/var/log/error.log
 
-mkdir -p "$BUILD_DIR/vendor/php/run"
+mkdir -p vendor/nginx/logs
+mkdir -p vendor/php/var/log
+mkdir -p vendor/php/run
 
-(tail -f -n 0 $BUILD_DIR/vendor/nginx/logs/*.log $BUILD_DIR/vendor/php/var/log/*.log &)
+touch vendor/nginx/logs/access.log vendor/nginx/logs/error.log
+touch vendor/php/var/log/error.log
 
-ls -l "$BUILD_DIR/vendor/"
-ls -l "$BUILD_DIR/vendor/nginx"
+(tail -f -n 0 vendor/nginx/logs/*.log vendor/php/var/log/*.log &)
 
-"$BUILD_DIR/vendor/php/sbin/php-fpm" -p "$BUILD_DIR/vendor/php" -y "$BUILD_DIR/conf/php-fpm.conf"
-"$BUILD_DIR/vendor/nginx/sbin/nginx" -p "$BUILD_DIR/vendor/nginx"
+./vendor/php/sbin/php-fpm" -p "vendor/php" -y "conf/php-fpm.conf"
+./vendor/nginx/sbin/nginx" -p "vendor/nginx"
 SH
 
-chmod a+x "$BUILD_DIR/bin/start.sh"
+chmod a+x "bin/run"

@@ -1,10 +1,8 @@
 #!/bin/bash
 
-BUILD_DIR="$1"
-
 cat << EOF
 ---
 addons:
 default_process_types:
-  web: bin/start.sh 
+  web: bin/run
 EOF
