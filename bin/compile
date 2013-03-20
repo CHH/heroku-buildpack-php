@@ -120,15 +120,7 @@ test -d "vendor/nginx"
 test -d "vendor/php"
 
 mkdir -p "conf"
-
-render_erb "$basedir/../conf/nginx/default.conf.erb" \
-    socket_path="/app/vendor/php/run/php-fpm.sock" \
-    document_root="$(package_document_root)" \
-    index_file="$(package_index_file)" \
-    error_log="/app/vendor/nginx/logs/error.log" \
-    access_log="/app/vendor/nginx/logs/access.log" \
-    > "vendor/nginx/conf/nginx.conf"
-
+cp "$basedir/../conf/nginx/default.conf.erb" "conf/nginx.conf.erb"
 cp "$basedir/../conf/php/php-fpm.conf" "conf/php-fpm.conf"
 
 test ! -d ".profile.d" && mkdir -p .profile.d || true
@@ -145,6 +137,11 @@ cat > "bin/run" <<SH
 #!/usr/bin/env bash
 
 pwd
+
+export DOCUMENT_ROOT=$(package_document_root)
+export INDEX_DOCUMENT=$(package_index_file)
+
+erb conf/nginx.conf.erb > vendor/nginx/conf/nginx.conf
 
 mkdir -p vendor/nginx/logs
 mkdir -p vendor/php/var/log
