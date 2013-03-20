@@ -35,6 +35,7 @@ function install_composer_deps() {
     local target="$1"
 
     echo "-----> Vendoring Composer"
+    mkdir -p "$target/vendor/composer/bin"
     curl -L "http://getcomposer.org/composer.phar" > "$target/vendor/composer/bin/composer"
     chmod a+x "$target/vendor/composer/bin/composer"
 
