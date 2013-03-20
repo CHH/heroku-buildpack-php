@@ -34,13 +34,14 @@ function install_composer_deps() {
     local cwd=$(pwd)
     local target="$1"
 
-    if [ ! -f "$target/composer.phar" ]; then
-        curl -L "http://getcomposer.org/composer.phar" > "$target/composer.phar"
-        chmod a+x "$target/composer.phar"
-    fi
+    echo "-----> Vendoring Composer"
+    curl -L "http://getcomposer.org/composer.phar" > "$target/vendor/composer/bin/composer"
+    chmod a+x "$target/vendor/composer/bin/composer"
 
+    echo "-----> Installing application dependencies with Composer"
     cd "$target"
-    "$BUILD_DIR/vendor/php/bin/php" composer.phar install --prefer-dist
+    "$BUILD_DIR/vendor/php/bin/php" \
+        "$target/vendor/composer/bin/composer" install --prefer-dist
     cd "$cwd"
 }
 
@@ -114,7 +115,9 @@ SH
 
 install_composer_deps "$BUILD_DIR"
 
-cat > "$BUILD_DIR/start.sh" <<SH
+mkdir -p "$BUILD_DIR/bin"
+
+cat > "$BUILD_DIR/bin/start.sh" <<SH
 #!/usr/bin/bash
 mkdir -p $BUILD_DIR/vendor/nginx/logs
 mkdir -p $BUILD_DIR/vendor/php/var/log
@@ -129,4 +132,4 @@ mkdir -p "$BUILD_DIR/vendor/php/run"
 "$BUILD_DIR/vendor/nginx/sbin/nginx" -c "$BUILD_DIR/conf/nginx.conf"
 SH
 
-chmod a+x "$BUILD_DIR/start.sh"
+chmod a+x "$BUILD_DIR/bin/start.sh"

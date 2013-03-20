@@ -1,7 +1,11 @@
 #!/bin/bash
 
+BUILD_DIR="$1"
+
 cat << EOF
 ---
+config_vars:
+  PATH: $BUILD_DIR/bin:$BUILD_DIR/vendor/nginx/sbin:$BUILD_DIR/vendor/php/sbin:$BUILD_DIR/vendor/php/bin
 addons:
 default_process_types:
   web: start.sh 
