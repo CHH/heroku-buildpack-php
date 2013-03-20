@@ -82,8 +82,8 @@ CACHE_DIR="$2"
 PHP_VERSION=5.4.13
 NGINX_VERSION=1.2.7
 
-NGINX_PACKAGE="http://${S3_BUCKET}.s3.amazonaws.com/packages/nginx-${NGINX_VERSION}.tgz"
-PHP_PACKAGE="http://${S3_BUCKET}.s3.amazonaws.com/packages/php-${PHP_VERSION}.tgz"
+NGINX_PACKAGE="http://${S3_BUCKET}.s3.amazonaws.com/package/nginx-${NGINX_VERSION}.tgz"
+PHP_PACKAGE="http://${S3_BUCKET}.s3.amazonaws.com/package/php-${PHP_VERSION}.tgz"
 
 echo "-----> Vendoring NGINX ${NGINX_VERSION} | PHP ${PHP_VERSION}"
 
