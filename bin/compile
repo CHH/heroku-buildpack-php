@@ -1,6 +1,7 @@
 #!/bin/bash
 
 set -e
+shopt -s dotglob
 
 if [ -n "$BUILDPACK_DEBUG" ]; then
     set -x
@@ -10,7 +11,7 @@ if [ -z "$S3_BUCKET" ]; then
     S3_BUCKET="chh-heroku-buildpack-php"
 fi
 
-PACKAGES_URL="http://${S3_BUCKET}.s3.amazonaws.com/packages"
+basedir="$( cd -P "$( dirname "$0" )" && pwd )"
 
 function fetch_package() {
     local package="$1"
@@ -18,7 +19,7 @@ function fetch_package() {
 
     mkdir -p "$location"
 
-    curl "$package" -L -s -o - | tar xzf - -C "$location"
+    curl "$package" -L -s | tar xzf - -C "$location"
 }
 
 function indent() {
@@ -42,15 +43,41 @@ function install_composer_deps() {
     cd "$cwd"
 }
 
+function render_erb() {
+    local file="$1"
+    shift
+
+    vars=
+    for arg in $@; do
+        local k=$(echo "$arg" | cut -f1 -d=)
+        local v=$(echo "$arg" | cut -f2 -d=)
+
+        vars="${vars}$k='$v';"
+    done
+
+    script="%s puts ERB.new(File.read('%s')).result(binding);"
+
+    printf "$script" "$vars" "$file" >&2
+    ruby -rerb -e "$(printf "$script" "$vars" "$file")"
+}
+
+function package_document_root() {
+    echo "$BUILD_DIR"
+}
+
+function package_index_file() {
+    echo "index.php"
+}
+
 BUILD_DIR="$1"
 CACHE_DIR="$2"
 
 #declare -A engine_versions
-#declare -A engine_defaults
+declare -A engine_defaults
 #declare -A engine_requests
 
-#engine_defaults["php"] = "5.4.13"
-#engine_defaults["nginx"] = "1.2.7"
+engine_defaults["php"] = "5.4.13"
+engine_defaults["nginx"] = "1.2.7"
 
 PHP_VERSION=5.4.13
 NGINX_VERSION=1.2.7
@@ -58,12 +85,45 @@ NGINX_VERSION=1.2.7
 NGINX_PACKAGE="http://${S3_BUCKET}.s3.amazonaws.com/packages/nginx-${NGINX_VERSION}.tgz"
 PHP_PACKAGE="http://${S3_BUCKET}.s3.amazonaws.com/packages/php-${PHP_VERSION}.tgz"
 
+echo "-----> Vendoring NGINX ${NGINX_VERSION} | PHP ${PHP_VERSION}"
+
 fetch_package "$NGINX_PACKAGE" "$BUILD_DIR/vendor/nginx"
 fetch_package "$PHP_VERSION" "$BUILD_DIR/vendor/php"
+
+# Test that all packages were fetched and"extracted successfully
+test -d "$BUILD_DIR/vendor/nginx"
+test -d "$BUILD_DIR/vendor/php"
+
+mkdir -p "$BUILD_DIR/conf"
+
+render_erb "$basedir/../conf/nginx/default.conf.erb" \
+    socket_path="$BUILD_DIR/vendor/php/run/php-fpm.sock" \
+    document_root="$(package_document_root)" \
+    index_file="$(package_index_file)" \
+    error_log="$BUILD_DIR/vendor/nginx/logs/error.log" \
+    access_log="$BUILD_DIR/vendor/nginx/logs/access.log" \
+    > "$BUILD_DIR/conf/nginx.conf"
 
 test ! -d "$BUILD_DIR/.profile.d" && mkdir -p $BUILD_DIR/.profile.d || true
 
 install_composer_deps "$BUILD_DIR"
+
+cat > "$BUILD_DIR/start.sh" <<SH
+#!/usr/bin/bash
+mkdir -p $BUILD_DIR/vendor/nginx/logs
+mkdir -p $BUILD_DIR/vendor/php/log
+touch $BUILD_DIR/vendor/nginx/logs/access.log $BUILD_DIR/vendor/nginx/logs/error.log
+touch $BUILD_DIR/vendor/php/var/log/error.log
+
+mkdir -p "$BUILD_DIR/vendor/php/run"
+
+(tail -f -n 0 $BUILD_DIR/vendor/nginx/logs/*.log $BUILD_DIR/vendor/php/var/log/*.log &)
+
+"$BUILD_DIR/vendor/php/sbin/php-fpm"
+"$BUILD_DIR/vendor/nginx/sbin/nginx" -c "$BUILD_DIR/conf/nginx.conf"
+SH
+
+chmod a+x "$BUILD_DIR/start.sh"
 
 cat > "$BUILD_DIR/.profile.d/php.sh" <<SH
 export PATH=/app/vendor/nginx/sbin:/app/vendor/nginx/bin:/app/vendor/php/sbin:/app/vendor/php/bin
