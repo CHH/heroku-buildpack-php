@@ -111,7 +111,7 @@ cp "$basedir/../conf/php/php-fpm.conf" "$BUILD_DIR/conf/php-fpm.conf"
 test ! -d "$BUILD_DIR/.profile.d" && mkdir -p $BUILD_DIR/.profile.d || true
 
 cat > "$BUILD_DIR/.profile.d/php.sh" <<SH
-export PATH=$BUILD_DIR/bin:$BUILD_DIR/vendor/nginx/sbin:$BUILD_DIR/vendor/php/sbin:$BUILD_DIR/vendor/php/bin:$BUILD_DIR/vendor/composer/bin
+export PATH=/sbin:/bin:/usr/sbin:/usr/bin:$BUILD_DIR/bin:$BUILD_DIR/vendor/nginx/sbin:$BUILD_DIR/vendor/php/sbin:$BUILD_DIR/vendor/php/bin:$BUILD_DIR/vendor/composer/bin
 SH
 
 install_composer_deps "$BUILD_DIR"
