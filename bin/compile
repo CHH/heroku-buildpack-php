@@ -19,7 +19,7 @@ function fetch_package() {
 
     mkdir -p "$location"
 
-    curl "$package" -L -s | tar xzf - -C "$location"
+    curl "$package" -L -s -o - | tar xzf - -C "$location"
 }
 
 function indent() {
