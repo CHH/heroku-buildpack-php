@@ -4,5 +4,5 @@ cat << EOF
 ---
 addons:
 default_process_types:
-  web: setup.sh 
+  web: start.sh 
 EOF
