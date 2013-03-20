@@ -141,19 +141,19 @@ pwd
 export DOCUMENT_ROOT=$(package_document_root)
 export INDEX_DOCUMENT=$(package_index_file)
 
-erb conf/nginx.conf.erb > vendor/nginx/conf/nginx.conf
+erb conf/nginx.conf.erb > /app/vendor/nginx/conf/nginx.conf
 
-mkdir -p vendor/nginx/logs
-mkdir -p vendor/php/var/log
-mkdir -p vendor/php/run
+mkdir -p /app/vendor/nginx/logs
+mkdir -p /app/vendor/php/var/log
+mkdir -p /app/vendor/php/run
 
-touch vendor/nginx/logs/access.log vendor/nginx/logs/error.log
-touch vendor/php/var/log/error.log
+touch /app/vendor/nginx/logs/access.log /app/vendor/nginx/logs/error.log
+touch /app/vendor/php/var/log/error.log
 
-(tail -f -n 0 vendor/nginx/logs/*.log vendor/php/var/log/*.log &)
+(tail -f -n 0 /app/vendor/nginx/logs/*.log /app/vendor/php/var/log/*.log &)
 
-vendor/php/sbin/php-fpm" -p "vendor/php" -y "conf/php-fpm.conf"
-vendor/nginx/sbin/nginx" -p "vendor/nginx"
+/app/vendor/php/sbin/php-fpm" -p "/app/vendor/php" -y "/app/conf/php-fpm.conf"
+/app/vendor/nginx/sbin/nginx" -p "/app/vendor/nginx"
 SH
 
 chmod a+x "bin/run"
