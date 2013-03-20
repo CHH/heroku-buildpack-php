@@ -119,7 +119,7 @@ install_composer_deps "$BUILD_DIR"
 mkdir -p "$BUILD_DIR/bin"
 
 cat > "$BUILD_DIR/bin/start.sh" <<SH
-#!/usr/bin/bash
+#!/usr/bin/env bash
 mkdir -p $BUILD_DIR/vendor/nginx/logs
 mkdir -p $BUILD_DIR/vendor/php/var/log
 touch $BUILD_DIR/vendor/nginx/logs/access.log $BUILD_DIR/vendor/nginx/logs/error.log
