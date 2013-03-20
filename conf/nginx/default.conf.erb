@@ -37,7 +37,7 @@ http {
      
         # pass the PHP scripts to FastCGI server from upstream phpfcgi
         location ~ \.php$ {
-            fastcgi_pass phpfcgi;
+            fastcgi_pass phpfpm;
             fastcgi_split_path_info ^(.+\.php)(/.*)$;
             include fastcgi_params;
             fastcgi_param  SCRIPT_FILENAME $document_root$fastcgi_script_name;
