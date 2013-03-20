@@ -129,8 +129,11 @@ mkdir -p "$BUILD_DIR/vendor/php/run"
 
 (tail -f -n 0 $BUILD_DIR/vendor/nginx/logs/*.log $BUILD_DIR/vendor/php/var/log/*.log &)
 
-php-fpm -p "$BUILD_DIR/vendor/php" -y "$BUILD_DIR/conf/php-fpm.conf"
-nginx -p "$BUILD_DIR/vendor/nginx"
+ls -l "$BUILD_DIR/vendor/"
+ls -l "$BUILD_DIR/vendor/nginx"
+
+"$BUILD_DIR/vendor/php/sbin/php-fpm" -p "$BUILD_DIR/vendor/php" -y "$BUILD_DIR/conf/php-fpm.conf"
+"$BUILD_DIR/vendor/nginx/sbin/nginx" -p "$BUILD_DIR/vendor/nginx"
 SH
 
 chmod a+x "$BUILD_DIR/bin/start.sh"
