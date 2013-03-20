@@ -134,7 +134,7 @@ cp "$basedir/../conf/php/php-fpm.conf" "conf/php-fpm.conf"
 test ! -d ".profile.d" && mkdir -p .profile.d || true
 
 cat > ".profile.d/php.sh" <<SH
-export PATH=/sbin:/bin:/usr/sbin:/usr/bin:/app/bin:/app/vendor/nginx/sbin:/app/vendor/php/sbin:/app/vendor/php/bin
+export PATH=/sbin:/bin:/usr/sbin:/usr/bin:/app/bin:/app/vendor/nginx/sbin:/app/vendor/php/sbin:/app/vendor/php/bin:\$PATH
 SH
 
 install_composer_deps "$BUILD_DIR"
@@ -144,17 +144,19 @@ mkdir -p "bin"
 cat > "bin/run" <<SH
 #!/usr/bin/env bash
 
-mkdir -p /app/vendor/nginx/logs
-mkdir -p /app/vendor/php/var/log
-mkdir -p /app/vendor/php/run
+pwd
 
-touch /app/vendor/nginx/logs/access.log /app/vendor/nginx/logs/error.log
-touch /app/vendor/php/var/log/error.log
+mkdir -p vendor/nginx/logs
+mkdir -p vendor/php/var/log
+mkdir -p vendor/php/run
 
-(tail -f -n 0 /app/vendor/nginx/logs/*.log /app/vendor/php/var/log/*.log &)
+touch vendor/nginx/logs/access.log vendor/nginx/logs/error.log
+touch vendor/php/var/log/error.log
 
-/app/vendor/php/sbin/php-fpm" -p "/app/vendor/php" -y "/app/conf/php-fpm.conf"
-/app/vendor/nginx/sbin/nginx" -p "/app/vendor/nginx"
+(tail -f -n 0 vendor/nginx/logs/*.log vendor/php/var/log/*.log &)
+
+vendor/php/sbin/php-fpm" -p "vendor/php" -y "conf/php-fpm.conf"
+vendor/nginx/sbin/nginx" -p "vendor/nginx"
 SH
 
 chmod a+x "bin/run"

@@ -1,32 +1,47 @@
-upstream phpfpm {
-    server unix:<%= socket_path %>;
+worker_processes 4;
+daemon off;
+
+events {
+    worker_connections  1024;
 }
-server {
-    listen 80;
- 
-    server_name heroku;
-    root <%= document_root %>;
- 
-    error_log <%= error_log %>;
-    access_log <%= access_log %>;
- 
-    rewrite ^/<%= index_file.gsub(".", "\\.") %>/?(.*)$ /$1 permanent;
- 
-    location / {
-        index index.php;
-        try_files $uri @rewriteapp;
+
+http {
+    upstream phpfpm {
+        server /tmp/php-fpm.sock
     }
- 
-    location @rewriteapp {
-        rewrite ^(.*)$ /<%= index_file %>/$1 last;
-    }
- 
-    # pass the PHP scripts to FastCGI server from upstream phpfcgi
-    location ~ \.php$ {
-        fastcgi_pass phpfcgi;
-        fastcgi_split_path_info ^(.+\.php)(/.*)$;
-        include fastcgi_params;
-        fastcgi_param  SCRIPT_FILENAME $document_root$fastcgi_script_name;
-        fastcgi_param  HTTPS off;
+
+    sendfile    on;
+    tcp_nopush  on;
+
+    keepalive_timeout  65;
+     
+    error_log logs/error.log notice;
+    access_log logs/access.log main;
+
+    server {
+        listen <%= ENV['PORT'] %>;
+     
+        server_name localhost;
+        root <%= ENV['DOCUMENT_ROOT'] %>;
+     
+        rewrite ^/<%= ENV['INDEX_DOCUMENT'].gsub(".", "\\.") %>/?(.*)$ /$1 permanent;
+     
+        location / {
+            index index.php;
+            try_files $uri @rewriteapp;
+        }
+     
+        location @rewriteapp {
+            rewrite ^(.*)$ /<%= ENV['INDEX_DOCUMENT'] %>/$1 last;
+        }
+     
+        # pass the PHP scripts to FastCGI server from upstream phpfcgi
+        location ~ \.php$ {
+            fastcgi_pass phpfcgi;
+            fastcgi_split_path_info ^(.+\.php)(/.*)$;
+            include fastcgi_params;
+            fastcgi_param  SCRIPT_FILENAME $document_root$fastcgi_script_name;
+            fastcgi_param  HTTPS off;
+        }
     }
 }
