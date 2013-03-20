@@ -89,7 +89,7 @@ function render_erb() {
 }
 
 function package_document_root() {
-    echo "$BUILD_DIR"
+    echo "/app"
 }
 
 function package_index_file() {
