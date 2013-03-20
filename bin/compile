@@ -137,9 +137,9 @@ SH
 
 install_composer_deps "$BUILD_DIR"
 
-mkdir -p "bin"
+mkdir -p "$BUILD_DIR/bin"
 
-cat > "bin/run" <<SH
+cat > "$BUILD_DIR/bin/run" <<SH
 #!/usr/bin/env bash
 
 mkdir -p vendor/nginx/logs
@@ -155,4 +155,4 @@ touch vendor/php/var/log/error.log
 ./vendor/nginx/sbin/nginx" -p "vendor/nginx"
 SH
 
-chmod a+x "bin/run"
+chmod a+x "$BUILD_DIR/bin/run"
