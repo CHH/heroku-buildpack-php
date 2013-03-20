@@ -154,7 +154,7 @@ touch /app/vendor/php/var/log/error.log
 
 (tail -f -n 0 /app/vendor/nginx/logs/*.log /app/vendor/php/var/log/*.log &)
 
-php-fpm -p "/app/vendor/php" -y "/app/conf/php-fpm.conf"
+php-fpm -p "/app/vendor/php"
 nginx -p "/app/vendor/nginx"
 SH
 
