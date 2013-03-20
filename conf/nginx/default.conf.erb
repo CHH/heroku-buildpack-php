@@ -24,19 +24,12 @@ http {
         server_name localhost;
         root <%= ENV['DOCUMENT_ROOT'] %>;
      
-        rewrite ^/<%= ENV['INDEX_DOCUMENT'].gsub(".", "\\.") %>/?(.*)$ /$1 permanent;
-     
-        location / {
-            try_files $uri $uri/ /<%= ENV['INDEX_DOCUMENT'] %>;
-        }
-     
-        # pass the PHP scripts to FastCGI server from upstream phpfcgi
-        location ~ \.php$ {
-            fastcgi_pass phpfpm;
-            fastcgi_split_path_info ^(.+\.php)(/.*)$;
-            include fastcgi_params;
-            fastcgi_index <%= ENV['INDEX_DOCUMENT'] %>;
-            fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;
+        index  index.html index.htm index.xhtml index.php;
+        try_files $uri $uri/ index.php;
+
+        location ~ \.php {
+            include         fastcgi.conf;
+            fastcgi_pass    unix:/tmp/php-fpm.sck;
         }
     }
 }
