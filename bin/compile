@@ -39,7 +39,7 @@ function install_composer_deps() {
 
     mkdir -p "$CACHE_DIR/composer/${PHP_VERSION}"
 
-    if [ -z "$CACHE_DIR/composer/${PHP_VERSION}/vendor" ]; then
+    if [ -d "$CACHE_DIR/composer/${PHP_VERSION}/vendor" ]; then
         cp -R "$CACHE_DIR/composer/${PHP_VERSION}/vendor/" "$target/vendor"
     fi
 
