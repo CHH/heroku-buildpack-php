@@ -104,7 +104,7 @@ render_erb "$basedir/../conf/nginx/default.conf.erb" \
     index_file="$(package_index_file)" \
     error_log="$BUILD_DIR/vendor/nginx/logs/error.log" \
     access_log="$BUILD_DIR/vendor/nginx/logs/access.log" \
-    > "$BUILD_DIR/conf/nginx.conf"
+    > "$BUILD_DIR/vendor/nginx/conf/nginx.conf"
 
 cp "$basedir/../conf/php/php-fpm.conf" "$BUILD_DIR/conf/php-fpm.conf"
 
@@ -129,8 +129,8 @@ mkdir -p "$BUILD_DIR/vendor/php/run"
 
 (tail -f -n 0 $BUILD_DIR/vendor/nginx/logs/*.log $BUILD_DIR/vendor/php/var/log/*.log &)
 
-"$BUILD_DIR/vendor/php/sbin/php-fpm" -p "$BUILD_DIR/vendor/php" -y "$BUILD_DIR/conf/php-fpm.conf"
-"$BUILD_DIR/vendor/nginx/sbin/nginx" -c "$BUILD_DIR/conf/nginx.conf"
+php-fpm -p "$BUILD_DIR/vendor/php" -y "$BUILD_DIR/conf/php-fpm.conf"
+nginx -p "$BUILD_DIR/vendor/nginx"
 SH
 
 chmod a+x "$BUILD_DIR/bin/start.sh"
