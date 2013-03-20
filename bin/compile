@@ -19,7 +19,7 @@ function fetch_package() {
 
     mkdir -p "$location"
 
-    curl "$package" -L -s -o - | tar xzf - -C "$location"
+    curl "$package" -L -s -o - | tar -xzf - -C "$location"
 }
 
 function indent() {
@@ -36,10 +36,11 @@ function install_composer_deps() {
 
     if [ ! -f "$target/composer.phar" ]; then
         curl -L "http://getcomposer.org/composer.phar" > "$target/composer.phar"
+        chmod a+x "$target/composer.phar"
     fi
 
     cd "$target"
-    "/app/vendor/php/bin/php" composer.phar install
+    "$BUILD_DIR/vendor/php/bin/php" composer.phar install
     cd "$cwd"
 }
 
@@ -57,7 +58,6 @@ function render_erb() {
 
     script="%s puts ERB.new(File.read('%s')).result(binding);"
 
-    printf "$script" "$vars" "$file" >&2
     ruby -rerb -e "$(printf "$script" "$vars" "$file")"
 }
 
@@ -88,7 +88,7 @@ PHP_PACKAGE="http://${S3_BUCKET}.s3.amazonaws.com/package/php-${PHP_VERSION}.tgz
 echo "-----> Vendoring NGINX ${NGINX_VERSION} | PHP ${PHP_VERSION}"
 
 fetch_package "$NGINX_PACKAGE" "$BUILD_DIR/vendor/nginx"
-fetch_package "$PHP_VERSION" "$BUILD_DIR/vendor/php"
+fetch_package "$PHP_PACKAGE" "$BUILD_DIR/vendor/php"
 
 # Test that all packages were fetched and"extracted successfully
 test -d "$BUILD_DIR/vendor/nginx"
@@ -104,14 +104,20 @@ render_erb "$basedir/../conf/nginx/default.conf.erb" \
     access_log="$BUILD_DIR/vendor/nginx/logs/access.log" \
     > "$BUILD_DIR/conf/nginx.conf"
 
+cp "$basedir/../conf/php/php-fpm.conf" "$BUILD_DIR/conf/php-fpm.conf"
+
 test ! -d "$BUILD_DIR/.profile.d" && mkdir -p $BUILD_DIR/.profile.d || true
+
+cat > "$BUILD_DIR/.profile.d/php.sh" <<SH
+export PATH=/app/vendor/nginx/sbin:/app/vendor/nginx/bin:/app/vendor/php/sbin:/app/vendor/php/bin
+SH
 
 install_composer_deps "$BUILD_DIR"
 
 cat > "$BUILD_DIR/start.sh" <<SH
 #!/usr/bin/bash
 mkdir -p $BUILD_DIR/vendor/nginx/logs
-mkdir -p $BUILD_DIR/vendor/php/log
+mkdir -p $BUILD_DIR/vendor/php/var/log
 touch $BUILD_DIR/vendor/nginx/logs/access.log $BUILD_DIR/vendor/nginx/logs/error.log
 touch $BUILD_DIR/vendor/php/var/log/error.log
 
@@ -119,12 +125,8 @@ mkdir -p "$BUILD_DIR/vendor/php/run"
 
 (tail -f -n 0 $BUILD_DIR/vendor/nginx/logs/*.log $BUILD_DIR/vendor/php/var/log/*.log &)
 
-"$BUILD_DIR/vendor/php/sbin/php-fpm"
+"$BUILD_DIR/vendor/php/sbin/php-fpm" -p "$BUILD_DIR/vendor/php" -y $BUILD_DIR/conf/php-fpm.conf"
 "$BUILD_DIR/vendor/nginx/sbin/nginx" -c "$BUILD_DIR/conf/nginx.conf"
 SH
 
 chmod a+x "$BUILD_DIR/start.sh"
-
-cat > "$BUILD_DIR/.profile.d/php.sh" <<SH
-export PATH=/app/vendor/nginx/sbin:/app/vendor/nginx/bin:/app/vendor/php/sbin:/app/vendor/php/bin
-SH
