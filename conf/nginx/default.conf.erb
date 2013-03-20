@@ -28,11 +28,7 @@ http {
      
         location / {
             index index.php;
-            try_files $uri @rewriteapp;
-        }
-     
-        location @rewriteapp {
-            rewrite ^(.*)$ /<%= ENV['INDEX_DOCUMENT'] %>/$1 last;
+            try_files $uri;
         }
      
         # pass the PHP scripts to FastCGI server from upstream phpfcgi
