@@ -6,5 +6,5 @@ cat << EOF
 ---
 addons:
 default_process_types:
-  web: start.sh 
+  web: bin/start.sh 
 EOF
