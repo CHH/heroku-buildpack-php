@@ -40,7 +40,7 @@ function install_composer_deps() {
     fi
 
     cd "$target"
-    "$BUILD_DIR/vendor/php/bin/php" composer.phar install
+    "$BUILD_DIR/vendor/php/bin/php" composer.phar install --prefer-dist
     cd "$cwd"
 }
 
