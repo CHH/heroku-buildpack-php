@@ -137,7 +137,7 @@ SH
 
 install_composer_deps "$BUILD_DIR"
 
-mkdir -p "$BUILD_DIR/bin"
+mkdir -p "bin"
 
 cat > "bin/run" <<SH
 #!/usr/bin/env bash
