@@ -100,8 +100,8 @@ NGINX_VERSION=1.2.7
 
 echo "-----> Vendoring NGINX ${NGINX_VERSION} | PHP ${PHP_VERSION}"
 
-VENDORED_NGINX=$(mktempdir nginx)
-VENDORED_PHP=$(mktempdir php)
+VENDORED_NGINX=$(mktmpdir nginx)
+VENDORED_PHP=$(mktmpdir php)
 
 fetch_package nginx "$NGINX_VERSION" "$VENDORED_NGINX"
 fetch_package php "$PHP_VERSION" "$VENDORED_PHP"
