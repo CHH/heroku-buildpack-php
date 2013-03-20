@@ -48,7 +48,10 @@ function install_composer_deps() {
     {
         cd "$target"
         "$BUILD_DIR/vendor/php/bin/php" \
-            "$target/vendor/composer/bin/composer.phar" install --prefer-dist
+            "$target/vendor/composer/bin/composer.phar" install \
+            --prefer-dist \
+            --optimize-autoloader \
+            --no-interaction
         cd "$cwd"
     } | indent
 }
@@ -137,7 +140,7 @@ cat > "bin/run" <<SH
 #!/usr/bin/env bash
 
 for var in \`env | cut -f1 -d=\`; do
-  echo "env[\$var] = \\$\${var}" >> /app/vendor/php/etc/php-fpm.conf
+    echo "env[\$var] = \\$\${var}" >> /app/vendor/php/etc/php-fpm.conf
 done
 
 export DOCUMENT_ROOT=$(package_document_root)
