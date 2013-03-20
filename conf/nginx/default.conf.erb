@@ -27,7 +27,7 @@ http {
         rewrite ^/<%= ENV['INDEX_DOCUMENT'].gsub(".", "\\.") %>/?(.*)$ /$1 permanent;
      
         location / {
-            index <%= ENV['INDEX_DOCUMENT'] %>;
+            try_files $uri $uri/ /<%= ENV['INDEX_DOCUMENT'] %>;
         }
      
         # pass the PHP scripts to FastCGI server from upstream phpfcgi
@@ -36,8 +36,7 @@ http {
             fastcgi_split_path_info ^(.+\.php)(/.*)$;
             include fastcgi_params;
             fastcgi_index <%= ENV['INDEX_DOCUMENT'] %>;
-            fastcgi_param  SCRIPT_FILENAME $document_root$fastcgi_script_name;
-            fastcgi_param  HTTPS off;
+            fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;
         }
     }
 }
