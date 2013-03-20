@@ -73,11 +73,11 @@ BUILD_DIR="$1"
 CACHE_DIR="$2"
 
 #declare -A engine_versions
-declare -A engine_defaults
+#declare -A engine_defaults
 #declare -A engine_requests
 
-engine_defaults["php"] = "5.4.13"
-engine_defaults["nginx"] = "1.2.7"
+#engine_defaults["php"] = "5.4.13"
+#engine_defaults["nginx"] = "1.2.7"
 
 PHP_VERSION=5.4.13
 NGINX_VERSION=1.2.7
