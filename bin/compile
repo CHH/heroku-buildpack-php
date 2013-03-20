@@ -121,7 +121,7 @@ test -d "vendor/php"
 
 mkdir -p "conf"
 cp "$basedir/../conf/nginx/default.conf.erb" "conf/nginx.conf.erb"
-cp "$basedir/../conf/php/php-fpm.conf" "conf/php-fpm.conf"
+cp "$basedir/../conf/php/php-fpm.conf" "vendor/php/etc/php-fpm.conf"
 
 test ! -d ".profile.d" && mkdir -p .profile.d || true
 
@@ -136,7 +136,9 @@ mkdir -p "bin"
 cat > "bin/run" <<SH
 #!/usr/bin/env bash
 
-pwd
+for var in \`env | cut -f1 -d=\`; do
+  echo "env[\$var] = \\$\${var}" >> /app/vendor/php/etc/php-fpm.conf
+done
 
 export DOCUMENT_ROOT=$(package_document_root)
 export INDEX_DOCUMENT=$(package_index_file)
@@ -152,8 +154,8 @@ touch /app/vendor/php/var/log/error.log
 
 (tail -f -n 0 /app/vendor/nginx/logs/*.log /app/vendor/php/var/log/*.log &)
 
-/app/vendor/php/sbin/php-fpm" -p "/app/vendor/php" -y "/app/conf/php-fpm.conf"
-/app/vendor/nginx/sbin/nginx" -p "/app/vendor/nginx"
+php-fpm -p "/app/vendor/php" -y "/app/conf/php-fpm.conf"
+nginx -p "/app/vendor/nginx"
 SH
 
 chmod a+x "bin/run"
