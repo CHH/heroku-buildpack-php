@@ -14,12 +14,15 @@ fi
 basedir="$( cd -P "$( dirname "$0" )" && pwd )"
 
 function fetch_package() {
-    local package="$1"
-    local location="$2"
+    local engine="$1"
+    local version="$2"
+    local location="$3"
 
     mkdir -p "$location"
 
-    curl "$package" -L -s -o - | tar -xzf - -C "$location"
+    local package="http://${S3_BUCKET}.s3.amazonaws.com/package/${engine}-${version}.tgz"
+
+    curl "$package" -L -s -o - | tar xzf - -C "$location"
 }
 
 function indent() {
@@ -35,15 +38,26 @@ function install_composer_deps() {
     local target="$1"
 
     echo "-----> Vendoring Composer"
-    mkdir -p "$target/vendor/composer/bin"
-    curl -L "http://getcomposer.org/composer.phar" > "$target/vendor/composer/bin/composer"
-    chmod a+x "$target/vendor/composer/bin/composer"
+    {
+        mkdir -p "$target/vendor/composer/bin"
+        curl -L "http://getcomposer.org/composer.phar" > "$target/vendor/composer/bin/composer.phar"
+        chmod a+x "$target/vendor/composer/bin/composer.phar"
+    } | indent
 
     echo "-----> Installing application dependencies with Composer"
-    cd "$target"
-    "$BUILD_DIR/vendor/php/bin/php" \
-        "$target/vendor/composer/bin/composer" install --prefer-dist
-    cd "$cwd"
+    {
+        cd "$target"
+        "$BUILD_DIR/vendor/php/bin/php" \
+            "$target/vendor/composer/bin/composer.phar" install --prefer-dist
+        cd "$cwd"
+    } | indent
+}
+
+function mktmpdir() {
+    dir=$(mktemp -t php-$1-XXXX)
+    rm -rf $dir
+    mkdir -p $dir
+    echo $dir
 }
 
 function render_erb() {
@@ -84,13 +98,20 @@ CACHE_DIR="$2"
 PHP_VERSION=5.4.13
 NGINX_VERSION=1.2.7
 
-NGINX_PACKAGE="http://${S3_BUCKET}.s3.amazonaws.com/package/nginx-${NGINX_VERSION}.tgz"
-PHP_PACKAGE="http://${S3_BUCKET}.s3.amazonaws.com/package/php-${PHP_VERSION}.tgz"
-
 echo "-----> Vendoring NGINX ${NGINX_VERSION} | PHP ${PHP_VERSION}"
 
-fetch_package "$NGINX_PACKAGE" "$BUILD_DIR/vendor/nginx"
-fetch_package "$PHP_PACKAGE" "$BUILD_DIR/vendor/php"
+VENDORED_NGINX=$(mktempdir nginx)
+VENDORED_PHP=$(mktempdir php)
+
+fetch_package nginx "$NGINX_VERSION" "$VENDORED_NGINX"
+fetch_package php "$PHP_VERSION" "$VENDORED_PHP"
+
+echo "-----> Vendoring binaries into slug"
+
+[ ! -d "$BUILD_DIR/vendor" ] && mkdir -p "$BUILD_DIR/vendor"
+
+cp -R -v "$VENDORED_NGINX/" "$BUILD_DIR/vendor/nginx" | indent
+cp -R -v "$VENDORED_PHP/" "$BUILD_DIR/vendor/php" | indent
 
 # Test that all packages were fetched and"extracted successfully
 test -d "$BUILD_DIR/vendor/nginx"
