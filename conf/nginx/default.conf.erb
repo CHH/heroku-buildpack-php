@@ -27,6 +27,8 @@ http {
             fastcgi_pass    unix:/tmp/php-fpm.sock;
         }
 
+        <% if ENV['FRAMEWORK'] %>
         include <%= ENV['FRAMEWORK'] %>.conf;
+        <% end %>
     }
 }
