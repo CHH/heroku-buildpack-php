@@ -101,6 +101,16 @@ function package_framework() {
     echo "$framework"
 }
 
+function package_php_version() {
+    eval local version=$(cat "$BUILD_DIR/composer.json" | jq '.extra.heroku.engines.php')
+
+    if [ -n "$version" ]; then
+        echo "$version"
+    else
+        echo "$DEFAULT_PHP"
+    fi
+}
+
 BUILD_DIR="$1"
 CACHE_DIR="$2"
 
@@ -112,8 +122,10 @@ cd "$BUILD_DIR"
 
 #engine_defaults["php"] = "5.4.13"
 #engine_defaults["nginx"] = "1.2.7"
+DEFAULT_PHP="5.4.13"
+DEFAULT_NGINX="1.2.7"
 
-PHP_VERSION=5.4.14
+PHP_VERSION=$(package_php_version)
 NGINX_VERSION=1.2.7
 
 # Download jq binary for JSON processing
@@ -178,7 +190,7 @@ export DOCUMENT_ROOT="$(package_document_root)"
 export INDEX_DOCUMENT="$(package_index_file)"
 
 erb conf/nginx.conf.erb > /app/vendor/nginx/conf/nginx.conf
-erb conf/$(package_framework).conf.erb > /app/vendor/nginx/conf/$(package_framework).conf
+erb conf/$FRAMEWORK.conf.erb > /app/vendor/nginx/conf/$FRAMEWORK.conf
 
 mkdir -p /app/vendor/nginx/logs
 mkdir -p /app/vendor/php/var/log
