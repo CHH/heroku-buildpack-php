@@ -116,22 +116,22 @@ CACHE_DIR="$2"
 
 cd "$BUILD_DIR"
 
+# Download jq binary for JSON processing
+export PATH="$HOME/bin:$PATH"
+curl "http://stedolan.github.com/jq/download/linux64/jq" -L -s -o - > "$HOME/bin/jq"
+chmod +x "$HOME/bin/jq"
+
 #declare -A engine_versions
 #declare -A engine_defaults
 #declare -A engine_requests
 
 #engine_defaults["php"] = "5.4.13"
 #engine_defaults["nginx"] = "1.2.7"
-DEFAULT_PHP="5.4.13"
+DEFAULT_PHP="5.4.14"
 DEFAULT_NGINX="1.2.7"
 
 PHP_VERSION=$(package_php_version)
 NGINX_VERSION=1.2.7
-
-# Download jq binary for JSON processing
-export PATH="$HOME/bin:$PATH"
-curl "http://stedolan.github.com/jq/download/linux64/jq" -L -s -o - > "$HOME/bin/jq"
-chmod +x "$HOME/bin/jq"
 
 echo "-----> Vendoring NGINX ${NGINX_VERSION} | PHP ${PHP_VERSION}"
 
@@ -164,8 +164,6 @@ if [ -n "$FRAMEWORK" ]; then
 
     if [ -f "$basedir/../conf/nginx/$FRAMEWORK.conf.erb" ]; then
         cp "$basedir/../conf/nginx/$FRAMEWORK.conf.erb" "conf/$FRAMEWORK.conf.erb"
-
-        echo "include $FRAMEWORK.conf;" >> conf/nginx.conf.erb
     fi
 fi
 
@@ -188,6 +186,7 @@ done
 
 export DOCUMENT_ROOT="$(package_document_root)"
 export INDEX_DOCUMENT="$(package_index_file)"
+export FRAMEWORK="$FRAMEWORK"
 
 erb conf/nginx.conf.erb > /app/vendor/nginx/conf/nginx.conf
 erb conf/$FRAMEWORK.conf.erb > /app/vendor/nginx/conf/$FRAMEWORK.conf
