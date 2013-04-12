@@ -1,4 +1,8 @@
 server {
+    listen <%= ENV['PORT'] %>;
+    server_name localhost;
+    root <%= ENV['DOCUMENT_ROOT'] %>;
+
     #site root is redirected to the app boot script
     location = / {
         try_files @site @site;

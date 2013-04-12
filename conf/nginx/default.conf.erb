@@ -14,12 +14,6 @@ http {
     error_log logs/error.log notice;
     access_log logs/access.log;
 
-    server {
-        listen <%= ENV['PORT'] %>;
-        server_name localhost;
-        root <%= ENV['DOCUMENT_ROOT'] %>;
-    }
-
     <% if ENV['FRAMEWORK'] %>
     include <%= ENV['FRAMEWORK'] %>.conf;
     <% end %>
