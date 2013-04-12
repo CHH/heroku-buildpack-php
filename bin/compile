@@ -37,12 +37,6 @@ function install_composer_deps() {
     local cwd=$(pwd)
     local target="$1"
 
-    mkdir -p "$CACHE_DIR/composer/${PHP_VERSION}"
-
-    if [ -d "$CACHE_DIR/composer/${PHP_VERSION}/vendor" ]; then
-        cp -R "$CACHE_DIR/composer/${PHP_VERSION}/vendor/" "$target/vendor"
-    fi
-
     echo "-----> Vendoring Composer"
     {
         mkdir -p "$target/vendor/composer/bin"
@@ -59,7 +53,6 @@ function install_composer_deps() {
             --optimize-autoloader \
             --no-interaction
 
-        cp -R "$target/vendor/" "$CACHE_DIR/composer/${PHP_VERSION}/vendor"
         cd "$cwd"
     } | indent
 }
