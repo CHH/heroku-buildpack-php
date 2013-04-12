@@ -59,7 +59,8 @@ build_command=$(cat <<BUILD_CMD
     --disable-debug \
     && make \
     && make install \
-    && /app/vendor/php/bin/pear config-set php_dir /app/vendor/php
+    && /app/vendor/php/bin/pear config-set php_dir /app/vendor/php \
+    && yes '' | /app/vendor/php/bin/pecl install apc-beta
 BUILD_CMD
 )
 

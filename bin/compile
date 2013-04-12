@@ -96,6 +96,11 @@ function package_index_file() {
     echo "index.php"
 }
 
+function package_framework() {
+    eval local framework=$(cat "$BUILD_DIR/composer.json" | jq '.extra.heroku.framework')
+    echo "$framework"
+}
+
 BUILD_DIR="$1"
 CACHE_DIR="$2"
 
@@ -108,7 +113,7 @@ cd "$BUILD_DIR"
 #engine_defaults["php"] = "5.4.13"
 #engine_defaults["nginx"] = "1.2.7"
 
-PHP_VERSION=5.4.13
+PHP_VERSION=5.4.14
 NGINX_VERSION=1.2.7
 
 # Download jq binary for JSON processing
@@ -127,8 +132,8 @@ echo "-----> Vendoring binaries into slug"
 
 [ ! -d "$BUILD_DIR/vendor" ] && mkdir -p "$BUILD_DIR/vendor"
 
-cp -R -v "$VENDORED_NGINX/" "vendor/nginx" | indent
-cp -R -v "$VENDORED_PHP/" "vendor/php" | indent
+cp -R "$VENDORED_NGINX/" "vendor/nginx" | indent
+cp -R "$VENDORED_PHP/" "vendor/php" | indent
 
 # Test that all packages were fetched and"extracted successfully
 test -d "vendor/nginx"
@@ -137,6 +142,15 @@ test -d "vendor/php"
 mkdir -p "conf"
 cp "$basedir/../conf/nginx/default.conf.erb" "conf/nginx.conf.erb"
 cp "$basedir/../conf/php/php-fpm.conf" "vendor/php/etc/php-fpm.conf"
+
+FRAMEWORK=$(package_framework)
+
+if [ -f "$basedir/conf/nginx/$FRAMEWORK.conf.erb" ]; then
+    echo "-----> Configuring $FRAMEWORK app"
+    cp "$basedir/conf/nginx/$FRAMEWORK.conf.erb" "conf/$FRAMEWORK.conf.erb"
+
+    echo "include $FRAMEWORK.conf.erb;" >> conf/nginx.conf.erb
+fi
 
 test ! -d ".profile.d" && mkdir -p .profile.d || true
 
@@ -155,10 +169,11 @@ for var in \`env | cut -f1 -d=\`; do
     echo "env[\$var] = \\$\${var}" >> /app/vendor/php/etc/php-fpm.conf
 done
 
-export DOCUMENT_ROOT=$(package_document_root)
-export INDEX_DOCUMENT=$(package_index_file)
+export DOCUMENT_ROOT="$(package_document_root)"
+export INDEX_DOCUMENT="$(package_index_file)"
 
 erb conf/nginx.conf.erb > /app/vendor/nginx/conf/nginx.conf
+erb conf/$(package_framework).conf.erb > /app/vendor/nginx/conf/$(package_framework).conf
 
 mkdir -p /app/vendor/nginx/logs
 mkdir -p /app/vendor/php/var/log
