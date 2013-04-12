@@ -1,12 +1,12 @@
 server {
     #site root is redirected to the app boot script
     location = / {
-        try_files <%= ENV['INDEX_DOCUMENT'] %> <%= ENV['INDEX_DOCUMENT'] %>;
+        try_files @site @site;
     }
 
     #all other locations try other files first and go to our front controller if none of them exists
     location / {
-        try_files $uri $uri/ <%= ENV['INDEX_DOCUMENT'] %>;
+        try_files $uri $uri/ @site;
     }
 
     #return 404 for all php files as we do have a front controller
@@ -14,8 +14,8 @@ server {
         return 404;
     }
 
-    location <%= ENV['INDEX_DOCUMENT'] %> {
-        fastcgi_pass   unix:/tmp/php-fpm.sock;
+    location @site {
+        fastcgi_pass   unix:/var/run/php-fpm/www.sock;
         include fastcgi_params;
         fastcgi_param  SCRIPT_FILENAME $document_root/<%= ENV['INDEX_DOCUMENT'] %>;
         #uncomment when running via https
