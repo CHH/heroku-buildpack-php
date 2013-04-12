@@ -181,8 +181,11 @@ export DOCUMENT_ROOT="$(package_document_root)"
 export INDEX_DOCUMENT="$(package_index_file)"
 export FRAMEWORK="$FRAMEWORK"
 
-erb conf/nginx.conf.erb > /app/vendor/nginx/conf/nginx.conf
-erb conf/\$FRAMEWORK.conf.erb > /app/vendor/nginx/conf/\$FRAMEWORK.conf
+erb conf/nginx.conf.erb > conf/nginx.conf
+erb conf/\$FRAMEWORK.conf.erb > conf/\$FRAMEWORK.conf
+
+mv conf/nginx.conf vendor/nginx/conf/nginx.conf
+mv conf/\$FRAMEWORK.conf vendor/nginx/conf/\$FRAMEWORK.conf
 
 mkdir -p /app/vendor/nginx/logs
 mkdir -p /app/vendor/php/var/log
