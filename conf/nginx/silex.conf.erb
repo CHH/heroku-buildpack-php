@@ -3,7 +3,7 @@ server {
     server_name localhost;
     root <%= ENV['DOCUMENT_ROOT'] %>;
 
-    index index.html index.htm index.xhtml index.php;
+    index index.html index.htm index.xhtml <%= ENV['FRONT_CONTROLLER'] %> index.php;
 
     #site root is redirected to the app boot script
     location = / {
@@ -23,7 +23,7 @@ server {
     location @site {
         fastcgi_pass   unix:/tmp/php-fpm.sock;
         include fastcgi_params;
-        fastcgi_param  SCRIPT_FILENAME $document_root/<%= ENV['INDEX_DOCUMENT'] %>;
+        fastcgi_param  SCRIPT_FILENAME $document_root/<%= ENV['FRONT_CONTROLLER'] %>;
         #uncomment when running via https
         #fastcgi_param HTTPS on;
     }

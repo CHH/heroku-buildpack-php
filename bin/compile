@@ -178,7 +178,7 @@ for var in \`env | cut -f1 -d=\`; do
 done
 
 export DOCUMENT_ROOT="$(package_document_root)"
-export INDEX_DOCUMENT="$(package_index_file)"
+export FRONT_CONTROLLER="$(package_index_file)"
 export FRAMEWORK="$FRAMEWORK"
 
 erb conf/nginx.conf.erb > /app/vendor/nginx/conf/nginx.conf
