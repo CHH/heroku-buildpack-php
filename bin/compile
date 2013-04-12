@@ -184,8 +184,8 @@ export FRAMEWORK="$FRAMEWORK"
 erb conf/nginx.conf.erb > conf/nginx.conf
 erb conf/\$FRAMEWORK.conf.erb > conf/\$FRAMEWORK.conf
 
-mv conf/nginx.conf vendor/nginx/conf/nginx.conf
-mv conf/\$FRAMEWORK.conf vendor/nginx/conf/\$FRAMEWORK.conf
+cp conf/nginx.conf vendor/nginx/conf/nginx.conf
+cp conf/\$FRAMEWORK.conf vendor/nginx/conf/\$FRAMEWORK.conf
 
 mkdir -p /app/vendor/nginx/logs
 mkdir -p /app/vendor/php/var/log
