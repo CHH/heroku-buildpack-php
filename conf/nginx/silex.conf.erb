@@ -3,6 +3,8 @@ server {
     server_name localhost;
     root <%= ENV['DOCUMENT_ROOT'] %>;
 
+    index index.html index.htm index.xhtml index.php;
+
     #site root is redirected to the app boot script
     location = / {
         try_files @site @site;
