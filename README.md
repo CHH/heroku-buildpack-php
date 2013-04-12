@@ -4,6 +4,11 @@
 
 Nothing.
 
+## Supported Versions
+
+* [Supported PHP Versions](http://chh-heroku-buildpack-php.s3.amazonaws.com/manifest.php)
+* [Supported NGINX Versions](http://chh-heroku-buildpack-php.s3.amazonaws.com/manifest.nginx)
+
 ## Configuration
 
 _Status: Not implemented yet._
@@ -38,12 +43,6 @@ which contains the application's front controller.
 Document root relative to the app root. Defaults to the app root.
 
     "document-root": "web"
-
-#### index-document
-
-Index document, typically contains the front controller.
-
-    "index-document": "web/app.php"
 
 #### engines
 

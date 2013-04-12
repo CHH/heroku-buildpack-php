@@ -90,12 +90,11 @@ function package_index_file() {
 }
 
 function package_framework() {
-    eval local framework=$(cat "$BUILD_DIR/composer.json" | jq '.extra.heroku.framework')
-    echo "$framework"
+    jq --raw-output '.extra.heroku.framework' < "$BUILD_DIR/composer.json"
 }
 
 function package_php_version() {
-    eval local version=$(cat "$BUILD_DIR/composer.json" | jq '.extra.heroku.engines.php')
+    local version=$(jq --raw-output '.extra.heroku.engines.php' < "$BUILD_DIR/composer.json")
 
     if [ "$version" != "null" ]; then
         echo "$version"
