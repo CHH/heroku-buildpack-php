@@ -7,7 +7,7 @@ events {
 
 http {
     upstream phpfpm {
-        server unix:/tmp/php-fpm.sock;
+        server localhost:9999;
     }
 
     sendfile    on;
