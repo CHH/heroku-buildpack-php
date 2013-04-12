@@ -111,6 +111,10 @@ cd "$BUILD_DIR"
 PHP_VERSION=5.4.13
 NGINX_VERSION=1.2.7
 
+# Download jq binary for JSON processing
+export PATH="$HOME/bin:$PATH"
+curl "http://stedolan.github.com/jq/download/linux64/jq" -L -s -o - > "$HOME/bin/jq"
+
 echo "-----> Vendoring NGINX ${NGINX_VERSION} | PHP ${PHP_VERSION}"
 
 VENDORED_NGINX=$(mktmpdir nginx)
@@ -166,7 +170,7 @@ touch /app/vendor/php/var/log/error.log
 (tail -f -n 0 /app/vendor/nginx/logs/*.log /app/vendor/php/var/log/*.log &)
 
 php-fpm -p "/app/vendor/php"
-nginx -p "/app/vendor/nginx"
+nginx -p "/app/vendor/nginx" -c /app/vendor/nginx/conf/nginx.conf
 SH
 
 chmod a+x "bin/run"

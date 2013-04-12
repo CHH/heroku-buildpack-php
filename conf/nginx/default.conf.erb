@@ -14,16 +14,15 @@ http {
     tcp_nopush  on;
 
     keepalive_timeout  65;
-     
+
     error_log logs/error.log notice;
     access_log logs/access.log;
 
     server {
         listen <%= ENV['PORT'] %>;
-     
         server_name localhost;
         root <%= ENV['DOCUMENT_ROOT'] %>;
-     
+
         index  index.html index.htm index.xhtml index.php;
         try_files $uri $uri/ index.php;
 
