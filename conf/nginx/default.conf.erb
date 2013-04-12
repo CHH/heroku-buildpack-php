@@ -6,10 +6,6 @@ events {
 }
 
 http {
-    upstream phpfpm {
-        server 127.0.0.1:9999;
-    }
-
     sendfile    on;
     tcp_nopush  on;
 
@@ -28,7 +24,7 @@ http {
 
         location ~ \.php {
             include         fastcgi.conf;
-            fastcgi_pass    unix:/tmp/php-fpm.sck;
+            fastcgi_pass    unix:/tmp/php-fpm.sock;
         }
     }
 }
