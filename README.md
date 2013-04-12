@@ -21,7 +21,7 @@ A simple configuration could look like this:
         "extra": {
             "heroku": {
                 "document-root": "web",
-                "index-document": "web/index.php",
+                "site": "web/index.php",
                 "catch-non-existing": true
             }
         }
@@ -31,3 +31,22 @@ This configures an app with the document root set to the project's `web`
 directory, and sets that all requests should go through `web/index.php`
 which contains the application's front controller.
 
+### Configuration Directives
+
+#### document-root
+
+#### site
+
+#### php-config
+
+Add directives to the `php.ini`:
+
+    {
+        "extra": {
+            "heroku": {
+                "php-config": [
+                    "display_errors=off"
+                ]
+            }
+        }
+    }

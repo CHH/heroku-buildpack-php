@@ -119,6 +119,7 @@ NGINX_VERSION=1.2.7
 # Download jq binary for JSON processing
 export PATH="$HOME/bin:$PATH"
 curl "http://stedolan.github.com/jq/download/linux64/jq" -L -s -o - > "$HOME/bin/jq"
+chmod +x "$HOME/bin/jq"
 
 echo "-----> Vendoring NGINX ${NGINX_VERSION} | PHP ${PHP_VERSION}"
 
