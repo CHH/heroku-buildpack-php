@@ -18,14 +18,6 @@ http {
         listen <%= ENV['PORT'] %>;
         server_name localhost;
         root <%= ENV['DOCUMENT_ROOT'] %>;
-
-        index  index.html index.htm index.xhtml index.php;
-        try_files $uri $uri/ index.php;
-
-        location ~ \.php {
-            include         fastcgi.conf;
-            fastcgi_pass    unix:/tmp/php-fpm.sock;
-        }
     }
 
     <% if ENV['FRAMEWORK'] %>
