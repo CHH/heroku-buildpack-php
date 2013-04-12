@@ -35,18 +35,29 @@ which contains the application's front controller.
 
 #### document-root
 
-#### site
+Document root relative to the app root. Defaults to the app root.
+
+    "document-root": "web"
+
+#### index-document
+
+Index document, typically contains the front controller.
+
+    "index-document": "web/app.php"
+
+#### engines
+
+Configure PHP and NGINX versions.
+
+    "engines": {
+        "php": "5.3.23"
+    }
 
 #### php-config
 
-Add directives to the `php.ini`:
+Add directives to the `php.ini`.
 
-    {
-        "extra": {
-            "heroku": {
-                "php-config": [
-                    "display_errors=off"
-                ]
-            }
-        }
-    }
+    "php-config": [
+        "display_errors=off"
+    ]
+

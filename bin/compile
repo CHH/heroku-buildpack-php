@@ -104,7 +104,7 @@ function package_framework() {
 function package_php_version() {
     eval local version=$(cat "$BUILD_DIR/composer.json" | jq '.extra.heroku.engines.php')
 
-    if [ -n "$version" ]; then
+    if [ "$version" != "null" ]; then
         echo "$version"
     else
         echo "$DEFAULT_PHP"
