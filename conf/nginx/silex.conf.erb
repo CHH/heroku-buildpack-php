@@ -15,7 +15,7 @@ server {
     }
 
     location @site {
-        fastcgi_pass   unix:/var/run/php-fpm/www.sock;
+        fastcgi_pass   unix:/tmp/php-fpm.sock;
         include fastcgi_params;
         fastcgi_param  SCRIPT_FILENAME $document_root/<%= ENV['INDEX_DOCUMENT'] %>;
         #uncomment when running via https
