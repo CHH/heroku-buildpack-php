@@ -160,7 +160,7 @@ done
 FRAMEWORK=$(package_framework)
 
 if [ -n "$FRAMEWORK" ]; then
-    echo "-----> Configuring $FRAMEWORK app"
+    echo "-----> Configuring for framework $FRAMEWORK"
 
     if [ -f "$basedir/../conf/nginx/$FRAMEWORK.conf.erb" ]; then
         cp "$basedir/../conf/nginx/$FRAMEWORK.conf.erb" "conf/$FRAMEWORK.conf.erb"
