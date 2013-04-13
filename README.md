@@ -2,16 +2,14 @@
 
 ## What works?
 
-Nothing.
+* Basic provisioning
+* NGINX Configuration for frameworks `silex` and `symfony2`
+* Reading configuration from `composer.json`
 
-## Supported Versions
-
-* [Supported PHP Versions](http://chh-heroku-buildpack-php.s3.amazonaws.com/manifest.php)
-* [Supported NGINX Versions](http://chh-heroku-buildpack-php.s3.amazonaws.com/manifest.nginx)
+[Available PHP Versions]: http://chh-heroku-buildpack-php.s3.amazonaws.com/manifest.php
+[Available NGINX Versions]: http://chh-heroku-buildpack-php.s3.amazonaws.com/manifest.nginx
 
 ## Configuration
-
-_Status: Not implemented yet._
 
 Configuration is done via a file named `composer.json` in the project's
 root.
@@ -26,8 +24,7 @@ A simple configuration could look like this:
         "extra": {
             "heroku": {
                 "document-root": "web",
-                "site": "web/index.php",
-                "catch-non-existing": true
+                "index-document": "index.php"
             }
         }
     }
@@ -38,20 +35,45 @@ which contains the application's front controller.
 
 ### Configuration Directives
 
+#### framework
+
+Use a framework preset for configuration. Some configuration keys cannot
+be overriden!
+
+Available presets:
+
+* `silex` (needs `document-root` and `index-document` set)
+* `symfony2`
+
+Example:
+
+    "framework": "silex"
+
 #### document-root
 
 Document root relative to the app root. Defaults to the app root.
 
     "document-root": "web"
 
+#### index-document
+
+Index Document relative to the document root.
+
 #### engines
 
 Configure PHP and NGINX versions.
+
+To launch the app with PHP 5.3.23 and NGINX 1.3.14:
 
     "engines": {
         "php": "5.3.23",
         "nginx": "1.3.14"
     }
+
+See also:
+
+* [Available NGINX Versions][]
+* [Available PHP Versions][]
 
 #### php-config
 

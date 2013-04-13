@@ -14,6 +14,23 @@ http {
     error_log logs/error.log notice;
     access_log logs/access.log;
 
+    index <%= ENV['INDEX_DOCUMENT'] %> index.html index.htm index.xhtml;
+
+    # Default configuration for non-framework apps
+    server {
+        server_name localhost;
+        listen <%= ENV['PORT'] %>;
+        root <%= ENV['DOCUMENT_ROOT'] %>;
+
+        location ~ \.php {
+            # for security reasons the next line is highly encouraged
+            try_files $uri =404;
+
+            include fastcgi_params;
+            fastcgi_pass unix:/tmp/php5-fpm.sock;
+        }
+    }
+
     <% if ENV['FRAMEWORK'] %>
     include <%= ENV['FRAMEWORK'] %>.conf;
     <% end %>

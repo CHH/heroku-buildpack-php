@@ -1,9 +1,7 @@
 server {
-    listen <%= ENV['PORT'] %>;
     server_name localhost;
+    listen <%= ENV['PORT'] %>;
     root <%= ENV['DOCUMENT_ROOT'] %>;
-
-    index index.html index.htm index.xhtml <%= ENV['FRONT_CONTROLLER'] %> index.php;
 
     #site root is redirected to the app boot script
     location = / {
@@ -21,9 +19,9 @@ server {
     }
 
     location @site {
-        fastcgi_pass   unix:/tmp/php-fpm.sock;
+        fastcgi_pass unix:/tmp/php-fpm.sock;
         include fastcgi_params;
-        fastcgi_param  SCRIPT_FILENAME $document_root/<%= ENV['FRONT_CONTROLLER'] %>;
+        fastcgi_param  SCRIPT_FILENAME $document_root/<%= ENV['INDEX_DOCUMENT'] %>;
         #uncomment when running via https
         #fastcgi_param HTTPS on;
     }
