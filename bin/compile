@@ -82,25 +82,29 @@ function render_erb() {
 }
 
 function package_document_root() {
-    echo "/app"
+    local doc_root=$(jq --raw-output '.extra.heroku["document-root"]' < "$BUILD_DIR/composer.json")
+    echo "/app/$doc_root"
 }
 
 function package_index_file() {
-    echo "index.php"
+    jq --raw-output '.extra.heroku["index-document"] // "index.php"' < "$BUILD_DIR/composer.json"
 }
 
 function package_framework() {
     jq --raw-output '.extra.heroku.framework' < "$BUILD_DIR/composer.json"
 }
 
-function package_php_version() {
-    local version=$(jq --raw-output '.extra.heroku.engines.php' < "$BUILD_DIR/composer.json")
+function package_nginx_version() {
+    jq --raw-output ".extra.heroku.engines.nginx // \"$DEFAULT_NGINX\"" < "$BUILD_DIR/composer.json"
+}
 
-    if [ "$version" != "null" ]; then
-        echo "$version"
-    else
-        echo "$DEFAULT_PHP"
-    fi
+function package_php_version() {
+    jq --raw-output ".extra.heroku.engines.php // \"$DEFAULT_PHP\"" < "$BUILD_DIR/composer.json"
+}
+
+function package_php_config()
+{
+    jq --raw-output '.extra.heroku["php-config"] // [] | .[]' < "$BUILD_DIR/composer.json"
 }
 
 BUILD_DIR="$1"
@@ -123,7 +127,7 @@ DEFAULT_PHP="5.4.14"
 DEFAULT_NGINX="1.2.7"
 
 PHP_VERSION=$(package_php_version)
-NGINX_VERSION=1.2.7
+NGINX_VERSION=$(package_nginx_version)
 
 echo "-----> Vendoring NGINX ${NGINX_VERSION} | PHP ${PHP_VERSION}"
 
@@ -148,6 +152,10 @@ mkdir -p "conf"
 cp "$basedir/../conf/nginx/default.conf.erb" "conf/nginx.conf.erb"
 cp "$basedir/../conf/php/php-fpm.conf" "vendor/php/etc/php-fpm.conf"
 cp "$basedir/../conf/php/php.ini" "vendor/php/etc/php.ini"
+
+for conf in $(package_php_config); do
+    echo "$conf" >> "vendor/php/etc/php.ini"
+done
 
 FRAMEWORK=$(package_framework)
 
