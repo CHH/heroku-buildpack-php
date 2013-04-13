@@ -23,9 +23,6 @@ http {
         root <%= ENV['DOCUMENT_ROOT'] %>;
 
         location ~ \.php {
-            # for security reasons the next line is highly encouraged
-            try_files $uri =404;
-
             include fastcgi_params;
             fastcgi_pass unix:/tmp/php-fpm.sock;
         }
