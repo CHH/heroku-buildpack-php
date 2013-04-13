@@ -31,7 +31,7 @@ http {
         }
     }
 
-    <% if ENV['FRAMEWORK'] %>
+    <% if ENV['FRAMEWORK'].length > 0 %>
     include <%= ENV['FRAMEWORK'] %>.conf;
     <% end %>
 }
