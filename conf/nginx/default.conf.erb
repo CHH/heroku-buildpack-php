@@ -16,6 +16,10 @@ http {
 
     index <%= ENV['INDEX_DOCUMENT'] %> index.html index.htm index.xhtml;
 
+    <% if ENV['FRAMEWORK'].length > 0 %>
+    include <%= ENV['FRAMEWORK'] %>.conf;
+    <% end %>
+
     # Default configuration for non-framework apps
     server {
         server_name localhost;
@@ -28,8 +32,4 @@ http {
             fastcgi_pass unix:/tmp/php-fpm.sock;
         }
     }
-
-    <% if ENV['FRAMEWORK'].length > 0 %>
-    include <%= ENV['FRAMEWORK'] %>.conf;
-    <% end %>
 }
