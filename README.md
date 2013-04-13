@@ -59,9 +59,11 @@ Document root relative to the app root. Defaults to the app root.
 
 Index Document relative to the document root.
 
+    "index-document": "app.php"
+
 #### engines
 
-Configure PHP and NGINX versions.
+Set PHP and NGINX versions.
 
 To launch the app with PHP 5.3.23 and NGINX 1.3.14:
 
@@ -82,5 +84,15 @@ Add directives to the `php.ini`.
     "php-config": [
         "display_errors=off",
         "short_open_tag=on"
+    ]
+
+#### compile
+
+_Status: Not Implemented_
+
+Run console commands on slug compilation.
+
+    "compile": [
+        "php app/console assetic:dump --env=prod --no-debug"
     ]
 
