@@ -9,9 +9,14 @@
 [Available PHP Versions]: http://chh-heroku-buildpack-php.s3.amazonaws.com/manifest.php
 [Available NGINX Versions]: http://chh-heroku-buildpack-php.s3.amazonaws.com/manifest.nginx
 
+## Detection
+
+This buildpack detects apps when the app has a `composer.json` in the
+app's root.
+
 ## Configuration
 
-Configuration is done via a file named `composer.json` in the project's
+Configuration is done via a file named `composer.json` in the app's
 root.
 
 A simple configuration could look like this:
@@ -19,7 +24,8 @@ A simple configuration could look like this:
     {
         "name": "my-app",
         "require": {
-            "php": ">=5.4.0"
+            "php": ">=5.4.0",
+            "silex/silex": "~1.0@dev"
         },
         "extra": {
             "heroku": {
@@ -35,7 +41,12 @@ which contains the application's front controller.
 
 ### Configuration Directives
 
+This buildpack supports configuration through directives placed in the `heroku`
+key in the `extra` object.
+
 #### framework
+
+_Default: Null_
 
 Use a framework preset for configuration. Some configuration keys cannot
 be overriden!
@@ -56,6 +67,8 @@ Document root relative to the app root. Defaults to the app root.
     "document-root": "web"
 
 #### index-document
+
+_Default: "index.php"_
 
 Index Document relative to the document root.
 
@@ -79,6 +92,8 @@ See also:
 
 #### php-config
 
+_Default: []_
+
 Add directives to the `php.ini`.
 
     "php-config": [
@@ -89,6 +104,8 @@ Add directives to the `php.ini`.
 #### compile
 
 _Status: Not Implemented_
+
+_Default: []_
 
 Run console commands on slug compilation.
 
