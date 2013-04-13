@@ -27,7 +27,7 @@ http {
             try_files $uri =404;
 
             include fastcgi_params;
-            fastcgi_pass unix:/tmp/php5-fpm.sock;
+            fastcgi_pass unix:/tmp/php-fpm.sock;
         }
     }
 
