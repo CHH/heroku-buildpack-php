@@ -82,7 +82,7 @@ function render_erb() {
 }
 
 function package_document_root() {
-    local doc_root=$(jq --raw-output '.extra.heroku["document-root"]' < "$BUILD_DIR/composer.json")
+    local doc_root=$(jq --raw-output '.extra.heroku["document-root"] // ""' < "$BUILD_DIR/composer.json")
     echo "/app/$doc_root"
 }
 
