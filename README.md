@@ -49,7 +49,8 @@ Document root relative to the app root. Defaults to the app root.
 Configure PHP and NGINX versions.
 
     "engines": {
-        "php": "5.3.23"
+        "php": "5.3.23",
+        "nginx": "1.3.14"
     }
 
 #### php-config
@@ -57,6 +58,7 @@ Configure PHP and NGINX versions.
 Add directives to the `php.ini`.
 
     "php-config": [
-        "display_errors=off"
+        "display_errors=off",
+        "short_open_tag=on"
     ]
 
