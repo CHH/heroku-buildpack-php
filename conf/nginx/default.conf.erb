@@ -18,8 +18,7 @@ http {
 
     <% if ENV['FRAMEWORK'].length > 0 %>
     include <%= ENV['FRAMEWORK'] %>.conf;
-    <% end %>
-
+    <% else %>
     # Default configuration for non-framework apps
     server {
         server_name localhost;
@@ -32,4 +31,5 @@ http {
             fastcgi_pass unix:/tmp/php-fpm.sock;
         }
     }
+    <% end %>
 }
