@@ -1,0 +1,15 @@
+#!/bin/bash
+
+set -e
+
+BUILD_DIR="$2"
+basedir="$( cd -P "$( dirname "$0" )" && pwd )"
+
+case "$1" in
+detect)
+    exit 0
+    ;;
+compile)
+    cp "$basedir/../conf/nginx/default_site.conf.erb" "$BUILD_DIR/conf/site.conf.erb"
+    ;;
+esac

@@ -1,0 +1,27 @@
+#!/bin/bash
+
+BUILD_DIR="$2"
+basedir="$( cd -P "$( dirname "$0" )" && pwd )"
+
+function requires_silex() {
+    [ $(jq --raw-output '.require["silex/silex"]' < "$BUILD_DIR/composer.json") != "null" ]
+}
+
+function sets_framework_silex() {
+    [ $(jq --raw-output '.extra.heroku.framework' < "$BUILD_DIR/composer.json") == "silex" ]
+}
+
+case "$1" in
+    detect)
+        if [ -f "$BUILD_DIR/composer.json" ] && requires_silex || set_framework_silex; then
+            echo "-----> Detected Silex App"
+            exit 0
+        else
+            exit 1
+        fi
+        ;;
+    compile)
+        echo "-----> Installing Silex Site Config"
+        cp "$basedir/../conf/nginx/silex.conf.erb" "$BUILD_DIR/conf/site.conf.erb"
+        ;;
+esac

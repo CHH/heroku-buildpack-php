@@ -64,23 +64,6 @@ function mktmpdir() {
     echo $dir
 }
 
-function render_erb() {
-    local file="$1"
-    shift
-
-    vars=
-    for arg in $@; do
-        local k=$(echo "$arg" | cut -f1 -d=)
-        local v=$(echo "$arg" | cut -f2 -d=)
-
-        vars="${vars}$k='$v';"
-    done
-
-    script="%s puts ERB.new(File.read('%s')).result(binding);"
-
-    ruby -rerb -e "$(printf "$script" "$vars" "$file")"
-}
-
 function package_document_root() {
     local doc_root=$(jq --raw-output '.extra.heroku["document-root"] // ""' < "$BUILD_DIR/composer.json")
     echo "/app/$doc_root"
@@ -117,12 +100,6 @@ export PATH="$HOME/bin:$PATH"
 curl "http://stedolan.github.com/jq/download/linux64/jq" -L -s -o - > "$HOME/bin/jq"
 chmod +x "$HOME/bin/jq"
 
-#declare -A engine_versions
-#declare -A engine_defaults
-#declare -A engine_requests
-
-#engine_defaults["php"] = "5.4.13"
-#engine_defaults["nginx"] = "1.2.7"
 DEFAULT_PHP="5.4.14"
 DEFAULT_NGINX="1.2.7"
 
@@ -141,10 +118,10 @@ echo "-----> Vendoring binaries into slug"
 
 [ ! -d "$BUILD_DIR/vendor" ] && mkdir -p "$BUILD_DIR/vendor"
 
-cp -R "$VENDORED_NGINX/" "vendor/nginx" | indent
-cp -R "$VENDORED_PHP/" "vendor/php" | indent
+cp -R "$VENDORED_NGINX/" "vendor/nginx"
+cp -R "$VENDORED_PHP/" "vendor/php"
 
-# Test that all packages were fetched and"extracted successfully
+# Test that all packages were fetched and extracted successfully
 test -d "vendor/nginx"
 test -d "vendor/php"
 
@@ -157,20 +134,23 @@ for conf in $(package_php_config); do
     echo "$conf" >> "vendor/php/etc/php.ini"
 done
 
-FRAMEWORK=$(package_framework)
+DETECTED_FRAMEWORK=
 
-if [ -n "$FRAMEWORK" ]; then
-    echo "-----> Configuring for framework $FRAMEWORK"
-
-    if [ -f "$basedir/../conf/nginx/$FRAMEWORK.conf.erb" ]; then
-        cp "$basedir/../conf/nginx/$FRAMEWORK.conf.erb" "conf/$FRAMEWORK.conf.erb"
+for framework in "$basedir/../frameworks/"*; do
+    if "$framework" detect "$BUILD_DIR"; then
+        "$framework" compile "$BUILD_DIR" "$CACHE_DIR"
+        DETECTED_FRAMEWORK="$framework"
     fi
+done
+
+if [ -z "$DETECTED_FRAMEWORK" ]; then
+    "$basedir/../frameworks/default" compile "$BUILD_DIR" "$CACHE_DIR"
 fi
 
 test ! -d ".profile.d" && mkdir -p .profile.d || true
 
 cat > ".profile.d/php.sh" <<SH
-export PATH=/sbin:/bin:/usr/sbin:/usr/bin:/app/bin:/app/vendor/nginx/sbin:/app/vendor/php/sbin:/app/vendor/php/bin:\$PATH
+export PATH=/sbin:/bin:/usr/sbin:/usr/bin:/app/bin:/app/vendor/nginx/sbin:/app/vendor/php/sbin:/app/vendor/php/bin:/app/vendor/bin:\$PATH
 SH
 
 install_composer_deps "$BUILD_DIR"
@@ -186,13 +166,9 @@ done
 
 export DOCUMENT_ROOT="$(package_document_root)"
 export INDEX_DOCUMENT="$(package_index_file)"
-export FRAMEWORK="$FRAMEWORK"
 
 erb conf/nginx.conf.erb > /app/vendor/nginx/conf/nginx.conf
-
-if [ -n "\$FRAMEWORK" ]; then
-    erb conf/\$FRAMEWORK.conf.erb > /app/vendor/nginx/conf/\$FRAMEWORK.conf
-fi
+erb conf/site.conf.erb > /app/vendor/nginx/conf/site.conf
 
 mkdir -p /app/vendor/nginx/logs
 mkdir -p /app/vendor/php/var/log

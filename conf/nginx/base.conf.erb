@@ -1,0 +1,20 @@
+worker_processes 4;
+daemon off;
+
+events {
+    worker_connections  1024;
+}
+
+http {
+    sendfile    on;
+    tcp_nopush  on;
+
+    keepalive_timeout  65;
+
+    error_log logs/error.log notice;
+    access_log logs/access.log;
+
+    index <%= ENV['INDEX_DOCUMENT'] %> index.html index.htm index.xhtml;
+
+    include site.conf
+}

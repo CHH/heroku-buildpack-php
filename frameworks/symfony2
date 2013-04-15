@@ -1,0 +1,27 @@
+#!/bin/bash
+
+BUILD_DIR="$2"
+basedir="$( cd -P "$( dirname "$0" )" && pwd )"
+
+function requires_symfony2() {
+    [ $(jq --raw-output '.require["symfony/symfony"]' < "$BUILD_DIR/composer.json") != "null" ]
+}
+
+function sets_framework_symfony2() {
+    [ $(jq --raw-output '.extra.heroku.framework' < "$BUILD_DIR/composer.json") == "symfony2" ]
+}
+
+case "$1" in
+    detect)
+        if [ -f "$BUILD_DIR/composer.json" ] && requires_symfony2 || sets_framework_symfony2; then
+            echo "-----> Detected Symfony2 App"
+            exit 0
+        else
+            exit 1
+        fi
+        ;;
+    compile)
+        echo "-----> Installing Symfony2 Site Config"
+        cp "$basedir/../conf/nginx/symfony2.conf.erb" "$BUILD_DIR/conf/site.conf.erb"
+        ;;
+esac
