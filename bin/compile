@@ -126,7 +126,7 @@ test -d "vendor/nginx"
 test -d "vendor/php"
 
 mkdir -p "conf"
-cp "$basedir/../conf/nginx/default.conf.erb" "conf/nginx.conf.erb"
+cp "$basedir/../conf/nginx/base.conf.erb" "conf/nginx.conf.erb"
 cp "$basedir/../conf/php/php-fpm.conf" "vendor/php/etc/php-fpm.conf"
 cp "$basedir/../conf/php/php.ini" "vendor/php/etc/php.ini"
 
