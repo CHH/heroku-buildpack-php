@@ -6,6 +6,12 @@
 * NGINX Configuration for frameworks `silex` and `symfony2`
 * Reading configuration from `composer.json`
 
+## Stack
+
+* NGINX 1.2 or 1.3
+* PHP 5.3 or 5.4
+* PHP-FPM
+
 [Available PHP Versions]: http://chh-heroku-buildpack-php.s3.amazonaws.com/manifest.php
 [Available NGINX Versions]: http://chh-heroku-buildpack-php.s3.amazonaws.com/manifest.nginx
 
