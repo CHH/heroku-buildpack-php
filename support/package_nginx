@@ -20,7 +20,7 @@ if [ -z "$S3_BUCKET" ]; then
 fi
 
 if [ -z "$NGINX_ZLIB_VERSION" ]; then
-    NGINX_ZLIB_VERSION=1.2.7
+    NGINX_ZLIB_VERSION=1.2.8
 fi
 
 if [ -z "$NGINX_PCRE_VERSION" ]; then

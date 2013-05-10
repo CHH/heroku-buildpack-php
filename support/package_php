@@ -12,7 +12,7 @@ fi
 php_version="$1"
 
 if [ -z "$PHP_ZLIB_VERSION" ]; then
-    PHP_ZLIB_VERSION=1.2.7
+    PHP_ZLIB_VERSION=1.2.8
 fi
 
 echo "-----> Packaging PHP $php_version"
