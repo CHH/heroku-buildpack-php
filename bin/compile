@@ -100,8 +100,8 @@ export PATH="$HOME/bin:$PATH"
 curl "http://stedolan.github.com/jq/download/linux64/jq" -L -s -o - > "$HOME/bin/jq"
 chmod +x "$HOME/bin/jq"
 
-DEFAULT_PHP="5.4.14"
-DEFAULT_NGINX="1.2.7"
+DEFAULT_PHP="5.4.15"
+DEFAULT_NGINX="1.4.1"
 
 PHP_VERSION=$(package_php_version)
 NGINX_VERSION=$(package_nginx_version)
