@@ -13,7 +13,7 @@ function sets_framework_silex() {
 
 case "$1" in
     detect)
-        if [ -f "$BUILD_DIR/composer.json" ] && requires_silex || set_framework_silex; then
+        if [ -f "$BUILD_DIR/composer.json" ] && requires_silex || sets_framework_silex; then
             echo "-----> Detected Silex App"
             exit 0
         else
