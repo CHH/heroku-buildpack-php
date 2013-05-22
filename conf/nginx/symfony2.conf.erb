@@ -1,7 +1,7 @@
 server {
     server_name localhost;
     listen <%= ENV['PORT'] %>;
-    root <%= ENV['DOCUMENT_ROOT'] || "/app/web" %>;
+    root /app/web;
 
     location / {
         # try to serve file directly, fallback to rewrite
