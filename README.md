@@ -1,5 +1,14 @@
 # Advanced PHP Heroku Build Pack
 
+## What makes it unique?
+
+* **Faster** deployments the runtime environment is built from precompiled binaries via Heroku's "vulcan"
+* Supports both the latest 5.3 _and_ 5.4 versions
+* Uses the memory of the dyno more efficiently by going with NGINX and PHP-FPM.
+* Supports Composer out of the box
+* No writing NGINX configuration files: supports Classic PHP, Silex and Symfony 2 apps with simple configuration driven by your `composer.json`.
+* Zero-Configuration Symfony 2 deployment.
+
 ## What works?
 
 * Basic provisioning
@@ -119,3 +128,27 @@ Run console commands on slug compilation.
         "php app/console assetic:dump --env=prod --no-debug"
     ]
 
+## Frameworks
+
+### Symfony 2
+
+Is detected when the app requires the `symfony/symfony` package or when the 
+`extra.heroku.framework` key is set to `symfony2` in the `composer.json`.
+
+This framework preset doesn't need any configuration to work.
+
+### Silex
+
+Is used when the app requires the `silex/silex` package or when the 
+`extra.heroku.framework` key is set to `silex` in the `composer.json`.
+
+Options:
+
+* `index-document`: With Silex apps, this should be the file where `$app->run()`
+  is called. All requests which don't match an existing file will be forwarded to
+  this document.
+
+### Classic PHP
+
+The classic PHP configuration is used as fallback when no framework was detected. It serves every `.php` file relative
+to the document root.
