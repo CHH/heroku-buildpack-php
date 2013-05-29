@@ -90,6 +90,10 @@ function package_php_config()
     jq --raw-output '.extra.heroku["php-config"] // [] | .[]' < "$BUILD_DIR/composer.json"
 }
 
+function package_compile_cmd() {
+    jq --raw-output '.extra.heroku["compile"] // [] | .[]' < "$BUILD_DIR/composer.json"
+}
+
 BUILD_DIR="$1"
 CACHE_DIR="$2"
 
@@ -100,7 +104,7 @@ export PATH="$HOME/bin:$PATH"
 curl "http://stedolan.github.com/jq/download/linux64/jq" -L -s -o - > "$HOME/bin/jq"
 chmod +x "$HOME/bin/jq"
 
-DEFAULT_PHP="5.4.15"
+DEFAULT_PHP="5.4.14"
 DEFAULT_NGINX="1.4.1"
 
 PHP_VERSION=$(package_php_version)
