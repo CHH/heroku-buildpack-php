@@ -42,6 +42,7 @@ build_command=$(cat <<BUILD_CMD
     --with-mysqli \
     --with-pdo-mysql \
     --with-pdo-sqlite \
+    --with-pdo-pgsql=/usr/bin/pg_config \
     --enable-shmop \
     --enable-zip \
     --with-jpeg-dir=/usr \

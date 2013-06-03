@@ -152,3 +152,11 @@ Options:
 
 The classic PHP configuration is used as fallback when no framework was detected. It serves every `.php` file relative
 to the document root.
+
+# Hacking
+
+You need the following tools to hack on this project:
+
+* `s3cmd` from <http://s3tools.org>
+* `vulcan` from Heroku via `gem install vulcan`
+
