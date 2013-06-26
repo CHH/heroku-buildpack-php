@@ -144,7 +144,7 @@ export PHP_PEAR_INSTALL_DIR="$BUILD_DIR/vendor/php/lib/php"
 ./vendor/php/bin/pear config-set php_ini "$BUILD_DIR/php/etc/php.ini"
 
 for cmd in $(package_compile_cmd); do
-    $cmd
+    env PHP_PEAR_PHP_BIN="$BUILD_DIR/vendor/php/bin/php" PHP_PEAR_INSTALL_DIR="$BUILD_DIR/vendor/php/lib/php" $cmd
 done
 
 for conf in $(package_php_config); do
