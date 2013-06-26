@@ -144,10 +144,6 @@ for cmd in $(package_compile_cmd); do
     $cmd
 done
 
-# Reset config vars so they point to the paths on the dyno
-./vendor/php/bin/pear config-set php_ini "/app/vendor/php/etc/php.ini"
-./vendor/php/bin/pear config-set php_dir "/app/vendor/php"
-
 for conf in $(package_php_config); do
     echo "$conf" >> "vendor/php/etc/php.ini"
 done
