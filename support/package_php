@@ -42,7 +42,7 @@ SH
 )
 else
     install_zend_optimizer=$(cat <<SH
-    pecl install ZendOpcache-beta \
+    /app/vendor/php/bin/pecl install ZendOpcache-beta \
         && echo "zend_extension=\$(/app/vendor/php/bin/php-config --extension-dir)/opcache.so" >> /app/vendor/php/etc/conf.d/opcache.ini
 SH
 )
