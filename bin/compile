@@ -137,7 +137,7 @@ cp "$basedir/../conf/php/php-fpm.conf" "vendor/php/etc/php-fpm.conf"
 cp "$basedir/../conf/php/php.ini" "vendor/php/etc/php.ini"
 
 # Point config vars to directories in the build environment
-./vendor/php/bin/pear config-set php_dir "$BUILD_DIR/vendor/php" > /dev/null
+PHP_PEAR_PHP_BIN="$BUILD_DIR/vendor/php/bin/php" ./vendor/php/bin/pear config-set php_dir "$BUILD_DIR/vendor/php" > /dev/null
 ./vendor/php/bin/pear config-set php_ini "$BUILD_DIR/php/etc/php.ini" > /dev/null
 
 for cmd in $(package_compile_cmd); do
