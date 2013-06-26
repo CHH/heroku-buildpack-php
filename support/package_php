@@ -4,6 +4,8 @@ set -e
 
 basedir="$( cd -P "$( dirname "$0" )" && pwd )"
 
+source "$basedir/../conf/buildpack.conf"
+
 if [ -z "$1" ]; then
     echo "Usage: $0 <version>" >&2
     exit 1
@@ -31,8 +33,24 @@ echo "-----> Downloading PHP $php_version"
 curl -LO "http://php.net/distributions/php-${php_version}.tar.gz"
 tar -xzvf "php-${php_version}.tar.gz"
 
+install_zend_optimizer=":"
+
+if [[ "$php_version" =~ 5.5 ]]; then
+    install_zend_optimizer=$(cat << SH
+    echo "zend_extension=\$(/app/vendor/php/bin/php-config --extension-dir)/opcache.so" >> /app/vendor/php/etc/conf.d/opcache.ini
+SH
+)
+else
+    install_zend_optimizer=$(cat <<SH
+    pecl install ZendOpcache-beta \
+        && echo "zend_extension=\$(/app/vendor/php/bin/php-config --extension-dir)/opcache.so" >> /app/vendor/php/etc/conf.d/opcache.ini
+SH
+)
+fi
+
 build_command=$(cat <<BUILD_CMD
     mkdir -p "/app/vendor/php/zlib" \
+    && mkdir -p "/app/vendor/php/etc/conf.d" \
     && cd zlib-${PHP_ZLIB_VERSION} && ./configure --prefix=/app/vendor/php/zlib && make && make install \
     && cd ../php-${php_version} && ./configure --prefix=/app/vendor/php \
     --with-config-file-path=/app/vendor/php/etc \
@@ -61,7 +79,7 @@ build_command=$(cat <<BUILD_CMD
     && make \
     && make install \
     && /app/vendor/php/bin/pear config-set php_dir /app/vendor/php \
-    && yes '' | /app/vendor/php/bin/pecl install apc-beta
+    && $install_zend_optimizer
 BUILD_CMD
 )
 

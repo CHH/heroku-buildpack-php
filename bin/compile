@@ -3,15 +3,13 @@
 set -e
 shopt -s dotglob
 
+basedir="$( cd -P "$( dirname "$0" )" && pwd )"
+
+source "$basedir/../conf/buildpack.conf"
+
 if [ -n "$BUILDPACK_DEBUG" ]; then
     set -x
 fi
-
-if [ -z "$S3_BUCKET" ]; then
-    S3_BUCKET="chh-heroku-buildpack-php"
-fi
-
-basedir="$( cd -P "$( dirname "$0" )" && pwd )"
 
 function fetch_package() {
     local engine="$1"
@@ -104,7 +102,7 @@ export PATH="$HOME/bin:$PATH"
 curl "http://stedolan.github.com/jq/download/linux64/jq" -L -s -o - > "$HOME/bin/jq"
 chmod +x "$HOME/bin/jq"
 
-DEFAULT_PHP="5.4.14"
+DEFAULT_PHP="5.4.15"
 DEFAULT_NGINX="1.4.1"
 
 PHP_VERSION=$(package_php_version)

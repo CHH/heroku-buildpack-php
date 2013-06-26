@@ -9,6 +9,8 @@ E_S3_BUCKET_MISSING=2
 
 basedir="$( cd -P "$( dirname "$0" )" && pwd )"
 
+source "$basedir/../conf/buildpack.conf"
+
 if [ -z "$nginx_version" ]; then
     echo "Usage: $0 <version>" >&2
     exit $E_ARG_MISSING
