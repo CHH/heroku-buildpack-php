@@ -140,8 +140,8 @@ cp "$basedir/../conf/php/php.ini" "vendor/php/etc/php.ini"
 export PHP_PEAR_PHP_BIN="$BUILD_DIR/vendor/php/bin/php"
 export PHP_PEAR_INSTALL_DIR="$BUILD_DIR/vendor/php/pear"
 
-./vendor/php/bin/pear config-set php_dir "$BUILD_DIR/vendor/php" > /dev/null
-./vendor/php/bin/pear config-set php_ini "$BUILD_DIR/php/etc/php.ini" > /dev/null
+./vendor/php/bin/pear config-set php_dir "$BUILD_DIR/vendor/php"
+./vendor/php/bin/pear config-set php_ini "$BUILD_DIR/php/etc/php.ini"
 
 for cmd in $(package_compile_cmd); do
     $cmd
