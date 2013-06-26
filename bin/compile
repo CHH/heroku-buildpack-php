@@ -83,8 +83,7 @@ function package_php_version() {
     jq --raw-output ".extra.heroku.engines.php // \"$DEFAULT_PHP\"" < "$BUILD_DIR/composer.json"
 }
 
-function package_php_config()
-{
+function package_php_config() {
     jq --raw-output '.extra.heroku["php-config"] // [] | .[]' < "$BUILD_DIR/composer.json"
 }
 
@@ -126,6 +125,11 @@ cp -R "$VENDORED_PHP/" "vendor/php"
 # Test that all packages were fetched and extracted successfully
 test -d "vendor/nginx"
 test -d "vendor/php"
+
+if [ -n "$BUILDPACK_DEBUG" ]; then
+    ls -R vendor/nginx
+    ls -R vendor/php
+fi
 
 mkdir -p "conf"
 cp "$basedir/../conf/nginx/base.conf.erb" "conf/nginx.conf.erb"
