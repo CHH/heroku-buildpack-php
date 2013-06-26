@@ -6,7 +6,8 @@
 
 * APC was removed in favor of Zend Opcache. All PHP versions from 5.3 to
   5.5 now use Zend Opcache for Opcaching. If you want to keep running
-with APC, set the PHP version in the engines to either 5.3.25 or 5.4.15.
+with APC, set the PHP version in the engines to either 5.3.25 or 5.4.15,
+and add `extension=apc.so` to your `php-config`.
 
 ### Changes
 
