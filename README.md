@@ -134,8 +134,6 @@ Add directives to the `php.ini`.
 
 #### compile
 
-_Status: Not Implemented_
-
 _Default: []_
 
 Run console commands on slug compilation.
@@ -143,6 +141,8 @@ Run console commands on slug compilation.
     "compile": [
         "php app/console assetic:dump --env=prod --no-debug"
     ]
+
+_Note: pecl is not runnable this way._
 
 ## Frameworks
 
