@@ -15,6 +15,22 @@
 * NGINX Configuration for frameworks `silex` and `symfony2`
 * Reading configuration from `composer.json`
 
+## How to use it
+
+Use the `--buildpack` parameter when creating a new app:
+
+    heroku create --buildpack https://github.com/CHH/heroku-buildpack-php myapp
+
+Or set the `BUILDPACK_URL` config var on an existing app:
+
+    heroku config:set BUILDPACK_URL=https://github.com/CHH/heroku-buildpack-php
+
+* * *
+
+If you want to be on the bleeding edge and use pre-release features, then use
+`git://github.com/CHH/heroku-buildpack-php#development` as buildpack
+url.
+
 ## Stack
 
 * NGINX 1.2 or 1.3
