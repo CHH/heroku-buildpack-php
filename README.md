@@ -150,13 +150,12 @@ Options:
 
 ### Classic PHP
 
-The classic PHP configuration is used as fallback when no framework was detected. It serves every `.php` file relative
-to the document root.
+The classic PHP configuration is used as fallback when no framework was detected. It serves every `.php` file relative to the document root.
 
-# Hacking
+This is also used when an `index.php` file was found in the root of your
+project and no `composer.json`.
 
-You need the following tools to hack on this project:
+# Contributing
 
-* `s3cmd` from <http://s3tools.org>
-* `vulcan` from Heroku via `gem install vulcan`
-
+Please see the [CONTRIBUTING](/CONTRIBUTING.md) file for all the
+details.
