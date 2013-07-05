@@ -35,6 +35,10 @@ function install_composer_deps() {
     local cwd=$(pwd)
     local target="$1"
 
+    if [ ! -f "$target/composer.json" ]; then
+        return 0
+    fi
+
     echo "-----> Vendoring Composer"
     {
         mkdir -p "$target/vendor/composer/bin"
