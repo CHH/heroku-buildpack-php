@@ -45,6 +45,10 @@ url.
 This buildpack detects apps when the app has a `composer.json` in the
 app's root.
 
+If an `index.php` is detected in the app's root, then it switches to
+"classic mode", which means that every ".php" file is served with PHP,
+and the document root is set to the app root.
+
 ## Configuration
 
 Configuration is done via a file named `composer.json` in the app's
