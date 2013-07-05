@@ -104,8 +104,23 @@ chmod +x "$HOME/bin/jq"
 DEFAULT_PHP="5.5.0"
 DEFAULT_NGINX="1.4.1"
 
-PHP_VERSION=$(package_php_version)
-NGINX_VERSION=$(package_nginx_version)
+PHP_VERSION="$DEFAULT_PHP"
+NGINX_VERSION="$DEFAULT_NGINX"
+DOCUMENT_ROOT="/app"
+INDEX_DOCUMENT="index.php"
+FRAMEWORK=default
+PHP_EXTRA_CONFIG=
+COMPILE_CMD=
+
+if [ -f "$BUILD_DIR/composer.json" ]; then
+    PHP_VERSION=$(package_php_version)
+    NGINX_VERSION=$(package_nginx_version)
+    DOCUMENT_ROOT=$(package_document_root)
+    INDEX_DOCUMENT=$(package_index_file)
+    FRAMEWORK=$(package_framework)
+    PHP_EXTRA_CONFIG=$(package_php_config)
+    COMPILE_CMD=$(package_compile_cmd)
+fi
 
 echo "-----> Vendoring NGINX ${NGINX_VERSION} | PHP ${PHP_VERSION}"
 
@@ -136,25 +151,33 @@ cp "$basedir/../conf/nginx/base.conf.erb" "conf/nginx.conf.erb"
 cp "$basedir/../conf/php/php-fpm.conf" "vendor/php/etc/php-fpm.conf"
 cp "$basedir/../conf/php/php.ini" "vendor/php/etc/php.ini"
 
-for cmd in $(package_compile_cmd); do
+for cmd in $COMPILE_CMD; do
     $cmd
 done
 
-for conf in $(package_php_config); do
+for conf in $PHP_EXTRA_CONFIG; do
     echo "$conf" >> "vendor/php/etc/php.ini"
 done
 
 DETECTED_FRAMEWORK=
 
-for framework in "$basedir/../frameworks/"*; do
-    if "$framework" detect "$BUILD_DIR"; then
-        "$framework" compile "$BUILD_DIR" "$CACHE_DIR"
-        DETECTED_FRAMEWORK="$framework"
-    fi
-done
+# Set the detected framework immediately if overridden through config
+if [ -n "$FRAMEWORK" ]; then
+    DETECTED_FRAMEWORK="$FRAMEWORK"
+else
+    for framework in "$basedir/../frameworks/"*; do
+        if "$framework" detect "$BUILD_DIR"; then
+            DETECTED_FRAMEWORK="$framework"
+        fi
+    done
+fi
 
+# Fall back to the default "classic" setup if no framework was detected,
+# otherwise invoke the build method of the detected framework
 if [ -z "$DETECTED_FRAMEWORK" ]; then
     "$basedir/../frameworks/default" compile "$BUILD_DIR" "$CACHE_DIR"
+else
+    "$DETECTED_FRAMEWORK" compile "$BUILD_DIR" "$CACHE_DIR"
 fi
 
 test ! -d ".profile.d" && mkdir -p .profile.d || true
@@ -174,8 +197,8 @@ for var in \`env | cut -f1 -d=\`; do
     echo "env[\$var] = \\$\${var}" >> /app/vendor/php/etc/php-fpm.conf
 done
 
-export DOCUMENT_ROOT="$(package_document_root)"
-export INDEX_DOCUMENT="$(package_index_file)"
+export DOCUMENT_ROOT="$DOCUMENT_ROOT"
+export INDEX_DOCUMENT="$INDEX_DOCUMENT"
 
 erb conf/nginx.conf.erb > /app/vendor/nginx/conf/nginx.conf
 erb conf/site.conf.erb > /app/vendor/nginx/conf/site.conf
