@@ -26,7 +26,7 @@ cd $tempdir
 
 echo "-----> Downloading dependency zlib ${zlib_version}"
 
-curl -LO "http://zlib.net/zlib-${PHP_ZLIB_VERSION}.tar.gz"
+curl -LO "http://$S3_BUCKET.s3.amazonaws.com/zlib/zlib-${PHP_ZLIB_VERSION}.tar.gz"
 tar -xzvf "zlib-${PHP_ZLIB_VERSION}.tar.gz"
 
 echo "-----> Downloading PHP $php_version"

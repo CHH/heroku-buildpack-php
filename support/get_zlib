@@ -1,0 +1,19 @@
+#!/usr/bin/env bash
+
+zlib_version="$1"
+basedir="$( cd -P "$( dirname "$0" )" && pwd )"
+
+source "$basedir/../conf/buildpack.conf"
+
+tempdir="$( mktemp -t nginx_xxxx )"
+rm -rf $tempdir
+mkdir -p $tempdir
+cd $tempdir
+
+echo "-----> Downloading ZLib v${zlib_version}"
+curl -LO "http://zlib.net/zlib-${zlib_version}.tar.gz"
+
+s3cmd put --verbose \
+    --acl-public \
+    "$tempdir/zlib-${zlib_version}.tar.gz" \
+    "s3://$S3_BUCKET/zlib/zlib-${zlib_version}.tar.gz"
