@@ -1,5 +1,12 @@
 # Changelog
 
+## v0.1.1, 2013-07-05
+
+### Changes
+
+* PHP 5.5.0 is the new default
+* Added PHP 5.4.17
+
 ## v0.1.0
 
 ### Upgrading:
