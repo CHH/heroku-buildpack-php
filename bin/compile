@@ -116,6 +116,7 @@ FRAMEWORK="$basedir/../frameworks/default"
 PHP_EXTRA_CONFIG=
 COMPILE_CMD=
 
+# Read config variables from composer.json if it exists
 if [ -f "$BUILD_DIR/composer.json" ]; then
     PHP_VERSION=$(package_php_version)
     NGINX_VERSION=$(package_nginx_version)
@@ -126,12 +127,13 @@ if [ -f "$BUILD_DIR/composer.json" ]; then
     COMPILE_CMD=$(package_compile_cmd)
 fi
 
-echo "-----> Vendoring NGINX ${NGINX_VERSION} | PHP ${PHP_VERSION}"
-
 VENDORED_NGINX=$(mktmpdir nginx)
 VENDORED_PHP=$(mktmpdir php)
 
+echo "-----> Fetching NGINX ${NGINX_VERSION}"
 fetch_package nginx "$NGINX_VERSION" "$VENDORED_NGINX"
+
+echo "-----> Fetching PHP ${PHP_VERSION}"
 fetch_package php "$PHP_VERSION" "$VENDORED_PHP"
 
 echo "-----> Vendoring binaries into slug"
@@ -156,32 +158,24 @@ cp "$basedir/../conf/php/php-fpm.conf" "vendor/php/etc/php-fpm.conf"
 cp "$basedir/../conf/php/php.ini" "vendor/php/etc/php.ini"
 
 for cmd in $COMPILE_CMD; do
-    $cmd
+    echo "-----> Running compile script $cmd"
+    env PATH="$BUILD_DIR/vendor/php/bin:$BUILD_DIR/vendor/nginx/sbin:$PATH" $cmd | indent
 done
 
 for conf in $PHP_EXTRA_CONFIG; do
     echo "$conf" >> "vendor/php/etc/php.ini"
 done
 
-DETECTED_FRAMEWORK=
-
-# Set the detected framework immediately if overridden through config
-if [ -n "$FRAMEWORK" ]; then
-    DETECTED_FRAMEWORK="$FRAMEWORK"
-else
-    for framework in "$basedir/../frameworks/"*; do
-        if "$framework" detect "$BUILD_DIR"; then
-            DETECTED_FRAMEWORK="$framework"
+if [ -z "$FRAMEWORK" ]; then
+    for f in "$basedir/../frameworks/"*; do
+        if "$f" detect "$BUILD_DIR"; then
+            FRAMEWORK="$framework"
         fi
     done
 fi
 
-# Fall back to the default "classic" setup if no framework was detected,
-# otherwise invoke the build method of the detected framework
-if [ -z "$DETECTED_FRAMEWORK" ]; then
-    "$basedir/../frameworks/default" compile "$BUILD_DIR" "$CACHE_DIR"
-else
-    "$DETECTED_FRAMEWORK" compile "$BUILD_DIR" "$CACHE_DIR"
+if [ -n "$FRAMEWORK" ]; then
+    "$FRAMEWORK" compile "$BUILD_DIR" "$CACHE_DIR"
 fi
 
 test ! -d ".profile.d" && mkdir -p .profile.d || true
