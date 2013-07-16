@@ -80,7 +80,7 @@ build_command=$(cat <<BUILD_CMD
     && make install \
     && /app/vendor/php/bin/pear config-set php_dir /app/vendor/php \
     && $install_zend_optimizer \
-    && yes '' | pecl install apcu-beta
+    && yes '' | /app/vendor/php/bin/pecl install apcu-beta
 BUILD_CMD
 )
 
