@@ -34,7 +34,7 @@ url.
 ## Stack
 
 * NGINX 1.4 or 1.5
-* PHP 5.3, 5.4 and 5.5, with ZendOpcache and [APCu][] ([Info](https://chh-php-test.herokuapp.com/info))
+* PHP 5.3, 5.4 and 5.5, with [ZendOpcache][] and [APCu][] ([Info](https://chh-php-test.herokuapp.com/info))
 * PHP-FPM
 
 [ZendOpcache]: http://pecl.php.net/package/ZendOpcache
