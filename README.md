@@ -137,6 +137,19 @@ Add directives to the `php.ini`.
         "short_open_tag=on"
     ]
 
+### nginx-includes
+
+_Default: []_
+
+Include additional config files into the NGINX configuration. Config
+files are included into the `server` scope and are loaded after the
+framework provided config. File paths are treated relative to the app
+root.
+
+Example:
+    
+    "nginx-includes": ["etc/nginx.conf"]
+
 #### compile
 
 _Default: []_
