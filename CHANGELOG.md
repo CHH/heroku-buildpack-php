@@ -1,5 +1,14 @@
 # Changelog
 
+## v0.2.0, ????-??-??
+
+### Changes
+
+* Buildpack now works also only with an `index.php` in the project's
+  root, without `composer.json`. This makes it possible to run apps
+  which are built for the official Heroku PHP buildpack.
+* Packaging scripts now use zlib package from S3 bucket
+
 ## v0.1.1, 2013-07-05
 
 ### Changes

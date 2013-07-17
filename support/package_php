@@ -26,7 +26,7 @@ cd $tempdir
 
 echo "-----> Downloading dependency zlib ${zlib_version}"
 
-curl -LO "http://zlib.net/zlib-${PHP_ZLIB_VERSION}.tar.gz"
+curl -LO "http://$S3_BUCKET.s3.amazonaws.com/zlib/zlib-${PHP_ZLIB_VERSION}.tar.gz"
 tar -xzvf "zlib-${PHP_ZLIB_VERSION}.tar.gz"
 
 echo "-----> Downloading PHP $php_version"
@@ -61,6 +61,7 @@ build_command=$(cat <<BUILD_CMD
     --with-pdo-mysql \
     --with-pdo-sqlite \
     --with-pdo-pgsql=/usr/bin/pg_config \
+    --with-pgsql \
     --enable-shmop \
     --enable-zip \
     --with-jpeg-dir=/usr \
@@ -79,7 +80,8 @@ build_command=$(cat <<BUILD_CMD
     && make \
     && make install \
     && /app/vendor/php/bin/pear config-set php_dir /app/vendor/php \
-    && $install_zend_optimizer
+    && $install_zend_optimizer \
+    && yes '' | /app/vendor/php/bin/pecl install apcu-beta
 BUILD_CMD
 )
 

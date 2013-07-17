@@ -35,6 +35,10 @@ function install_composer_deps() {
     local cwd=$(pwd)
     local target="$1"
 
+    if [ ! -f "$target/composer.json" ]; then
+        return 0
+    fi
+
     echo "-----> Vendoring Composer"
     {
         mkdir -p "$target/vendor/composer/bin"
@@ -87,6 +91,10 @@ function package_php_config() {
     jq --raw-output '.extra.heroku["php-config"] // [] | .[]' < "$BUILD_DIR/composer.json"
 }
 
+function package_nginx_includes() {
+    jq --raw-output '.extra.heroku["nginx-includes"] // [] | .[]' < "$BUILD_DIR/composer.json"
+}
+
 function package_compile_cmd() {
     jq --raw-output '.extra.heroku["compile"] // [] | .[]' < "$BUILD_DIR/composer.json"
 }
@@ -104,21 +112,38 @@ chmod +x "$HOME/bin/jq"
 DEFAULT_PHP="5.5.0"
 DEFAULT_NGINX="1.4.1"
 
-PHP_VERSION=$(package_php_version)
-NGINX_VERSION=$(package_nginx_version)
+PHP_VERSION="$DEFAULT_PHP"
+NGINX_VERSION="$DEFAULT_NGINX"
+DOCUMENT_ROOT="/app"
+INDEX_DOCUMENT="index.php"
+FRAMEWORK=
+PHP_EXTRA_CONFIG=
+COMPILE_CMD=
+NGINX_INCLUDES=
 
-echo "-----> Vendoring NGINX ${NGINX_VERSION} | PHP ${PHP_VERSION}"
+# Read config variables from composer.json if it exists
+if [ -f "$BUILD_DIR/composer.json" ]; then
+    PHP_VERSION=$(package_php_version)
+    NGINX_VERSION=$(package_nginx_version)
+    DOCUMENT_ROOT=$(package_document_root)
+    INDEX_DOCUMENT=$(package_index_file)
+    FRAMEWORK=$(package_framework)
+    PHP_EXTRA_CONFIG=$(package_php_config)
+    COMPILE_CMD=$(package_compile_cmd)
+    NGINX_INCLUDES=$(package_nginx_includes)
+fi
 
 VENDORED_NGINX=$(mktmpdir nginx)
 VENDORED_PHP=$(mktmpdir php)
 
+echo "-----> Bundling NGINX ${NGINX_VERSION}"
 fetch_package nginx "$NGINX_VERSION" "$VENDORED_NGINX"
+
+echo "-----> Bundling PHP ${PHP_VERSION}"
 fetch_package php "$PHP_VERSION" "$VENDORED_PHP"
 
 echo "-----> Vendoring binaries into slug"
-
 [ ! -d "$BUILD_DIR/vendor" ] && mkdir -p "$BUILD_DIR/vendor"
-
 cp -R "$VENDORED_NGINX/" "vendor/nginx"
 cp -R "$VENDORED_PHP/" "vendor/php"
 
@@ -136,25 +161,32 @@ cp "$basedir/../conf/nginx/base.conf.erb" "conf/nginx.conf.erb"
 cp "$basedir/../conf/php/php-fpm.conf" "vendor/php/etc/php-fpm.conf"
 cp "$basedir/../conf/php/php.ini" "vendor/php/etc/php.ini"
 
-for cmd in $(package_compile_cmd); do
-    $cmd
+for cmd in $COMPILE_CMD; do
+    echo "-----> Running compile script $cmd"
+    env PATH="$BUILD_DIR/vendor/php/bin:$BUILD_DIR/vendor/nginx/sbin:$PATH" $cmd | indent
 done
 
-for conf in $(package_php_config); do
+for conf in $PHP_EXTRA_CONFIG; do
     echo "$conf" >> "vendor/php/etc/php.ini"
 done
 
-DETECTED_FRAMEWORK=
-
-for framework in "$basedir/../frameworks/"*; do
-    if "$framework" detect "$BUILD_DIR"; then
-        "$framework" compile "$BUILD_DIR" "$CACHE_DIR"
-        DETECTED_FRAMEWORK="$framework"
+for f in "$basedir/../frameworks/"*; do
+    if "$f" detect "$BUILD_DIR"; then
+        FRAMEWORK="$f"
     fi
 done
 
-if [ -z "$DETECTED_FRAMEWORK" ]; then
-    "$basedir/../frameworks/default" compile "$BUILD_DIR" "$CACHE_DIR"
+# Fall back to classic mode
+if [ -z "$FRAMEWORK" ]; then
+    FRAMEWORK="$basedir/../frameworks/default"
+fi
+
+if [ ! -f "$FRAMEWORK" ] && [ -f "$basedir/../frameworks/$FRAMEWORK" ]; then
+    FRAMEWORK="$basedir/../frameworks/$FRAMEWORK"
+fi
+
+if [ -n "$FRAMEWORK" ] && [ -f "$FRAMEWORK" ]; then
+    "$FRAMEWORK" compile "$BUILD_DIR" "$CACHE_DIR"
 fi
 
 test ! -d ".profile.d" && mkdir -p .profile.d || true
@@ -174,8 +206,9 @@ for var in \`env | cut -f1 -d=\`; do
     echo "env[\$var] = \\$\${var}" >> /app/vendor/php/etc/php-fpm.conf
 done
 
-export DOCUMENT_ROOT="$(package_document_root)"
-export INDEX_DOCUMENT="$(package_index_file)"
+export DOCUMENT_ROOT="$DOCUMENT_ROOT"
+export INDEX_DOCUMENT="$INDEX_DOCUMENT"
+export NGINX_INCLUDES="$NGINX_INCLUDES"
 
 erb conf/nginx.conf.erb > /app/vendor/nginx/conf/nginx.conf
 erb conf/site.conf.erb > /app/vendor/nginx/conf/site.conf
