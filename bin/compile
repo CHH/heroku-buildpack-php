@@ -112,7 +112,7 @@ PHP_VERSION="$DEFAULT_PHP"
 NGINX_VERSION="$DEFAULT_NGINX"
 DOCUMENT_ROOT="/app"
 INDEX_DOCUMENT="index.php"
-FRAMEWORK="${basedir}/../frameworks/default"
+FRAMEWORK=
 PHP_EXTRA_CONFIG=
 COMPILE_CMD=
 
@@ -137,9 +137,7 @@ echo "-----> Bundling PHP ${PHP_VERSION}"
 fetch_package php "$PHP_VERSION" "$VENDORED_PHP"
 
 echo "-----> Vendoring binaries into slug"
-
 [ ! -d "$BUILD_DIR/vendor" ] && mkdir -p "$BUILD_DIR/vendor"
-
 cp -R "$VENDORED_NGINX/" "vendor/nginx"
 cp -R "$VENDORED_PHP/" "vendor/php"
 
@@ -168,11 +166,20 @@ done
 
 for f in "$basedir/../frameworks/"*; do
     if "$f" detect "$BUILD_DIR"; then
-        FRAMEWORK="$framework"
+        FRAMEWORK="$f"
     fi
 done
 
-if [ -n "$FRAMEWORK" ]; then
+# Fall back to classic mode
+if [ -z "$FRAMEWORK" ]; then
+    FRAMEWORK="$basedir/../frameworks/default"
+fi
+
+if [ ! -f "$FRAMEWORK" ] && [ -f "$basedir/../frameworks/$FRAMEWORK" ]; then
+    FRAMEWORK="$basedir/../frameworks/$FRAMEWORK"
+fi
+
+if [ -n "$FRAMEWORK" ] && [ -f "$FRAMEWORK" ]; then
     "$FRAMEWORK" compile "$BUILD_DIR" "$CACHE_DIR"
 fi
 
