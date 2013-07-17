@@ -34,9 +34,11 @@ url.
 ## Stack
 
 * NGINX 1.4 or 1.5
-* PHP 5.3, 5.4 and 5.5
+* PHP 5.3, 5.4 and 5.5, with [ZendOpcache][] and [APCu][] ([Info](https://chh-php-test.herokuapp.com/info))
 * PHP-FPM
 
+[ZendOpcache]: http://pecl.php.net/package/ZendOpcache
+[APCu]: http://pecl.php.net/package/apcu
 [Available PHP Versions]: http://chh-heroku-buildpack-php.s3.amazonaws.com/manifest.php
 [Available NGINX Versions]: http://chh-heroku-buildpack-php.s3.amazonaws.com/manifest.nginx
 
@@ -57,7 +59,6 @@ root.
 A simple configuration could look like this:
 
     {
-        "name": "my-app",
         "require": {
             "php": ">=5.4.0",
             "silex/silex": "~1.0@dev"
