@@ -8,6 +8,7 @@ detect)
     exit 1
     ;;
 compile)
+    echo "-----> Setting up default configuration"
     cp "$basedir/../conf/nginx/default_site.conf.erb" "$BUILD_DIR/conf/site.conf.erb"
     ;;
 esac
