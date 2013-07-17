@@ -1,3 +1,4 @@
+<% require "Shellwords" %>
 worker_processes 4;
 daemon off;
 
@@ -24,6 +25,9 @@ http {
         root <%= ENV['DOCUMENT_ROOT'] %>;
 
         include site.conf;
-        include /app/conf/nginx/*.conf
+
+        <% Shellwords.split(ENV['NGINX_INCLUDES'].to_s).each do |f| %>
+            include /app/<%= f %>;
+        <% end %>
     }
 }
