@@ -91,6 +91,10 @@ function package_php_config() {
     jq --raw-output '.extra.heroku["php-config"] // [] | .[]' < "$BUILD_DIR/composer.json"
 }
 
+function package_nginx_includes() {
+    jq --raw-output '.extra.heroku["nginx-includes"] // [] | .[]' < "$BUILD_DIR/composer.json"
+}
+
 function package_compile_cmd() {
     jq --raw-output '.extra.heroku["compile"] // [] | .[]' < "$BUILD_DIR/composer.json"
 }
@@ -115,6 +119,7 @@ INDEX_DOCUMENT="index.php"
 FRAMEWORK=
 PHP_EXTRA_CONFIG=
 COMPILE_CMD=
+NGINX_INCLUDES=
 
 # Read config variables from composer.json if it exists
 if [ -f "$BUILD_DIR/composer.json" ]; then
@@ -125,6 +130,7 @@ if [ -f "$BUILD_DIR/composer.json" ]; then
     FRAMEWORK=$(package_framework)
     PHP_EXTRA_CONFIG=$(package_php_config)
     COMPILE_CMD=$(package_compile_cmd)
+    NGINX_INCLUDES=$(package_nginx_includes)
 fi
 
 VENDORED_NGINX=$(mktmpdir nginx)
@@ -202,6 +208,7 @@ done
 
 export DOCUMENT_ROOT="$DOCUMENT_ROOT"
 export INDEX_DOCUMENT="$INDEX_DOCUMENT"
+export NGINX_INCLUDES="$NGINX_INCLUDES"
 
 erb conf/nginx.conf.erb > /app/vendor/nginx/conf/nginx.conf
 erb conf/site.conf.erb > /app/vendor/nginx/conf/site.conf

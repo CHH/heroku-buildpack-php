@@ -51,6 +51,33 @@ If an `index.php` is detected in the app's root, then it switches to
 "classic mode", which means that every ".php" file is served with PHP,
 and the document root is set to the app root.
 
+## Frameworks
+
+### Symfony 2
+
+Is detected when the app requires the `symfony/symfony` package or when the 
+`extra.heroku.framework` key is set to `symfony2` in the `composer.json`.
+
+This framework preset doesn't need any configuration to work.
+
+### Silex
+
+Is used when the app requires the `silex/silex` package or when the 
+`extra.heroku.framework` key is set to `silex` in the `composer.json`.
+
+Options:
+
+* `index-document`: With Silex apps, this should be the file where `$app->run()`
+  is called. All requests which don't match an existing file will be forwarded to
+  this document.
+
+### Classic PHP
+
+The classic PHP configuration is used as fallback when no framework was detected. It serves every `.php` file relative to the document root.
+
+This is also used when an `index.php` file was found in the root of your
+project and no `composer.json`.
+
 ## Configuration
 
 Configuration is done via a file named `composer.json` in the app's
@@ -137,6 +164,19 @@ Add directives to the `php.ini`.
         "short_open_tag=on"
     ]
 
+### nginx-includes
+
+_Default: []_
+
+Include additional config files into the NGINX configuration. Config
+files are included into the `server` scope and are loaded after the
+framework provided config. File paths are treated relative to the app
+root.
+
+Example:
+    
+    "nginx-includes": ["etc/nginx.conf"]
+
 #### compile
 
 _Default: []_
@@ -148,33 +188,6 @@ Run console commands on slug compilation.
     ]
 
 _Note: pecl is not runnable this way._
-
-## Frameworks
-
-### Symfony 2
-
-Is detected when the app requires the `symfony/symfony` package or when the 
-`extra.heroku.framework` key is set to `symfony2` in the `composer.json`.
-
-This framework preset doesn't need any configuration to work.
-
-### Silex
-
-Is used when the app requires the `silex/silex` package or when the 
-`extra.heroku.framework` key is set to `silex` in the `composer.json`.
-
-Options:
-
-* `index-document`: With Silex apps, this should be the file where `$app->run()`
-  is called. All requests which don't match an existing file will be forwarded to
-  this document.
-
-### Classic PHP
-
-The classic PHP configuration is used as fallback when no framework was detected. It serves every `.php` file relative to the document root.
-
-This is also used when an `index.php` file was found in the root of your
-project and no `composer.json`.
 
 # Contributing
 

@@ -1,3 +1,4 @@
+<% require "shellwords" %>
 worker_processes 4;
 daemon off;
 
@@ -17,5 +18,16 @@ http {
     index <%= ENV['INDEX_DOCUMENT'] %> index.html index.htm index.xhtml;
 
     include mime.types;
-    include site.conf;
+
+    server {
+        server_name localhost;
+        listen <%= ENV['PORT'] %>;
+        root <%= ENV['DOCUMENT_ROOT'] %>;
+
+        include site.conf;
+
+        <% Shellwords.split(ENV['NGINX_INCLUDES'].to_s).each do |f| %>
+        include /app/<%= f %>;
+        <% end %>
+    }
 }
