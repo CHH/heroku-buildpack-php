@@ -17,5 +17,12 @@ http {
     index <%= ENV['INDEX_DOCUMENT'] %> index.html index.htm index.xhtml;
 
     include mime.types;
-    include site.conf;
+
+    server {
+        server_name localhost;
+        listen <%= ENV['PORT'] %>;
+        root <%= ENV['DOCUMENT_ROOT'] %>;
+
+        include site.conf;
+    }
 }

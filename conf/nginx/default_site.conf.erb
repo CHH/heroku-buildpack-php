@@ -1,12 +1,6 @@
 # Default configuration for non-framework apps
-server {
-    server_name localhost;
-    listen <%= ENV['PORT'] %>;
-    root <%= ENV['DOCUMENT_ROOT'] %>;
-
-    location ~ \.php {
-        include fastcgi_params;
-        fastcgi_param  SCRIPT_FILENAME    $document_root$fastcgi_script_name;
-        fastcgi_pass unix:/tmp/php-fpm.sock;
-    }
+location ~ \.php {
+    include fastcgi_params;
+    fastcgi_param  SCRIPT_FILENAME    $document_root$fastcgi_script_name;
+    fastcgi_pass unix:/tmp/php-fpm.sock;
 }
