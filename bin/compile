@@ -217,10 +217,12 @@ mkdir -p /app/vendor/nginx/logs
 mkdir -p /app/vendor/php/var/log
 mkdir -p /app/vendor/php/run
 
-touch /app/vendor/nginx/logs/access.log /app/vendor/nginx/logs/error.log
-touch /app/vendor/php/var/log/error.log
+mkfifo /app/vendor/nginx/logs/access.log.fifo \
+       /app/vendor/nginx/logs/error.log.fifo
 
-(tail -f -n 0 /app/vendor/nginx/logs/*.log /app/vendor/php/var/log/*.log &)
+mkfifo /app/vendor/php/var/log/error.log.fifo
+
+(tail -f -n 0 /app/vendor/nginx/logs/*.log.fifo /app/vendor/php/var/log/*.log.fifo &)
 
 php-fpm -p "/app/vendor/php"
 nginx -p "/app/vendor/nginx" -c /app/vendor/nginx/conf/nginx.conf

@@ -12,8 +12,8 @@ http {
 
     keepalive_timeout  65;
 
-    error_log logs/error.log notice;
-    access_log logs/access.log;
+    error_log logs/error.log.fifo notice;
+    access_log logs/access.log.fifo;
 
     index <%= ENV['INDEX_DOCUMENT'] %> index.html index.htm index.xhtml;
 
