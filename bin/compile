@@ -102,7 +102,7 @@ curl "http://stedolan.github.com/jq/download/linux64/jq" -L -s -o - > "$HOME/bin
 chmod +x "$HOME/bin/jq"
 
 DEFAULT_PHP="5.5.1"
-DEFAULT_NGINX="1.4.1"
+DEFAULT_NGINX="1.4.2"
 
 PHP_VERSION=$(package_php_version)
 NGINX_VERSION=$(package_nginx_version)
