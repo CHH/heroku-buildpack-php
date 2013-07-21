@@ -6,6 +6,11 @@ events {
     worker_connections  1024;
 }
 
+upstream php {
+    server unix:/tmp/php-fpm.sock max_fails=3 fail_timeout=3s;
+    keepalive 16;
+}
+
 http {
     sendfile    on;
     tcp_nopush  on;
