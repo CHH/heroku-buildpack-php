@@ -222,7 +222,7 @@ mkfifo /app/vendor/nginx/logs/access.log.fifo \
 
 mkfifo /app/vendor/php/var/log/error.log.fifo
 
-(tail -f -n 0 /app/vendor/nginx/logs/*.log.fifo /app/vendor/php/var/log/error.log.fifo &)
+(tail -f -n 0 /app/vendor/nginx/logs/*.log.fifo &)
 (tail -f -n 0 /app/vendor/php/var/log/error.log.fifo &)
 
 php-fpm -p "/app/vendor/php"
