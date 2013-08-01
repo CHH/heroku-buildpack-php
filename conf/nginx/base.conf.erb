@@ -11,8 +11,8 @@ http {
 
     keepalive_timeout  65;
 
-    error_log logs/error.log notice;
-    access_log logs/access.log;
+    error_log logs/error.log.fifo notice;
+    access_log logs/access.log.fifo;
 
     upstream php {
         server unix:/tmp/php-fpm.sock max_fails=3 fail_timeout=3s;
