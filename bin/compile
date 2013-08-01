@@ -217,10 +217,6 @@ mkdir -p /app/vendor/nginx/logs
 mkdir -p /app/vendor/php/var/log
 mkdir -p /app/vendor/php/run
 
-ready_pipe=/tmp/php-buildpack-wait
-rm -f "$ready_pipe"
-mkfifo "\$ready_pipe"
-
 mkfifo /app/vendor/nginx/logs/access.log.fifo \
       /app/vendor/nginx/logs/error.log.fifo
 
