@@ -17,7 +17,7 @@ location @site {
     fastcgi_pass php;
     include fastcgi_params;
     fastcgi_param  SCRIPT_FILENAME $document_root/<%= ENV['INDEX_DOCUMENT'] %>;
-    #fastcgi_buffers 256 4k;
+    fastcgi_buffers 256 4k;
     #uncomment when running via https
     #fastcgi_param HTTPS on;
 }
