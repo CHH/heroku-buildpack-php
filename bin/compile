@@ -136,10 +136,6 @@ cp "$basedir/../conf/nginx/base.conf.erb" "conf/nginx.conf.erb"
 cp "$basedir/../conf/php/php-fpm.conf" "vendor/php/etc/php-fpm.conf"
 cp "$basedir/../conf/php/php.ini" "vendor/php/etc/php.ini"
 
-for cmd in $(package_compile_cmd); do
-    $cmd
-done
-
 for conf in $(package_php_config); do
     echo "$conf" >> "vendor/php/etc/php.ini"
 done
@@ -164,6 +160,12 @@ export PATH=/sbin:/bin:/usr/sbin:/usr/bin:/app/bin:/app/vendor/nginx/sbin:/app/v
 SH
 
 install_composer_deps "$BUILD_DIR"
+
+echo "-----> Running compile commands"
+package_compile_cmd | while read cmd; do
+    echo "       Running '$cmd'"
+    eval $cmd
+done
 
 mkdir -p "bin"
 
