@@ -39,6 +39,9 @@ function install_composer_deps() {
         return 0
     fi
 
+    export COMPOSER_CACHE_DIR=$CACHE_DIR/composer
+    mkdir -p $COMPOSER_CACHE_DIR
+
     echo "-----> Vendoring Composer"
     {
         mkdir -p "$target/vendor/composer/bin"
