@@ -147,6 +147,8 @@ echo "-----> Vendoring binaries into slug"
 cp -R "$VENDORED_NGINX/" "vendor/nginx"
 cp -R "$VENDORED_PHP/" "vendor/php"
 
+export PATH=/app/vendor/nginx/sbin:/app/vendor/php/bin:/app/vendor/php/sbin:$PATH
+
 # Test that all packages were fetched and extracted successfully
 test -d "vendor/nginx"
 test -d "vendor/php"
@@ -163,7 +165,7 @@ cp "$basedir/../conf/php/php.ini" "vendor/php/etc/php.ini"
 
 for cmd in $COMPILE_CMD; do
     echo "-----> Running compile script $cmd"
-    env PATH="$BUILD_DIR/vendor/php/bin:$BUILD_DIR/vendor/nginx/sbin:$PATH" $cmd | indent
+    eval $cmd
 done
 
 for conf in $PHP_EXTRA_CONFIG; do
@@ -196,6 +198,12 @@ export PATH=/sbin:/bin:/usr/sbin:/usr/bin:/app/bin:/app/vendor/nginx/sbin:/app/v
 SH
 
 install_composer_deps "$BUILD_DIR"
+
+echo "-----> Running compile commands"
+package_compile_cmd | while read cmd; do
+    echo "       Running '$cmd'"
+    eval $cmd
+done
 
 mkdir -p "bin"
 
