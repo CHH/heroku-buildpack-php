@@ -112,11 +112,11 @@ export PATH="$HOME/bin:$PATH"
 curl "http://stedolan.github.com/jq/download/linux64/jq" -L -s -o - > "$HOME/bin/jq"
 chmod +x "$HOME/bin/jq"
 
-DEFAULT_PHP="5.5.1"
+DEFAULT_PHP="5.5.3"
 DEFAULT_NGINX="1.4.2"
 
-PHP_VERSION="$DEFAULT_PHP"
-NGINX_VERSION="$DEFAULT_NGINX"
+PHP_VERSION="default"
+NGINX_VERSION="default"
 DOCUMENT_ROOT="/app"
 INDEX_DOCUMENT="index.php"
 FRAMEWORK=
@@ -134,6 +134,14 @@ if [ -f "$BUILD_DIR/composer.json" ]; then
     PHP_EXTRA_CONFIG=$(package_php_config)
     COMPILE_CMD=$(package_compile_cmd)
     NGINX_INCLUDES=$(package_nginx_includes)
+fi
+
+if [ "$PHP_VERSION" = "default" ]; then
+    PHP_VERSION="$DEFAULT_PHP"
+fi
+
+if [ "$NGINX_VERSION" = "default" ]; then
+    NGINX_VERSION="$DEFAULT_NGINX"
 fi
 
 VENDORED_NGINX=$(mktmpdir nginx)

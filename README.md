@@ -137,6 +137,8 @@ Index Document relative to the document root.
 
     "index-document": "app.php"
 
+#### install-dev
+
 #### engines
 
 Set PHP and NGINX versions.
@@ -147,6 +149,9 @@ To launch the app with PHP 5.3.23 and NGINX 1.3.14:
         "php": "5.3.23",
         "nginx": "1.3.14"
     }
+
+Set the version to "default" to use the current default version. The current
+default versions are NGINX `1.4.2` and PHP `5.5.3`.
 
 See also:
 

@@ -76,6 +76,8 @@ build_command=$(cat <<BUILD_CMD
     --enable-fpm \
     --enable-mbstring \
     --enable-pcntl \
+    --enable-sockets \
+    --with-readline \
     --disable-debug \
     && make \
     && make install \
