@@ -14,14 +14,14 @@ function sets_framework_silex() {
 case "$1" in
     detect)
         if [ -f "$BUILD_DIR/composer.json" ] && requires_silex || sets_framework_silex; then
-            echo "-----> Detected Silex App"
+            echo "-----> Detected Silex app"
             exit 0
         else
             exit 1
         fi
         ;;
     compile)
-        echo "-----> Installing Silex Site Config"
+        echo "-----> Setting up Silex app"
         cp "$basedir/../conf/nginx/silex.conf.erb" "$BUILD_DIR/conf/site.conf.erb"
         ;;
 esac
