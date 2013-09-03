@@ -137,8 +137,6 @@ Index Document relative to the document root.
 
     "index-document": "app.php"
 
-#### install-dev
-
 #### engines
 
 Set PHP and NGINX versions.
