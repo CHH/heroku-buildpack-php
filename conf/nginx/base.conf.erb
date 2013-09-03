@@ -1,10 +1,10 @@
-worker_processes 4;
+<% require "shellwords" %>
+worker_processes auto;
 daemon off;
 
 events {
     worker_connections  1024;
 }
-
 http {
     sendfile    on;
     tcp_nopush  on;
@@ -14,8 +14,28 @@ http {
     error_log logs/error.log notice;
     access_log logs/access.log;
 
+    upstream php {
+        server unix:/tmp/php-fpm.sock max_fails=3 fail_timeout=3s;
+        keepalive 16;
+    }
+
+    <% if ENV.has_key? "INDEX_DOCUMENT" and ENV['INDEX_DOCUMENT'] != nil %>
     index <%= ENV['INDEX_DOCUMENT'] %> index.html index.htm index.xhtml;
+    <% else %>
+    index index.html index.htm index.xhtml;
+    <% end %>
 
     include mime.types;
-    include site.conf;
+
+    server {
+        server_name localhost;
+        listen <%= ENV['PORT'] %>;
+        root <%= ENV['DOCUMENT_ROOT'] %>;
+
+        include site.conf;
+
+        <% Shellwords.split(ENV['NGINX_INCLUDES'].to_s).each do |f| %>
+        include /app/<%= f %>;
+        <% end %>
+    }
 }

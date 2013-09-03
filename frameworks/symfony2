@@ -21,7 +21,7 @@ case "$1" in
         fi
         ;;
     compile)
-        echo "-----> Installing Symfony2 Site Config"
+        echo "-----> Setting up Symfony2 app"
         cp "$basedir/../conf/nginx/symfony2.conf.erb" "$BUILD_DIR/conf/site.conf.erb"
         ;;
 esac

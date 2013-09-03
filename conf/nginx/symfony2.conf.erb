@@ -1,23 +1,20 @@
-server {
-    server_name localhost;
-    listen <%= ENV['PORT'] %>;
-    root /app/web;
+root /app/web;
 
-    location / {
-        # try to serve file directly, fallback to rewrite
-        try_files $uri @rewriteapp;
-    }
+location / {
+    # try to serve file directly, fallback to rewrite
+    try_files $uri @rewriteapp;
+}
 
-    location @rewriteapp {
-        # rewrite all to app.php
-        rewrite ^(.*)$ /app.php/$1 last;
-    }
+location @rewriteapp {
+    # rewrite all to app.php
+    rewrite ^(.*)$ /app.php/$1 last;
+}
 
-    location ~ ^/(app|app_dev)\.php(/|$) {
-        fastcgi_pass unix:/tmp/php-fpm.sock;
-        fastcgi_split_path_info ^(.+\.php)(/.*)$;
-        include fastcgi_params;
-        fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;
-        fastcgi_param HTTPS off;
-    }
+location ~ ^/(app|app_dev)\.php(/|$) {
+    fastcgi_pass php;
+    fastcgi_split_path_info ^(.+\.php)(/.*)$;
+    include fastcgi_params;
+    fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;
+    fastcgi_param HTTPS off;
+    fastcgi_buffers 256 4k;
 }
