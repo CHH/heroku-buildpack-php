@@ -13,7 +13,11 @@ function sets_framework_symfony2() {
 
 case "$1" in
     detect)
-        if [ -f "$BUILD_DIR/composer.json" ] && requires_symfony2 || sets_framework_symfony2; then
+        if [ ! -f "$BUILD_DIR/composer.json" ]; then
+            exit 1
+        fi
+
+        if requires_symfony2 || sets_framework_symfony2; then
             echo "-----> Detected Symfony2 App"
             exit 0
         else
