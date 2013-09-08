@@ -211,7 +211,7 @@ SH
 install_composer_deps "$BUILD_DIR"
 
 echo "-----> Running compile commands"
-package_compile_cmd | while read cmd; do
+for cmd in "$COMPILE_CMD"; do
     echo "       Running '$cmd'"
     eval $cmd
 done
