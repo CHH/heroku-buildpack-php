@@ -167,7 +167,7 @@ Add directives to the `php.ini`.
         "short_open_tag=on"
     ]
 
-### nginx-includes
+#### nginx-includes
 
 _Default: []_
 
