@@ -48,6 +48,8 @@ Packaging is done with [Vulcan][] by Heroku. You need to setup a build
 server before packaging. _Note: This requires a Heroku account with a
 valid credit card on file! You don't get charged anything though._
 
+[Vulcan]: http://github.com/heroku/vulcan
+
     vulcan create youruser-buildserver
 
 All packaging scripts are in the `support` directory and are named
