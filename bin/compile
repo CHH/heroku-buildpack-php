@@ -210,11 +210,13 @@ SH
 
 install_composer_deps "$BUILD_DIR"
 
-echo "-----> Running compile commands"
-for cmd in "$COMPILE_CMD"; do
-    echo "       Running '$cmd'"
-    eval $cmd
-done
+if [ -n "$COMPILE_CMD" ]; then
+    echo "-----> Running compile commands"
+    for cmd in "$COMPILE_CMD"; do
+        echo "       Running '$cmd'"
+        eval $cmd
+    done
+fi
 
 mkdir -p "bin"
 
