@@ -214,7 +214,7 @@ if [ -n "$COMPILE_CMD" ]; then
     echo "-----> Running compile commands"
     for cmd in "$COMPILE_CMD"; do
         echo "       Running '$cmd'"
-        eval $cmd
+        eval "$cmd"
     done
 fi
 
