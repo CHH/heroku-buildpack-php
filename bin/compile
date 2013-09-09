@@ -174,11 +174,6 @@ cp "$basedir/../conf/nginx/base.conf.erb" "conf/nginx.conf.erb"
 cp "$basedir/../conf/php/php-fpm.conf" "vendor/php/etc/php-fpm.conf"
 cp "$basedir/../conf/php/php.ini" "vendor/php/etc/php.ini"
 
-for cmd in $COMPILE_CMD; do
-    echo "-----> Running compile script $cmd"
-    eval $cmd
-done
-
 for conf in $PHP_EXTRA_CONFIG; do
     echo "$conf" >> "vendor/php/etc/php.ini"
 done
@@ -213,8 +208,10 @@ install_composer_deps "$BUILD_DIR"
 if [ -n "$COMPILE_CMD" ]; then
     echo "-----> Running compile commands"
     for cmd in "$COMPILE_CMD"; do
-        echo "       Running '$cmd'"
-        eval "$cmd"
+        {
+            echo "Running '$cmd'"
+            eval "$cmd"
+        } | indent
     done
 fi
 
