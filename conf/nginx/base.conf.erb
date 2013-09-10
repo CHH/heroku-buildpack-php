@@ -30,7 +30,6 @@ http {
     server {
         server_name localhost;
         listen <%= ENV['PORT'] %>;
-        root <%= ENV['DOCUMENT_ROOT'] %>;
 
         include site.conf;
 

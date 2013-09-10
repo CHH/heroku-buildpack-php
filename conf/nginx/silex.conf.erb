@@ -1,3 +1,5 @@
+root <%= ENV['DOCUMENT_ROOT'] %>;
+
 #site root is redirected to the app boot script
 location = / {
     try_files @site @site;
