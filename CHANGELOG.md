@@ -1,5 +1,12 @@
 # Changelog
 
+## v0.2.1, 2013-09-10
+
+### Changes
+
+* Fix compile command evaluation
+* #28: Fix NGINX error caused by duplicate `root` directives 
+
 ## v0.2.0, 2013-09-03
 
 ### Changes
