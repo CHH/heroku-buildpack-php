@@ -7,11 +7,6 @@ if [ -z "$manifest_type" ]; then
     exit 1
 fi
 
-if [ -z "$S3_BUCKET" ]; then
-    echo "S3_BUCKET must be set" >&2
-    exit 1
-fi
-
 indent() {
     local expr='s/^/       /'
 
@@ -23,6 +18,13 @@ indent() {
 }
 
 basedir="$( cd -P "$( dirname "$0" )" && pwd )"
+
+source "$basedir/../conf/buildpack.conf"
+
+if [ -z "$S3_BUCKET" ]; then
+    echo "S3_BUCKET must be set" >&2
+    exit 1
+fi
 
 # make a temp directory
 tempdir="$( mktemp -t php_XXXX )"
