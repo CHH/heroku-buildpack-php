@@ -1,5 +1,20 @@
 # Changelog
 
+## v0.3.0, yyyy-mm-dd
+
+### Changes
+
+* Add support for wildcards in engine versions, e.g. `5.4.*` selects the
+  latest available version of PHP 5.4. Staying up to date has never been easier!
+* Made document root overridable for Symfony apps
+* Rebuilt 5.5, 5.4.19 and 5.3.27 to include the [phpredis][], mongo, exif,
+  readline, sockets, readline and bcmath extensions.
+* Enable extensions in the `.ini` files distributed with the binaries.
+* Added `php-includes` config directive for `composer.json` for
+  including additional PHP config files.
+
+[phpredis]: http://github.com/nicolasff/phpredis
+
 ## v0.2.1, 2013-09-10
 
 ### Changes
