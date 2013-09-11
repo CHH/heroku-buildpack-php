@@ -94,6 +94,10 @@ function package_php_config() {
     jq --raw-output '.extra.heroku["php-config"] // [] | .[]' < "$BUILD_DIR/composer.json"
 }
 
+function package_php_includes() {
+    jq --raw-output '.extra.heroku["php-includes"] // [] | .[]' < "$BUILD_DIR/composer.json"
+}
+
 function package_nginx_includes() {
     jq --raw-output '.extra.heroku["nginx-includes"] // [] | .[]' < "$BUILD_DIR/composer.json"
 }
@@ -124,6 +128,7 @@ DOCUMENT_ROOT="/app"
 INDEX_DOCUMENT="index.php"
 FRAMEWORK=
 PHP_EXTRA_CONFIG=
+PHP_INCLUDES=
 COMPILE_CMD=
 NGINX_INCLUDES=
 
@@ -135,6 +140,7 @@ if [ -f "$BUILD_DIR/composer.json" ]; then
     INDEX_DOCUMENT=$(package_index_file)
     FRAMEWORK=$(package_framework)
     PHP_EXTRA_CONFIG=$(package_php_config)
+    PHP_INCLUDES=$(package_php_includes)
     COMPILE_CMD=$(package_compile_cmd)
     NGINX_INCLUDES=$(package_nginx_includes)
 fi
@@ -189,6 +195,10 @@ cp "$basedir/../conf/php/php.ini" "vendor/php/etc/php.ini"
 
 for conf in $PHP_EXTRA_CONFIG; do
     echo "$conf" >> "vendor/php/etc/php.ini"
+done
+
+for include in $PHP_INCLUDES; do
+    cp "$BUILD_DIR/$include" "vendor/php/etc/conf.d"
 done
 
 for f in "$basedir/../frameworks/"*; do
