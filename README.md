@@ -151,6 +151,10 @@ To launch the app with PHP 5.3.23 and NGINX 1.3.14:
 Set the version to "default" to use the current default version. The current
 default versions are NGINX `1.4.2` and PHP `5.5.3`.
 
+The version identifiers can also include wildcards, e.g. `5.4.*`. At the
+time of writing, PHP `5.4.19` would be used in this case. This also
+works for NGINX.
+
 See also:
 
 * [Available NGINX Versions][]
