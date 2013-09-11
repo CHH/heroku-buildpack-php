@@ -83,11 +83,11 @@ function package_framework() {
 }
 
 function package_nginx_version() {
-    jq --raw-output ".extra.heroku.engines.nginx // \"$DEFAULT_NGINX\"" < "$BUILD_DIR/composer.json"
+    jq --raw-output ".extra.heroku.engines.nginx // \"default\"" < "$BUILD_DIR/composer.json"
 }
 
 function package_php_version() {
-    jq --raw-output ".extra.heroku.engines.php // \"$DEFAULT_PHP\"" < "$BUILD_DIR/composer.json"
+    jq --raw-output ".extra.heroku.engines.php // \"default\"" < "$BUILD_DIR/composer.json"
 }
 
 function package_php_config() {
@@ -151,6 +151,16 @@ fi
 
 if [ "$NGINX_VERSION" = "default" ]; then
     NGINX_VERSION="$DEFAULT_NGINX"
+fi
+
+# Look for ".*" versions, match them against all available versions
+# and select the latest version which was found.
+if echo "$PHP_VERSION" | grep '\*' &>/dev/null; then
+    PHP_VERSION=$(echo "$AVAILABLE_PHP_VERSIONS" | grep "^$PHP_VERSION$" | sort -r | head -n1)
+fi
+
+if echo "$NGINX_VERSION" | grep '\*' &>/dev/null; then
+    NGINX_VERSION=$(echo "$AVAILABLE_NGINX_VERSIONS" | grep "^$NGINX_VERSION$" | sort -r | head -n1)
 fi
 
 VENDORED_NGINX=$(mktmpdir nginx)
