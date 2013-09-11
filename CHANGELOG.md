@@ -12,6 +12,8 @@
 * Enable extensions in the `.ini` files distributed with the binaries.
 * Added `php-includes` config directive for `composer.json` for
   including additional PHP config files.
+* PHP, NGINX and Composer binaries are now cached and revalidated
+  against MD5 hashes. This should provide notably faster deployments.
 
 [phpredis]: http://github.com/nicolasff/phpredis
 
