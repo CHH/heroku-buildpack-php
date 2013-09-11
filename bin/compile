@@ -11,6 +11,12 @@ if [ -n "$BUILDPACK_DEBUG" ]; then
     set -x
 fi
 
+BUILD_DIR="$1"
+CACHE_DIR="$2"
+
+cd "$BUILD_DIR"
+mkdir -p "$CACHE_DIR/package"
+
 function fetch_package() {
     local engine="$1"
     local version="$2"
@@ -18,9 +24,22 @@ function fetch_package() {
 
     mkdir -p "$location"
 
-    local package="http://${S3_BUCKET}.s3.amazonaws.com/package/${engine}-${version}.tgz"
+    local package="${engine}-${version}"
+    local checksum_url="http://${S3_BUCKET}.s3.amazonaws.com/package/${package}.md5"
+    local package_url="http://${S3_BUCKET}.s3.amazonaws.com/package/${package}.tgz"
+    local checksum=$(curl "$checksum_url" 2> /dev/null)
+    local cache_checksum=
 
-    curl "$package" -L -s -o - | tar xzf - -C "$location"
+    if [ -f "$CACHE_DIR/package/${package}.md5" ]; then
+        local cache_checksum=$(cat "$CACHE_DIR/package/${package}.md5")
+    fi
+
+    if [ "$cache_checksum" != "$checksum" ]; then
+        curl "$package_url" -L -s -o - > "$CACHE_DIR/package/${package}.tgz"
+        echo "$checksum" > "$CACHE_DIR/package/${package}.md5"
+    fi
+
+    tar xzf "$CACHE_DIR/package/${package}.tgz" -C "$location"
 }
 
 function indent() {
@@ -101,11 +120,6 @@ function package_nginx_includes() {
 function package_compile_cmd() {
     jq --raw-output '.extra.heroku["compile"] // [] | .[]' < "$BUILD_DIR/composer.json"
 }
-
-BUILD_DIR="$1"
-CACHE_DIR="$2"
-
-cd "$BUILD_DIR"
 
 # Download jq binary for JSON processing
 export PATH="$HOME/bin:$PATH"
