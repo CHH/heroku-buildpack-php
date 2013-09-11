@@ -1,4 +1,8 @@
+<% if ENV.has_key? "DOCUMENT_ROOT" and ENV['DOCUMENT_ROOT'] != nil %>
+root <%= ENV['DOCUMENT_ROOT'] %>;
+<% else %>
 root /app/web;
+<% end %>
 
 location / {
     # try to serve file directly, fallback to rewrite
