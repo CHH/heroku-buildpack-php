@@ -147,10 +147,6 @@ if [ "$NGINX_VERSION" = "default" ]; then
     NGINX_VERSION="$DEFAULT_NGINX"
 fi
 
-if echo "$PHP_VERSION" | grep '\*' &>/dev/null; then
-    PHP_VERSION=$(echo "$AVAILABLE_PHP_VERSIONS" | grep "^$PHP_VERSION$" | sort -r | head -n1)
-fi
-
 VENDORED_NGINX=$(mktmpdir nginx)
 VENDORED_PHP=$(mktmpdir php)
 
