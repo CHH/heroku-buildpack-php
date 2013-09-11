@@ -66,7 +66,9 @@ function install_composer_deps() {
 
     echo "-----> Vendoring Composer"
     if [ -f "$CACHE_DIR/composer.phar" ]; then
-        "$BUILD_DIR/vendor/php/bin/php" "$CACHE_DIR/composer.phar" self-update
+        {
+            "$BUILD_DIR/vendor/php/bin/php" "$CACHE_DIR/composer.phar" self-update
+        } | indent
     else
         {
             curl -L "http://getcomposer.org/composer.phar" > "$CACHE_DIR/composer.phar"
