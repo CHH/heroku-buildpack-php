@@ -64,5 +64,6 @@ s3cmd put --verbose \
     "s3://$S3_BUCKET/package/nginx-${nginx_version}.tgz"
 
 "$basedir/manifest" nginx
+"$basedir/package-checksum" "nginx-${nginx_version}"
 
 echo "-----> Done building NGINX package!"

@@ -123,5 +123,6 @@ s3cmd put --verbose \
     "s3://$S3_BUCKET/package/php-${php_version}.tgz"
 
 "$basedir/manifest" php
+"$basedir/package-checksum" "php-${php_version}"
 
 echo "-----> Done building PHP package!"

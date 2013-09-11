@@ -10,7 +10,7 @@ if [ -z "$S3_BUCKET" ]; then
     exit $E_S3_BUCKET_MISSING
 fi
 
-tempdir="$( mktemp -t nginx_xxxx )"
+tempdir="$( mktemp -t libmemcached_xxxx )"
 rm -rf $tempdir
 mkdir -p $tempdir
 cd $tempdir
