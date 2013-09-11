@@ -198,7 +198,7 @@ for conf in $PHP_EXTRA_CONFIG; do
 done
 
 for include in $PHP_INCLUDES; do
-    cp "$target/$include" "vendor/php/etc/conf.d"
+    cp "$BUILD_DIR/$include" "vendor/php/etc/conf.d"
 done
 
 for f in "$basedir/../frameworks/"*; do
