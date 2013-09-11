@@ -115,6 +115,9 @@ chmod +x "$HOME/bin/jq"
 DEFAULT_PHP="5.5.3"
 DEFAULT_NGINX="1.4.2"
 
+AVAILABLE_PHP_VERSIONS=$(curl "http://${S3_BUCKET}.s3.amazonaws.com/manifest.php" 2> /dev/null)
+AVAILABLE_NGINX_VERSIONS=$(curl "http://${S3_BUCKET}.s3.amazonaws.com/manifest.nginx" 2> /dev/null)
+
 PHP_VERSION="default"
 NGINX_VERSION="default"
 DOCUMENT_ROOT="/app"
@@ -142,6 +145,10 @@ fi
 
 if [ "$NGINX_VERSION" = "default" ]; then
     NGINX_VERSION="$DEFAULT_NGINX"
+fi
+
+if echo "$PHP_VERSION" | grep '\*' &>/dev/null; then
+    PHP_VERSION=$(echo "$AVAILABLE_PHP_VERSIONS" | grep "^$PHP_VERSION$" | sort -r | head -n1)
 fi
 
 VENDORED_NGINX=$(mktmpdir nginx)
