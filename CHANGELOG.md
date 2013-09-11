@@ -8,7 +8,7 @@
   latest available version of PHP 5.4. Staying up to date has never been easier!
 * Made document root overridable for Symfony apps
 * Rebuilt 5.5, 5.4.19 and 5.3.27 to include the [phpredis][], mongo, exif,
-  readline, sockets, readline and bcmath extensions.
+  readline, sockets and bcmath extensions.
 * Enable extensions in the `.ini` files distributed with the binaries.
 * Added `php-includes` config directive for `composer.json` for
   including additional PHP config files.
