@@ -37,6 +37,8 @@ function fetch_package() {
     if [ "$cache_checksum" != "$checksum" ]; then
         curl "$package_url" -L -s -o - > "$CACHE_DIR/package/${package}.tgz"
         echo "$checksum" > "$CACHE_DIR/package/${package}.md5"
+    else
+        echo "Checksums match. Fetching from cache." | indent
     fi
 
     tar xzf "$CACHE_DIR/package/${package}.tgz" -C "$location"
