@@ -16,11 +16,6 @@ if [ -z "$nginx_version" ]; then
     exit $E_ARG_MISSING
 fi
 
-if [ -z "$S3_BUCKET" ]; then
-    echo "Must set S3_BUCKET environment variable" >&2
-    exit $E_S3_BUCKET_MISSING
-fi
-
 if [ -z "$NGINX_ZLIB_VERSION" ]; then
     NGINX_ZLIB_VERSION=1.2.8
 fi

@@ -2,7 +2,7 @@
 
 ## What makes it unique?
 
-* **Faster** deployments, because the runtime environment is built from precompiled binaries via Heroku's "vulcan"
+* **Fast** deployments, because the runtime environment is built from precompiled binaries via Heroku's "vulcan"
 * Supports PHP 5.3, 5.4 and 5.5
 * Uses the memory of the dyno more efficiently by going with NGINX and PHP-FPM.
 * Supports Composer out of the box
