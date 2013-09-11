@@ -62,13 +62,19 @@ function install_composer_deps() {
 
     export COMPOSER_CACHE_DIR=$CACHE_DIR/composer
     mkdir -p $COMPOSER_CACHE_DIR
+    mkdir -p "$target/vendor/composer/bin"
 
     echo "-----> Vendoring Composer"
-    {
-        mkdir -p "$target/vendor/composer/bin"
-        curl -L "http://getcomposer.org/composer.phar" > "$target/vendor/composer/bin/composer.phar"
-        chmod a+x "$target/vendor/composer/bin/composer.phar"
-    } | indent
+    if [ -f "$CACHE_DIR/composer.phar" ]; then
+        "$BUILD_DIR/vendor/php/bin/php" "$CACHE_DIR/composer.phar" self-update
+    else
+        {
+            curl -L "http://getcomposer.org/composer.phar" > "$CACHE_DIR/composer.phar"
+            chmod a+x "$CACHE_DIR/composer.phar"
+        } | indent
+    fi
+
+    cp "$CACHE_DIR/composer.phar" "$target/vendor/composer/bin/"
 
     echo "-----> Installing application dependencies with Composer"
     {
