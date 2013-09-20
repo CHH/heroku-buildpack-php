@@ -1,0 +1,55 @@
+#!/usr/bin/env bash
+
+set -e
+
+basedir="$( cd -P "$( dirname "$0" )" && pwd )"
+source "$basedir/../../conf/buildpack.conf"
+
+php_series="$1"
+phpredis_version="$2"
+zend_api_version=${PHP_MODULE_API_VERSIONS["$php_series"]}
+
+echo "-----> Building phpredis v${phpredis_version} for PHP module API version ${zend_api_version}"
+
+php_versions=$(curl "http://${S3_BUCKET}.s3.amazonaws.com/manifest.php" 2>/dev/null)
+php_version=$(\
+    echo "$php_versions" \
+    | grep "^${php_series}.*$" | sort -r | head -n1)
+
+tempdir="$( mktemp -t phpredis_xxxx )"
+rm -rf $tempdir
+mkdir -p $tempdir
+cd $tempdir
+
+mkdir -p "$tempdir/php-${php_version}"
+php_package="http://${S3_BUCKET}.s3.amazonaws.com/package/php-${php_version}.tgz"
+
+curl -Lo - "https://github.com/nicolasff/phpredis/archive/${phpredis_version}.tar.gz" \
+    | tar -xzv
+
+build_cmd=$(cat <<EOF
+    mkdir -p /app/vendor/php \
+    && mkdir -p "/tmp/out/lib/php/extensions/no-debug-non-zts-${zend_api_version}" \
+    && curl -L "$php_package" | tar -xzv -C /app/vendor/php \
+    && cd phpredis-${phpredis_version} \
+    && /app/vendor/php/bin/phpize \
+    && ./configure \
+        --with-php-config=/app/vendor/php/bin/php-config \
+        --enable-redis \
+    && make \
+    && cp modules/redis.so "/tmp/out/lib/php/extensions/no-debug-non-zts-${zend_api_version}" 
+EOF
+)
+
+vulcan build --verbose \
+    --name phpredis \
+    --prefix "/tmp/out" \
+    --source "$tempdir" \
+    --output "$tempdir/phpredis.tgz" \
+    --command "$build_cmd"
+
+s3cmd put --verbose \
+    --acl-public \
+    "$tempdir/phpredis.tgz" \
+    "s3://$S3_BUCKET/package/ext/${zend_api_version}/phpredis-${phpredis_version}.tgz"
+
