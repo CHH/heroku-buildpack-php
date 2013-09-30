@@ -37,6 +37,7 @@ echo "-----> Manifest for $manifest_type"
 s3cmd ls "s3://$S3_BUCKET/package/" \
     | awk '{ print $4 }' \
     | sed "s/^s3:\/\/$S3_BUCKET\/package\///" \
+    | grep "\.tgz$" \
     | grep "${manifest_type}" \
     | sed -e "s/${manifest_type}-\([0-9.]*\)\\.tgz/\\1/" \
     | awk 'BEGIN {FS="."} {printf("%03d.%03d.%03d %s\n",$1,$2,$3,$0)}' | sort -r | cut -d" " -f2 \
