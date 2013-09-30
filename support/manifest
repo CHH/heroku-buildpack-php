@@ -37,6 +37,7 @@ echo "-----> Manifest for $manifest_type"
 s3cmd ls "s3://$S3_BUCKET/package/" \
     | awk '{ print $4 }' \
     | sed "s/^s3:\/\/$S3_BUCKET\/package\///" \
+    | grep "\.tgz$" \
     | grep "${manifest_type}" \
     | grep -v -e ".md5" \
     | sed -e "s/${manifest_type}-\([0-9.]*\)\\.tgz/\\1/" \
