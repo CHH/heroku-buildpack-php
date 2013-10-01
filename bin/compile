@@ -189,7 +189,7 @@ if [ -f "$BUILD_DIR/composer.json" ]; then
     PHP_EXTRA_CONFIG=$(package_php_config)
     COMPILE_CMD=$(package_compile_cmd)
     NGINX_INCLUDES=$(package_nginx_includes)
-    NEWRELIC_LICENSE=$(package_newrelic)
+    NEWRELIC_LICENSE=$(package_newrelic_license)
 fi
 
 if [ "$PHP_VERSION" = "default" ]; then
