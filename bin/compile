@@ -102,7 +102,7 @@ function mktmpdir() {
 function install_newrelic() {
     echo "-----> Enabling Newrelic support"
 
-    phpize --version
+    php-config --extension-dir
 
     local version="$1"
     local license="$2"
