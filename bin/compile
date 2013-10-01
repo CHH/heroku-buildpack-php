@@ -99,6 +99,27 @@ function mktmpdir() {
     echo $dir
 }
 
+function install_newrelic() {
+    echo "-----> Enabling Newrelic support"
+
+    local php_api_version=$(basename "$(php-config --extension-dir)" | tr '-' ' ' | cut -f 5 -d ' ')
+    local version="$1"
+    local cwd=$(pwd)
+    local ext_dir=$BUILD_DIR/vendor/php/lib/php/extensions/no-debug-non-zts-${php_api_version}
+    local tempdir=$(mktmpdir "newrelic")
+    cd "$tempdir"
+
+    curl --silent -L "http://download.newrelic.com/php_agent/archive/${version}/newrelic-php5-${version}-linux.tar.gz" | tar xz
+    mkdir -p $BUILD_DIR/vendor/newrelic/{bin,etc}
+    cd "newrelic-php5-${version}-linux"
+    cp -f "daemon/newrelic-daemon.x64" $BUILD_DIR/vendor/newrelic/bin/newrelic-daemon
+    cp -f "agent/x64/newrelic-${php_api_version}.so" "${ext_dir}/newrelic.so"
+
+    cp "$basedir/../conf/php/newrelic.ini" "$BUILD_DIR/vendor/php/etc/conf.d/newrelic.ini"
+
+    cd "$cwd"
+}
+
 function package_document_root() {
     local doc_root=$(jq --raw-output '.extra.heroku["document-root"] // ""' < "$BUILD_DIR/composer.json")
     echo "/app/$doc_root"
@@ -132,6 +153,16 @@ function package_compile_cmd() {
     jq --raw-output '.extra.heroku["compile"] // [] | .[]' < "$BUILD_DIR/composer.json"
 }
 
+function package_newrelic_enabled() {
+    local val=$(jq --raw-output '.extra.heroku["newrelic"] // false' < "$BUILD_DIR/composer.json")
+
+    if [ "$val" = "true" ]; then
+        return 0
+    else
+        return 1
+    fi
+}
+
 # Download jq binary for JSON processing
 export PATH="$HOME/bin:$PATH"
 curl "http://stedolan.github.com/jq/download/linux64/jq" -L -s -o - > "$HOME/bin/jq"
@@ -151,6 +182,7 @@ FRAMEWORK=
 PHP_EXTRA_CONFIG=
 COMPILE_CMD=
 NGINX_INCLUDES=
+NEWRELIC_VERSION=4.0.5.18
 
 # Read config variables from composer.json if it exists
 if [ -f "$BUILD_DIR/composer.json" ]; then
@@ -196,7 +228,11 @@ echo "-----> Vendoring binaries into slug"
 cp -R "$VENDORED_NGINX/" "vendor/nginx"
 cp -R "$VENDORED_PHP/" "vendor/php"
 
-export PATH=/app/vendor/nginx/sbin:/app/vendor/php/bin:/app/vendor/php/sbin:$PATH
+export PATH=$BUILD_DIR/vendor/nginx/sbin:$BUILD_DIR/vendor/php/bin:$BUILD_DIR/vendor/php/sbin:$PATH
+
+if [ -f "$BUILD_DIR/composer.json" ] && package_newrelic_enabled; then
+    install_newrelic "$NEWRELIC_VERSION"
+fi
 
 # Test that all packages were fetched and extracted successfully
 test -d "vendor/nginx"
@@ -216,6 +252,7 @@ for conf in $PHP_EXTRA_CONFIG; do
     echo "$conf" >> "vendor/php/etc/php.ini"
 done
 
+# Detect PHP framework
 for f in "$basedir/../frameworks/"*; do
     if "$f" detect "$BUILD_DIR"; then
         FRAMEWORK="$f"
@@ -265,6 +302,10 @@ done
 export DOCUMENT_ROOT="$DOCUMENT_ROOT"
 export INDEX_DOCUMENT="$INDEX_DOCUMENT"
 export NGINX_INCLUDES="$NGINX_INCLUDES"
+
+if [ -n "\$NEW_RELIC_LICENSE_KEY" ]; then
+    echo "newrelic.license=\"\$NEW_RELIC_LICENSE_KEY\"" > /app/vendor/php/etc/conf.d/newrelic_license.ini
+fi
 
 erb conf/nginx.conf.erb > /app/vendor/nginx/conf/nginx.conf
 erb conf/site.conf.erb > /app/vendor/nginx/conf/site.conf
