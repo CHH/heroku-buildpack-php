@@ -100,6 +100,8 @@ function mktmpdir() {
 }
 
 function install_newrelic() {
+    echo "-----> Enabling Newrelic support"
+
     local version="$1"
     local license="$2"
     local cwd=$(pwd)
@@ -107,8 +109,6 @@ function install_newrelic() {
     local ext_dir=$(php-config --extension-dir)
     local tempdir=$(mktmpdir "newrelic")
     cd "$tempdir"
-
-    echo "-----> Enabling Newrelic support"
 
     curl -L "http://download.newrelic.com/php_agent/archive/${version}/newrelic-php5-${version}-linux.tar.gz" | tar xz
     cd "newrelic-php5-${version}-linux"
@@ -224,7 +224,7 @@ echo "-----> Vendoring binaries into slug"
 cp -R "$VENDORED_NGINX/" "vendor/nginx"
 cp -R "$VENDORED_PHP/" "vendor/php"
 
-export PATH=/app/vendor/nginx/sbin:/app/vendor/php/bin:/app/vendor/php/sbin:$PATH
+export PATH=$BUILD_DIR/vendor/nginx/sbin:$BUILD_DIR/vendor/php/bin:$BUILD_DIR/vendor/php/sbin:$PATH
 
 # Install Newrelic addon
 if [ -n "$NEWRELIC_LICENSE" ]; then
