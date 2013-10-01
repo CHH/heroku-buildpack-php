@@ -252,6 +252,7 @@ for conf in $PHP_EXTRA_CONFIG; do
     echo "$conf" >> "vendor/php/etc/php.ini"
 done
 
+# Detect PHP framework
 for f in "$basedir/../frameworks/"*; do
     if "$f" detect "$BUILD_DIR"; then
         FRAMEWORK="$f"
