@@ -92,6 +92,27 @@ function install_composer_deps() {
     } | indent
 }
 
+function install_newrelic() {
+    local version="$1"
+    local license="$2"
+    local cwd=$(pwd)
+    local php_api_version=$(/app/vendor/php/bin/phpize --version | grep "Zend Module Api No" | tr -d ' ' | cut -f 2 -d ':')
+    local ext_dir=$(php-config --extension-dir)
+    local tempdir=$(mktempdir "newrelic")
+    cd "$tempdir"
+
+    echo "-----> Enabling Newrelic support"
+
+    curl -L "http://download.newrelic.com/php_agent/archive/${version}/newrelic-php5-${version}-linux.tar.gz" | tar xz
+    cd "newrelic-php5-${version}-linux"
+    cp -f "agent/x64/newrelic-${php_api_version}.so" "${ext_dir}/newrelic.so"
+
+    echo "extension=newrelic.so" > /app/vendor/php/etc/conf.d/newrelic.ini
+    echo "newrelic.license=$license" >> /app/vendor/php/etc/conf.d/newrelic.ini
+
+    cd "$cwd"
+}
+
 function mktmpdir() {
     dir=$(mktemp -t php-$1-XXXX)
     rm -rf $dir
@@ -132,6 +153,10 @@ function package_compile_cmd() {
     jq --raw-output '.extra.heroku["compile"] // [] | .[]' < "$BUILD_DIR/composer.json"
 }
 
+function package_newrelic_license() {
+    jq --raw-output '.extra.heroku["newrelic"] // ""' < "$BUILD_DIR/composer.json"
+}
+
 # Download jq binary for JSON processing
 export PATH="$HOME/bin:$PATH"
 curl "http://stedolan.github.com/jq/download/linux64/jq" -L -s -o - > "$HOME/bin/jq"
@@ -151,6 +176,8 @@ FRAMEWORK=
 PHP_EXTRA_CONFIG=
 COMPILE_CMD=
 NGINX_INCLUDES=
+NEWRELIC_LICENSE=
+NEWRELIC_VERSION=4.0.5.18
 
 # Read config variables from composer.json if it exists
 if [ -f "$BUILD_DIR/composer.json" ]; then
@@ -162,6 +189,7 @@ if [ -f "$BUILD_DIR/composer.json" ]; then
     PHP_EXTRA_CONFIG=$(package_php_config)
     COMPILE_CMD=$(package_compile_cmd)
     NGINX_INCLUDES=$(package_nginx_includes)
+    NEWRELIC_LICENSE=$(package_newrelic)
 fi
 
 if [ "$PHP_VERSION" = "default" ]; then
@@ -195,6 +223,11 @@ echo "-----> Vendoring binaries into slug"
 [ ! -d "$BUILD_DIR/vendor" ] && mkdir -p "$BUILD_DIR/vendor"
 cp -R "$VENDORED_NGINX/" "vendor/nginx"
 cp -R "$VENDORED_PHP/" "vendor/php"
+
+# Install Newrelic addon
+if [ -n "$NEWRELIC_LICENSE" ]; then
+    install_newrelic "$NEWRELIC_VERSION" "$NEWRELIC_LICENSE"
+fi
 
 export PATH=/app/vendor/nginx/sbin:/app/vendor/php/bin:/app/vendor/php/sbin:$PATH
 
