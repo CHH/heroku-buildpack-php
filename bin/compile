@@ -102,6 +102,8 @@ function mktmpdir() {
 function install_newrelic() {
     echo "-----> Enabling Newrelic support"
 
+    phpize --version
+
     local version="$1"
     local license="$2"
     local cwd=$(pwd)
@@ -110,7 +112,7 @@ function install_newrelic() {
     local tempdir=$(mktmpdir "newrelic")
     cd "$tempdir"
 
-    curl -L "http://download.newrelic.com/php_agent/archive/${version}/newrelic-php5-${version}-linux.tar.gz" | tar xz
+    curl --silent -L "http://download.newrelic.com/php_agent/archive/${version}/newrelic-php5-${version}-linux.tar.gz" | tar xz
     cd "newrelic-php5-${version}-linux"
     cp -f "agent/x64/newrelic-${php_api_version}.so" "${ext_dir}/newrelic.so"
 
