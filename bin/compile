@@ -231,7 +231,7 @@ cp -R "$VENDORED_PHP/" "vendor/php"
 export PATH=$BUILD_DIR/vendor/nginx/sbin:$BUILD_DIR/vendor/php/bin:$BUILD_DIR/vendor/php/sbin:$PATH
 
 if [ -f "$BUILD_DIR/composer.json" ] && package_newrelic_enabled; then
-    install_newrelic "$NEWRELIC_VERSION" "$NEWRELIC_LICENSE"
+    install_newrelic "$NEWRELIC_VERSION"
 fi
 
 # Test that all packages were fetched and extracted successfully
