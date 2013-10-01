@@ -106,7 +106,7 @@ function install_newrelic() {
     local version="$1"
     local license="$2"
     local cwd=$(pwd)
-    local ext_dir=$(php-config --extension-dir)
+    local ext_dir=$BUILD_DIR/vendor/php/lib/php/extensions/no-debug-non-zts-${php_api_version}
     local tempdir=$(mktmpdir "newrelic")
     cd "$tempdir"
 
@@ -114,8 +114,8 @@ function install_newrelic() {
     cd "newrelic-php5-${version}-linux"
     cp -f "agent/x64/newrelic-${php_api_version}.so" "${ext_dir}/newrelic.so"
 
-    echo "extension=newrelic.so" > /app/vendor/php/etc/conf.d/newrelic.ini
-    echo "newrelic.license=$license" >> /app/vendor/php/etc/conf.d/newrelic.ini
+    echo "extension=newrelic.so" > $BUILD_DIR/vendor/php/etc/conf.d/newrelic.ini
+    echo "newrelic.license=$license" >> $BUILD_DIR/vendor/php/etc/conf.d/newrelic.ini
 
     cd "$cwd"
 }
