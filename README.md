@@ -171,6 +171,17 @@ Add directives to the `php.ini`.
         "short_open_tag=on"
     ]
 
+#### php-includes
+
+_Default: []_
+
+Include additional .ini files that should be parsed after the default php.ini. File paths
+are treated relative to the app root.
+
+Example:
+
+    "php-includes": ["etc/php.ini"]
+
 #### nginx-includes
 
 _Default: []_
