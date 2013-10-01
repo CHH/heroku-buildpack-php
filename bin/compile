@@ -102,12 +102,10 @@ function mktmpdir() {
 function install_newrelic() {
     echo "-----> Enabling Newrelic support"
 
-    php-config --extension-dir
-
+    local php_api_version=$(basename "$(php-config --extension-dir)" | tr '-' ' ' | cut -f 5 -d ' ')
     local version="$1"
     local license="$2"
     local cwd=$(pwd)
-    local php_api_version=$(phpize --version | grep "Zend Module Api No" | tr -d ' ' | cut -f 2 -d ':')
     local ext_dir=$(php-config --extension-dir)
     local tempdir=$(mktmpdir "newrelic")
     cd "$tempdir"
