@@ -104,7 +104,6 @@ function install_newrelic() {
 
     local php_api_version=$(basename "$(php-config --extension-dir)" | tr '-' ' ' | cut -f 5 -d ' ')
     local version="$1"
-    local license="$2"
     local cwd=$(pwd)
     local ext_dir=$BUILD_DIR/vendor/php/lib/php/extensions/no-debug-non-zts-${php_api_version}
     local tempdir=$(mktmpdir "newrelic")
@@ -115,7 +114,6 @@ function install_newrelic() {
     cp -f "agent/x64/newrelic-${php_api_version}.so" "${ext_dir}/newrelic.so"
 
     echo "extension=newrelic.so" > $BUILD_DIR/vendor/php/etc/conf.d/newrelic.ini
-    echo "newrelic.license=$license" >> $BUILD_DIR/vendor/php/etc/conf.d/newrelic.ini
 
     cd "$cwd"
 }
@@ -153,8 +151,14 @@ function package_compile_cmd() {
     jq --raw-output '.extra.heroku["compile"] // [] | .[]' < "$BUILD_DIR/composer.json"
 }
 
-function package_newrelic_license() {
-    jq --raw-output '.extra.heroku["newrelic"] // ""' < "$BUILD_DIR/composer.json"
+function package_newrelic_enabled() {
+    local val=$(jq --raw-output '.extra.heroku["newrelic"] // false' < "$BUILD_DIR/composer.json")
+
+    if [ "$val" = "true" ]; then
+        return 0
+    else
+        return 1
+    fi
 }
 
 # Download jq binary for JSON processing
@@ -176,7 +180,6 @@ FRAMEWORK=
 PHP_EXTRA_CONFIG=
 COMPILE_CMD=
 NGINX_INCLUDES=
-NEWRELIC_LICENSE=
 NEWRELIC_VERSION=4.0.5.18
 
 # Read config variables from composer.json if it exists
@@ -189,7 +192,6 @@ if [ -f "$BUILD_DIR/composer.json" ]; then
     PHP_EXTRA_CONFIG=$(package_php_config)
     COMPILE_CMD=$(package_compile_cmd)
     NGINX_INCLUDES=$(package_nginx_includes)
-    NEWRELIC_LICENSE=$(package_newrelic_license)
 fi
 
 if [ "$PHP_VERSION" = "default" ]; then
@@ -226,8 +228,7 @@ cp -R "$VENDORED_PHP/" "vendor/php"
 
 export PATH=$BUILD_DIR/vendor/nginx/sbin:$BUILD_DIR/vendor/php/bin:$BUILD_DIR/vendor/php/sbin:$PATH
 
-# Install Newrelic addon
-if [ -n "$NEWRELIC_LICENSE" ]; then
+if [ -f "$BUILD_DIR/composer.json" ] && package_newrelic_enabled; then
     install_newrelic "$NEWRELIC_VERSION" "$NEWRELIC_LICENSE"
 fi
 
@@ -298,6 +299,10 @@ done
 export DOCUMENT_ROOT="$DOCUMENT_ROOT"
 export INDEX_DOCUMENT="$INDEX_DOCUMENT"
 export NGINX_INCLUDES="$NGINX_INCLUDES"
+
+if [ -n "\$NEW_RELIC_LICENSE_KEY" ]; then
+    echo "newrelic.license=\"\$NEW_RELIC_LICENSE_KEY\"" > /app/vendor/php/etc/conf.d/newrelic_license.ini
+fi
 
 erb conf/nginx.conf.erb > /app/vendor/nginx/conf/nginx.conf
 erb conf/site.conf.erb > /app/vendor/nginx/conf/site.conf
