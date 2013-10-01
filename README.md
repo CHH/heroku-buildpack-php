@@ -196,6 +196,16 @@ Run console commands on slug compilation.
 
 _Note: pecl is not runnable this way._
 
+#### newrelic
+
+_Default: false_
+
+Enable instrumentation support via [New Relic](http://newrelic.com).
+It's recommended to add the New Relic addon to your Heroku app, but you
+can also set your license key manually by setting the NEW_RELIC_LICENSE_KEY` config var via `heroku config:set`
+
+    "newrelic": true
+
 # Contributing
 
 Please see the [CONTRIBUTING](/CONTRIBUTING.md) file for all the
