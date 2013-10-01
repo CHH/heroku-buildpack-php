@@ -1,0 +1,15 @@
+#!/usr/bin/env bash
+
+mongo_version="1.4.4"
+
+curl -L "https://github.com/mongodb/mongo-php-driver/archive/${mongo_version}.tar.gz" \
+    | tar xzv
+
+cd mongo-php-driver-${mongo_version}
+/app/vendor/php/bin/phpize
+./configure --with-php-config=/app/vendor/php/bin/php-config \
+            --enable-mongo
+
+make
+cp modules/mongo.so "$EXT_DIR/mongo.so"
+echo "extension=mongo.so" > "$PREFIX/etc/conf.d/mongo.ini"

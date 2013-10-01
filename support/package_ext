@@ -1,0 +1,78 @@
+#!/usr/bin/env bash
+
+set -e
+
+if [ -z "$1" ]; then
+    echo "Usage: package_ext EXT API..."
+    exit 1
+fi
+
+indent() {
+    c='s/^/       /'
+    case $(uname) in
+        Darwin) sed -l "$c";;
+        *)      sed -u "$c";;
+    esac
+}
+
+basedir="$( cd -P "$( dirname "$0" )" && pwd )"
+source "$basedir/../conf/buildpack.conf"
+
+php_versions=$(curl --silent "http://${S3_BUCKET}.s3.amazonaws.com/manifest.php")
+
+ext_name="$1"
+shift
+php_api="$@"
+
+echo "-----> Building $ext_name for PHP versions $php_api"
+
+build_ext() {
+    local ext_name="$1"
+    local php_series="$2"
+    local zend_api_version=${PHP_MODULE_API_VERSIONS["$php_series"]}
+
+    tempdir="$( mktemp -t php${ext_name}_xxxx )"
+    rm -rf $tempdir
+    mkdir -p $tempdir
+    cd $tempdir
+
+    echo "-----> Building $ext_name for PHP module API version ${zend_api_version} (PHP ${php_series})"
+
+    local php_version=$(\
+        echo "$php_versions" \
+        | grep "^${php_series}.*$" | sort -r | head -n1)
+
+    local ext_dir="lib/php/extensions/no-debug-non-zts-${zend_api_version}"
+    local php_package="http://${S3_BUCKET}.s3.amazonaws.com/package/php-${php_version}.tgz"
+
+    cp "$basedir/ext/${ext_name}" "$tempdir/build.sh"
+
+    local build_cmd=$(cat <<EOF
+        mkdir -p /app/vendor/php \
+        && mkdir -p "/tmp/out/$ext_dir" \
+        && mkdir -p "/tmp/out/etc/conf.d" \
+        && curl -L "$php_package" | tar -xzv -C /app/vendor/php \
+        && PREFIX="/tmp/out" EXT_DIR="/tmp/out/$ext_dir" ./build.sh
+EOF
+    )
+
+    {
+        vulcan build --verbose \
+            --name "php-${ext_name}" \
+            --prefix "/tmp/out" \
+            --source "$tempdir" \
+            --output "$tempdir/php-${ext_name}.tgz" \
+            --command "$build_cmd"
+
+        s3cmd put --verbose \
+            --acl-public \
+            "$tempdir/php-${ext_name}.tgz" \
+            "s3://$S3_BUCKET/package/ext/${zend_api_version}/php-${ext_name}.tgz"
+    } | indent
+
+    "$basedir/package-checksum" "ext/${zend_api_version}/php-${ext_name}"
+}
+
+for api in $php_api; do
+    build_ext "$ext_name" "$api"
+done

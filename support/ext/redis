@@ -1,0 +1,17 @@
+#!/usr/bin/env bash
+
+set -e
+
+phpredis_version="2.2.4"
+curl -L "https://github.com/nicolasff/phpredis/archive/${phpredis_version}.tar.gz" \
+    | tar -xzv
+
+cd phpredis-${phpredis_version}
+
+/app/vendor/php/bin/phpize
+./configure --with-php-config=/app/vendor/php/bin/php-config \
+            --enable-redis
+
+make
+cp modules/redis.so "$EXT_DIR/redis.so"
+echo "extension=redis.so" > "$PREFIX/etc/conf.d/redis.ini"
