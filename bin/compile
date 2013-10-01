@@ -110,7 +110,7 @@ function install_newrelic() {
     cd "$tempdir"
 
     curl --silent -L "http://download.newrelic.com/php_agent/archive/${version}/newrelic-php5-${version}-linux.tar.gz" | tar xz
-    mkdir -p /app/vendor/newrelic/{bin,etc} /var/log/newrelic
+    mkdir -p /app/vendor/newrelic/{bin,etc}
     cd "newrelic-php5-${version}-linux"
     cp -f "daemon/newrelic-daemon.x64" /app/vendor/newrelic/bin/newrelic-daemon
     cp -f "agent/x64/newrelic-${php_api_version}.so" "${ext_dir}/newrelic.so"
