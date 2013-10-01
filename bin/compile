@@ -92,13 +92,20 @@ function install_composer_deps() {
     } | indent
 }
 
+function mktmpdir() {
+    dir=$(mktemp -t php-$1-XXXX)
+    rm -rf $dir
+    mkdir -p $dir
+    echo $dir
+}
+
 function install_newrelic() {
     local version="$1"
     local license="$2"
     local cwd=$(pwd)
-    local php_api_version=$(/app/vendor/php/bin/phpize --version | grep "Zend Module Api No" | tr -d ' ' | cut -f 2 -d ':')
+    local php_api_version=$(phpize --version | grep "Zend Module Api No" | tr -d ' ' | cut -f 2 -d ':')
     local ext_dir=$(php-config --extension-dir)
-    local tempdir=$(mktempdir "newrelic")
+    local tempdir=$(mktmpdir "newrelic")
     cd "$tempdir"
 
     echo "-----> Enabling Newrelic support"
@@ -111,13 +118,6 @@ function install_newrelic() {
     echo "newrelic.license=$license" >> /app/vendor/php/etc/conf.d/newrelic.ini
 
     cd "$cwd"
-}
-
-function mktmpdir() {
-    dir=$(mktemp -t php-$1-XXXX)
-    rm -rf $dir
-    mkdir -p $dir
-    echo $dir
 }
 
 function package_document_root() {
@@ -224,12 +224,12 @@ echo "-----> Vendoring binaries into slug"
 cp -R "$VENDORED_NGINX/" "vendor/nginx"
 cp -R "$VENDORED_PHP/" "vendor/php"
 
+export PATH=/app/vendor/nginx/sbin:/app/vendor/php/bin:/app/vendor/php/sbin:$PATH
+
 # Install Newrelic addon
 if [ -n "$NEWRELIC_LICENSE" ]; then
     install_newrelic "$NEWRELIC_VERSION" "$NEWRELIC_LICENSE"
 fi
-
-export PATH=/app/vendor/nginx/sbin:/app/vendor/php/bin:/app/vendor/php/sbin:$PATH
 
 # Test that all packages were fetched and extracted successfully
 test -d "vendor/nginx"
