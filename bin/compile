@@ -121,8 +121,7 @@ function install_newrelic() {
 }
 
 function package_document_root() {
-    local doc_root=$(jq --raw-output '.extra.heroku["document-root"] // ""' < "$BUILD_DIR/composer.json")
-    echo "/app/$doc_root"
+    jq --raw-output '.extra.heroku["document-root"] // ""' < "$BUILD_DIR/composer.json"
 }
 
 function package_index_file() {
@@ -180,7 +179,7 @@ AVAILABLE_NGINX_VERSIONS=$(curl "http://${S3_BUCKET}.s3.amazonaws.com/manifest.n
 
 PHP_VERSION="default"
 NGINX_VERSION="default"
-DOCUMENT_ROOT="/app"
+DOCUMENT_ROOT=
 INDEX_DOCUMENT="index.php"
 FRAMEWORK=
 PHP_EXTRA_CONFIG=
