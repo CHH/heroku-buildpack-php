@@ -171,6 +171,17 @@ Add directives to the `php.ini`.
         "short_open_tag=on"
     ]
 
+#### php-includes
+
+_Default: []_
+
+Include additional .ini files that should be parsed after the default php.ini. File paths
+are treated relative to the app root.
+
+Example:
+
+    "php-includes": ["etc/php.ini"]
+
 #### nginx-includes
 
 _Default: []_
@@ -195,6 +206,16 @@ Run console commands on slug compilation.
     ]
 
 _Note: pecl is not runnable this way._
+
+#### newrelic
+
+_Default: false_
+
+Enable instrumentation support via [New Relic](http://newrelic.com).
+It's recommended to add the New Relic addon to your Heroku app, but you
+can also set your license key manually by setting the `NEW_RELIC_LICENSE_KEY` config var via `heroku config:set`.
+
+    "newrelic": true
 
 # Contributing
 
