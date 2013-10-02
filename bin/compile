@@ -17,14 +17,20 @@ CACHE_DIR="$2"
 cd "$BUILD_DIR"
 mkdir -p "$CACHE_DIR/package"
 
-function fetch_package() {
+function fetch_engine_package() {
     local engine="$1"
     local version="$2"
     local location="$3"
 
+    fetch_package "${engine}-${version}" "$location"
+}
+
+function fetch_package() {
+    local package="$1"
+    local location="$2"
+
     mkdir -p "$location"
 
-    local package="${engine}-${version}"
     local checksum_url="http://${S3_BUCKET}.s3.amazonaws.com/package/${package}.md5"
     local package_url="http://${S3_BUCKET}.s3.amazonaws.com/package/${package}.tgz"
     local checksum=$(curl "$checksum_url" 2> /dev/null)
@@ -99,13 +105,16 @@ function mktmpdir() {
     echo $dir
 }
 
+function php_api_version() {
+    basename "$(php-config --extension-dir)" | tr '-' ' ' | cut -f 5 -d ' '
+}
+
 function install_newrelic() {
     echo "-----> Enabling Newrelic support"
 
-    local php_api_version=$(basename "$(php-config --extension-dir)" | tr '-' ' ' | cut -f 5 -d ' ')
     local version="$1"
     local cwd=$(pwd)
-    local ext_dir=$BUILD_DIR/vendor/php/lib/php/extensions/no-debug-non-zts-${php_api_version}
+    local ext_dir=$BUILD_DIR/vendor/php/lib/php/extensions/no-debug-non-zts-$(php_api_version)
     local tempdir=$(mktmpdir "newrelic")
     cd "$tempdir"
 
@@ -113,7 +122,7 @@ function install_newrelic() {
     mkdir -p $BUILD_DIR/vendor/newrelic/{bin,etc}
     cd "newrelic-php5-${version}-linux"
     cp -f "daemon/newrelic-daemon.x64" $BUILD_DIR/vendor/newrelic/bin/newrelic-daemon
-    cp -f "agent/x64/newrelic-${php_api_version}.so" "${ext_dir}/newrelic.so"
+    cp -f "agent/x64/newrelic-$(php_api_version).so" "${ext_dir}/newrelic.so"
 
     cp "$basedir/../conf/php/newrelic.ini" "$BUILD_DIR/vendor/php/etc/conf.d/newrelic.ini"
 
@@ -223,15 +232,23 @@ VENDORED_NGINX=$(mktmpdir nginx)
 VENDORED_PHP=$(mktmpdir php)
 
 echo "-----> Bundling NGINX ${NGINX_VERSION}"
-fetch_package nginx "$NGINX_VERSION" "$VENDORED_NGINX"
+fetch_engine_package nginx "$NGINX_VERSION" "$VENDORED_NGINX"
 
 echo "-----> Bundling PHP ${PHP_VERSION}"
-fetch_package php "$PHP_VERSION" "$VENDORED_PHP"
+fetch_engine_package php "$PHP_VERSION" "$VENDORED_PHP"
 
 echo "-----> Vendoring binaries into slug"
 [ ! -d "$BUILD_DIR/vendor" ] && mkdir -p "$BUILD_DIR/vendor"
 cp -R "$VENDORED_NGINX/" "vendor/nginx"
 cp -R "$VENDORED_PHP/" "vendor/php"
+
+# Fetch additional extensions
+{
+    echo "Bundling phpredis"
+    fetch_package "ext/$(php_api_version)/php-redis" "vendor/php"
+    echo "Bundling mongo"
+    fetch_package "ext/$(php_api_version)/php-mongo" "vendor/php"
+} | indent
 
 export PATH=$BUILD_DIR/vendor/nginx/sbin:$BUILD_DIR/vendor/php/bin:$BUILD_DIR/vendor/php/sbin:$PATH
 

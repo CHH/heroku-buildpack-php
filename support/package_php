@@ -98,11 +98,7 @@ build_command=$(cat <<BUILD_CMD
     && /app/vendor/php/bin/pear config-set php_dir /app/vendor/php \
     && $install_zend_optimizer \
     && yes '' | /app/vendor/php/bin/pecl install apcu-beta \
-    && echo "extension=apcu.so" > /app/vendor/php/etc/conf.d/apcu.ini \
-    && /app/vendor/php/bin/pecl install mongo \
-    && echo "extension=mongo.so" > /app/vendor/php/etc/conf.d/mongo.ini \
-    && cd ../phpredis-${php_redis_version} && /app/vendor/php/bin/phpize && ./configure --with-php-config=/app/vendor/php/bin/php-config && make && make install \
-    && echo "extension=redis.so" > /app/vendor/php/etc/conf.d/redis.ini
+    && echo "extension=apcu.so" > /app/vendor/php/etc/conf.d/apcu.ini
 BUILD_CMD
 )
 
