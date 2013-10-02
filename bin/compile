@@ -40,6 +40,8 @@ function fetch_package() {
         local cache_checksum=$(cat "$CACHE_DIR/package/${package}.md5")
     fi
 
+    mkdir -p "$CACHE_DIR/package/$(dirname "$package")"
+
     if [ "$cache_checksum" != "$checksum" ]; then
         curl "$package_url" -L -s -o - > "$CACHE_DIR/package/${package}.tgz"
         echo "$checksum" > "$CACHE_DIR/package/${package}.md5"
