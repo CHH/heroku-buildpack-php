@@ -1,4 +1,4 @@
-<% if ENV.has_key? "DOCUMENT_ROOT" and ENV['DOCUMENT_ROOT'] != nil %>
+<% if ENV.has_key? "DOCUMENT_ROOT" and ENV['DOCUMENT_ROOT'].to_s != "" %>
 root <%= ENV['DOCUMENT_ROOT'] %>;
 <% else %>
 root /app/web;
