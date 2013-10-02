@@ -242,15 +242,17 @@ echo "-----> Vendoring binaries into slug"
 cp -R "$VENDORED_NGINX/" "vendor/nginx"
 cp -R "$VENDORED_PHP/" "vendor/php"
 
+export PATH=$BUILD_DIR/vendor/nginx/sbin:$BUILD_DIR/vendor/php/bin:$BUILD_DIR/vendor/php/sbin:$PATH
+
+echo "-----> Bundling extensions"
+
 # Fetch additional extensions
 {
-    echo "Bundling phpredis"
+    echo "phpredis"
     fetch_package "ext/$(php_api_version)/php-redis" "vendor/php"
-    echo "Bundling mongo"
+    echo "mongo"
     fetch_package "ext/$(php_api_version)/php-mongo" "vendor/php"
 } | indent
-
-export PATH=$BUILD_DIR/vendor/nginx/sbin:$BUILD_DIR/vendor/php/bin:$BUILD_DIR/vendor/php/sbin:$PATH
 
 if [ -f "$BUILD_DIR/composer.json" ] && package_newrelic_enabled; then
     install_newrelic "$NEWRELIC_VERSION"
