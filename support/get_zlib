@@ -13,7 +13,7 @@ cd $tempdir
 echo "-----> Downloading ZLib v${zlib_version}"
 curl -LO "http://zlib.net/zlib-${zlib_version}.tar.gz"
 
-s3cmd put --verbose \
-    --acl-public \
-    "$tempdir/zlib-${zlib_version}.tar.gz" \
-    "s3://$S3_BUCKET/zlib/zlib-${zlib_version}.tar.gz"
+aws s3 cp "zlib-${zlib_version}.tar.gz" \
+    "s3://$S3_BUCKET/zlib/zlib-${zlib_version}.tar.gz" \
+    --acl public-read \
+    --region "$S3_REGION"
