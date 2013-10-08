@@ -96,6 +96,10 @@ function install_composer_deps() {
             --no-interaction \
             --no-dev
 
+        if (($? > 0)); then
+            exit 1
+        fi
+
         cd "$cwd"
     } | indent
 }
