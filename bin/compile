@@ -264,7 +264,7 @@ EXTENSION_DIR="$BUILD_DIR/vendor/php/lib/php/extensions/no-debug-non-zts-$(php_a
 echo "extension_dir=$EXTENSION_DIR" > $BUILD_DIR/vendor/php/etc/conf.d/00_extensions.ini
 
 # Disable opcache at build time so php doesn't make us warnings
-sed -i "" -e 's/^/;/' $BUILD_DIR/vendor/php/etc/conf.d/opcache.ini
+sed -e 's/^/;/' -i "" $BUILD_DIR/vendor/php/etc/conf.d/opcache.ini
 
 # Fetch additional extensions
 echo "-----> Bundling extensions"
@@ -340,7 +340,7 @@ fi
 mkdir -p "bin"
 rm $BUILD_DIR/vendor/php/etc/conf.d/00_extensions.ini
 # Enable opcache again
-sed -i "" -e 's/^;//' $BUILD_DIR/vendor/php/etc/conf.d/opcache.ini
+sed -e 's/^;//' -i "" $BUILD_DIR/vendor/php/etc/conf.d/opcache.ini
 
 cat > "bin/run" <<SH
 #!/usr/bin/env bash
