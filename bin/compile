@@ -260,6 +260,8 @@ cp -R "$VENDORED_PHP/" "vendor/php"
 export PHP_INI_SCAN_DIR="$BUILD_DIR/vendor/php/etc/conf.d"
 export PATH=$BUILD_DIR/vendor/nginx/sbin:$BUILD_DIR/vendor/php/bin:$BUILD_DIR/vendor/php/sbin:$PATH
 
+echo "extension_dir=$BUILD_DIR/vendor/php/lib/php/extensions/no-debug-non-zts-$(php_api_version)" > $BUILD_DIR/vendor/php/etc/conf.d/00_extensions.ini
+
 # Fetch additional extensions
 echo "-----> Bundling extensions"
 echo "       phpredis"
@@ -332,6 +334,7 @@ if [ -n "$COMPILE_CMD" ]; then
 fi
 
 mkdir -p "bin"
+rm $BUILD_DIR/vendor/php/etc/conf.d/00_extensions.ini
 
 cat > "bin/run" <<SH
 #!/usr/bin/env bash
