@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 manifest_type="$1"
 
@@ -30,7 +30,7 @@ fi
 tempdir="$( mktemp -t php_XXXX )"
 rm -rf $tempdir
 mkdir -p $tempdir
-pushd $tempdir
+pushd $tempdir > /dev/null
 
 echo "-----> Manifest for $manifest_type"
 
@@ -39,13 +39,18 @@ s3cmd ls "s3://$S3_BUCKET/package/" \
     | sed "s/^s3:\/\/$S3_BUCKET\/package\///" \
     | grep "\.tgz$" \
     | grep "${manifest_type}" \
+    | grep -v -e ".md5" \
     | sed -e "s/${manifest_type}-\([0-9.]*\)\\.tgz/\\1/" \
-    | awk 'BEGIN {FS="."} {printf("%03d.%03d.%03d %s\n",$1,$2,$3,$0)}' | sort -r | cut -d" " -f2 \
-    | tee manifest.${manifest_type} \
-    | indent
+    | awk 'BEGIN {FS="."} {printf("%03d.%03d.%03d %s\n",$1,$2,$3,$0)}' \
+    | sort -r \
+    | cut -d" " -f2 \
+    > manifest.${manifest_type}
+
+cat "manifest.${manifest_type}" | indent
 
 echo
 echo "-----> Uploading manifest for ${manifest_type} to S3"
 
 s3cmd put --acl-public --mime-type="text/plain" \
-    manifest.${manifest_type} "s3://$S3_BUCKET"
+    manifest.${manifest_type} "s3://$S3_BUCKET" \
+    | fold -w 70 | indent

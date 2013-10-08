@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 set -e
 
@@ -12,7 +12,7 @@ if [ -z "$1" ]; then
 fi
 
 php_version="$1"
-php_redis_version="2.2.4"
+mcrypt_version="2.5.8"
 
 if [ -z "$PHP_ZLIB_VERSION" ]; then
     PHP_ZLIB_VERSION=1.2.8
@@ -30,19 +30,13 @@ echo "-----> Downloading dependency zlib ${zlib_version}"
 curl -LO "http://$S3_BUCKET.s3.amazonaws.com/zlib/zlib-${PHP_ZLIB_VERSION}.tar.gz"
 tar -xzvf "zlib-${PHP_ZLIB_VERSION}.tar.gz"
 
+echo "-----> Downloading dependency libmcrypt ${mcrypt_version}"
+curl -L "http://sourceforge.net/projects/mcrypt/files/Libmcrypt/${mcrypt_version}/libmcrypt-${mcrypt_version}.tar.gz/download" \
+    | tar xzv
+
 echo "-----> Downloading PHP $php_version"
 curl -LO "http://php.net/distributions/php-${php_version}.tar.gz"
 tar -xzvf "php-${php_version}.tar.gz"
-
-echo "-----> Downloading php-redis $php_redis_version"
-curl -L -o - "https://github.com/nicolasff/phpredis/archive/${php_redis_version}.tar.gz" > "phpredis-${php_redis_version}.tar.gz"
-tar -xzvf "phpredis-${php_redis_version}.tar.gz"
-
-# php_memcached_version=40ce9b4633de5d70f056e4d434d9b064263348d0
-
-# echo "-----> Downloading php-memcached $php_memcached_version"
-# curl -L -o - "https://github.com/andreiz/php-memcached/archive/${php_memcached_version}.tar.gz" > "phpmemcached-${php_memcached_version}.tar.gz"
-# tar -xzvf "phpmemcached-${php_memcached_version}.tar.gz"
 
 install_zend_optimizer=":"
 
@@ -60,9 +54,10 @@ SH
 fi
 
 build_command=$(cat <<BUILD_CMD
-    mkdir -p "/app/vendor/php/zlib" \
+    mkdir -p "/app/vendor/php/zlib" "/app/vendor/php/libmcrypt" \
     && mkdir -p "/app/vendor/php/etc/conf.d" \
     && cd zlib-${PHP_ZLIB_VERSION} && ./configure --prefix=/app/vendor/php/zlib && make && make install \
+    && cd ../libmcrypt-${mcrypt_version} && ./configure --disable-posix-threads --prefix=/app/vendor/php/libmcrypt && make && make install \
     && cd ../php-${php_version} && ./configure --prefix=/app/vendor/php \
     --with-config-file-path=/app/vendor/php/etc \
     --with-config-file-scan-dir=/app/vendor/php/etc/conf.d \
@@ -92,17 +87,14 @@ build_command=$(cat <<BUILD_CMD
     --enable-sockets \
     --enable-bcmath \
     --with-readline \
+    --with-mcrypt=/app/vendor/php/libmcrypt \
     --disable-debug \
     && make \
     && make install \
     && /app/vendor/php/bin/pear config-set php_dir /app/vendor/php \
     && $install_zend_optimizer \
     && yes '' | /app/vendor/php/bin/pecl install apcu-beta \
-    && echo "extension=apcu.so" > /app/vendor/php/etc/conf.d/apcu.ini \
-    && /app/vendor/php/bin/pecl install mongo \
-    && echo "extension=mongo.so" > /app/vendor/php/etc/conf.d/mongo.ini \
-    && cd ../phpredis-${php_redis_version} && /app/vendor/php/bin/phpize && ./configure --with-php-config=/app/vendor/php/bin/php-config && make && make install \
-    && echo "extension=redis.so" > /app/vendor/php/etc/conf.d/redis.ini
+    && echo "extension=apcu.so" > /app/vendor/php/etc/conf.d/apcu.ini
 BUILD_CMD
 )
 
@@ -117,8 +109,8 @@ vulcan build --verbose \
 
 echo "-----> Moving package to S3"
 
-s3cmd put --verbose \
-    --acl-public \
+s3cmd put \
+    --verbose --acl-public \
     "$tempdir/php-${php_version}.tgz" \
     "s3://$S3_BUCKET/package/php-${php_version}.tgz"
 
