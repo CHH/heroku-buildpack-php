@@ -84,6 +84,14 @@ function install_composer_deps() {
         } | indent
     fi
 
+    required_extensions=$(jq --raw-output '.require | keys | .[]' | grep '^ext-' | sed 's/^ext-//')
+    if [ -n "$required_extensions" ]; then
+        echo "-----> Bundling additional extensions $required_extensions"
+        for ext in $required_extensions; do
+            fetch_package "ext/$(php_api_version)/php-${ext}" "${BUILD_DIR}/vendor/php"
+        done
+    fi
+
     cp "$CACHE_DIR/composer.phar" "$target/vendor/composer/bin/"
 
     echo "-----> Installing application dependencies with Composer"
@@ -102,14 +110,6 @@ function install_composer_deps() {
 
         cd "$cwd"
     } | indent
-
-    required_extensions=$(jq --raw-output '.require | keys | .[]' | grep '^ext-' | sed 's/^ext-//')
-    if [ -n "$required_extensions" ]; then
-        echo "-----> Bundling additional extensions"
-        for ext in $required_extensions; do
-            fetch_package "ext/$(php_api_version)/php-${ext}" "${BUILD_DIR}/vendor/php"
-        done
-    fi
 }
 
 function mktmpdir() {
