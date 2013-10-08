@@ -257,6 +257,7 @@ echo "-----> Vendoring binaries into slug"
 cp -R "$VENDORED_NGINX/" "vendor/nginx"
 cp -R "$VENDORED_PHP/" "vendor/php"
 
+export PHP_INI_SCAN_DIR="$BUILD_DIR/vendor/php/etc/conf.d"
 export PATH=$BUILD_DIR/vendor/nginx/sbin:$BUILD_DIR/vendor/php/bin:$BUILD_DIR/vendor/php/sbin:$PATH
 
 # Fetch additional extensions
