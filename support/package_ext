@@ -15,17 +15,6 @@ indent() {
     esac
 }
 
-basedir="$( cd -P "$( dirname "$0" )" && pwd )"
-source "$basedir/../conf/buildpack.conf"
-
-php_versions=$(curl --silent "http://${S3_BUCKET}.s3.amazonaws.com/manifest.php")
-
-ext_name="$1"
-shift
-php_api="$@"
-
-echo "-----> Building $ext_name for PHP versions $php_api"
-
 build_ext() {
     local ext_name="$1"
     local php_series="$2"
@@ -72,6 +61,17 @@ EOF
 
     "$basedir/package-checksum" "ext/${zend_api_version}/php-${ext_name}"
 }
+
+basedir="$( cd -P "$( dirname "$0" )" && pwd )"
+source "$basedir/../conf/buildpack.conf"
+
+php_versions=$(curl --silent "http://${S3_BUCKET}.s3.amazonaws.com/manifest.php")
+
+ext_name="$1"
+shift
+php_api="$@"
+
+echo "-----> Building $ext_name for PHP versions $php_api"
 
 for api in $php_api; do
     build_ext "$ext_name" "$api"
