@@ -88,7 +88,8 @@ function install_composer_deps() {
     if [ -n "$required_extensions" ]; then
         echo "-----> Bundling additional extensions $required_extensions"
         for ext in $required_extensions; do
-            fetch_package "ext/$(php_api_version)/php-${ext}" "${BUILD_DIR}/vendor/php"
+            echo "$ext" | indent
+            fetch_package "ext/$(php_api_version)/php-${ext}" "${target}/vendor/php" | indent
         done
     fi
 
