@@ -340,7 +340,7 @@ fi
 mkdir -p "bin"
 rm $BUILD_DIR/vendor/php/etc/conf.d/00_extensions.ini
 # Enable opcache again
-sed -e 's/^;//' -i "" $BUILD_DIR/vendor/php/etc/conf.d/opcache.ini
+sed -e 's/^;//' --in-place="" $BUILD_DIR/vendor/php/etc/conf.d/opcache.ini
 
 cat > "bin/run" <<SH
 #!/usr/bin/env bash
