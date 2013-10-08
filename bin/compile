@@ -43,10 +43,10 @@ function fetch_package() {
     mkdir -p "$CACHE_DIR/package/$(dirname "$package")"
 
     if [ "$cache_checksum" != "$checksum" ]; then
-        curl "$package_url" -L -s -o - > "$CACHE_DIR/package/${package}.tgz"
+        curl "$package_url" -L -s > "$CACHE_DIR/package/${package}.tgz"
         echo "$checksum" > "$CACHE_DIR/package/${package}.md5"
     else
-        echo "Checksums match. Fetching from cache." | indent
+        echo "Checksums match. Fetching from cache."
     fi
 
     tar xzf "$CACHE_DIR/package/${package}.tgz" -C "$location"
@@ -102,6 +102,14 @@ function install_composer_deps() {
 
         cd "$cwd"
     } | indent
+
+    required_extensions=$(jq --raw-output '.require | keys | .[]' | grep '^ext-' | sed 's/^ext-//')
+    if [ -n "$required_extensions" ]; then
+        echo "-----> Bundling additional extensions"
+        for ext in $required_extensions; do
+            fetch_package "ext/$(php_api_version)/php-${ext}" "${BUILD_DIR}/vendor/php"
+        done
+    fi
 }
 
 function mktmpdir() {
@@ -238,10 +246,10 @@ VENDORED_NGINX=$(mktmpdir nginx)
 VENDORED_PHP=$(mktmpdir php)
 
 echo "-----> Bundling NGINX ${NGINX_VERSION}"
-fetch_engine_package nginx "$NGINX_VERSION" "$VENDORED_NGINX"
+fetch_engine_package nginx "$NGINX_VERSION" "$VENDORED_NGINX" | indent
 
 echo "-----> Bundling PHP ${PHP_VERSION}"
-fetch_engine_package php "$PHP_VERSION" "$VENDORED_PHP"
+fetch_engine_package php "$PHP_VERSION" "$VENDORED_PHP" | indent
 
 echo "-----> Vendoring binaries into slug"
 [ ! -d "$BUILD_DIR/vendor" ] && mkdir -p "$BUILD_DIR/vendor"
@@ -253,9 +261,9 @@ export PATH=$BUILD_DIR/vendor/nginx/sbin:$BUILD_DIR/vendor/php/bin:$BUILD_DIR/ve
 # Fetch additional extensions
 echo "-----> Bundling extensions"
 echo "       phpredis"
-fetch_package "ext/$(php_api_version)/php-redis" "vendor/php"
+fetch_package "ext/$(php_api_version)/php-redis" "vendor/php" | indent
 echo "       mongo"
-fetch_package "ext/$(php_api_version)/php-mongo" "vendor/php"
+fetch_package "ext/$(php_api_version)/php-mongo" "vendor/php" | indent
 
 if [ -f "$BUILD_DIR/composer.json" ] && package_newrelic_enabled; then
     install_newrelic "$NEWRELIC_VERSION"
