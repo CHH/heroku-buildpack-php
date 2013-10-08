@@ -71,6 +71,11 @@ ext_name="$1"
 shift
 php_api="$@"
 
+if [ ! -f "$basedir/ext/$ext_name" ]; then
+    echo "No build manifest found for '$ext_name'" >&2
+    exit 1
+fi
+
 echo "-----> Building $ext_name for PHP versions $php_api"
 
 for api in $php_api; do
