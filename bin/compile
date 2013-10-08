@@ -84,7 +84,7 @@ function install_composer_deps() {
         } | indent
     fi
 
-    required_extensions=$(jq --raw-output '.require | keys | .[]' | grep '^ext-' | sed 's/^ext-//')
+    local required_extensions=$(jq --raw-output '.require | keys | .[]' < "$BUILD_DIR/composer.json" | grep '^ext-' | sed 's/^ext-//')
     if [ -n "$required_extensions" ]; then
         echo "-----> Bundling additional extensions $required_extensions"
         for ext in $required_extensions; do
