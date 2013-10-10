@@ -259,7 +259,7 @@ fetch_engine_package php "$PHP_VERSION" "$VENDORED_PHP" | indent
 
 mkdir -p /app/vendor
 cp -R $BUILD_DIR/vendor/libmcrypt/ /app/vendor/libmcrypt
-cp -R $BUILD_DIR/vendor/libicu /app/vendor/libicu
+cp -R $BUILD_DIR/vendor/libicu/ /app/vendor/libicu
 
 echo "-----> Vendoring binaries into slug"
 cp -R "$VENDORED_NGINX/" "vendor/nginx"
