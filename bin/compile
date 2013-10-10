@@ -243,13 +243,13 @@ if echo "$NGINX_VERSION" | grep '\*' &>/dev/null; then
     NGINX_VERSION=$(echo "$AVAILABLE_NGINX_VERSIONS" | grep "^$NGINX_VERSION$" | sort -r | head -n1)
 fi
 
-VENDORED_NGINX=$(mktmpdir nginx)
-VENDORED_PHP=$(mktmpdir php)
+VENDORED_NGINX=/app/vendor/nginx
+VENDORED_PHP=/app/vendor/php
 
 [ ! -d "$BUILD_DIR/vendor" ] && mkdir -p "$BUILD_DIR/vendor"
 
 echo "-----> Bundling NGINX ${NGINX_VERSION}"
-fetch_engine_package nginx "$NGINX_VERSION" "$VENDORED_NGINX" | indent
+fetch_engine_package nginx "$NGINX_VERSION" /app/vendor/nginx | indent
 
 echo "-----> Bundling PHP ${PHP_VERSION}"
 
