@@ -342,10 +342,10 @@ if [ -n "$COMPILE_CMD" ]; then
 fi
 
 echo "-----> Vendoring binaries into slug"
-cp -R /app/vendor/libmcrypt/ vendor/libmcrypt
-cp -R /app/vendor/libicu/ vendor/libicu
-cp -R /app/vendor/nginx/ vendor/nginx
-cp -R /app/vendor/php/ vendor/php
+mv /app/vendor/libmcrypt vendor/libmcrypt
+mv /app/vendor/libicu vendor/libicu
+mv /app/vendor/nginx vendor/nginx
+mv /app/vendor/php vendor/php
 
 mkdir -p "bin"
 # rm $BUILD_DIR/vendor/php/etc/conf.d/00_extensions.ini
