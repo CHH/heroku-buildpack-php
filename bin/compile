@@ -268,18 +268,6 @@ SH
 
 source ".profile.d/php.sh"
 
-# export PHP_INI_SCAN_DIR="$BUILD_DIR/vendor/php/etc/conf.d"
-# export PATH=$BUILD_DIR/vendor/nginx/sbin:$BUILD_DIR/vendor/php/bin:$BUILD_DIR/vendor/php/sbin:$PATH
-# EXTENSION_DIR="$BUILD_DIR/vendor/php/lib/php/extensions/no-debug-non-zts-$(php_api_version)"
-
-# Temporarily set the extension dir relative to the build dir so
-# dynamically loaded extensions (like redis or mongo) are available at build time.
-# echo "extension_dir=$EXTENSION_DIR" > $BUILD_DIR/vendor/php/etc/conf.d/00_extensions.ini
-
-# Disable opcache at build time so php doesn't warn us that it couldn't load
-# the opcache extension because of the hardcoded paths not matching the build environment.
-# sed -e 's/^/;/' --in-place="" $BUILD_DIR/vendor/php/etc/conf.d/opcache.ini
-
 # Fetch additional extensions
 echo "-----> Bundling extensions"
 echo "       phpredis"
@@ -348,9 +336,6 @@ mv /app/vendor/nginx vendor/nginx
 mv /app/vendor/php vendor/php
 
 mkdir -p "bin"
-# rm $BUILD_DIR/vendor/php/etc/conf.d/00_extensions.ini
-# Enable opcache again
-# sed -e 's/^;//' --in-place="" $BUILD_DIR/vendor/php/etc/conf.d/opcache.ini
 
 cat > "bin/run" <<SH
 #!/usr/bin/env bash
