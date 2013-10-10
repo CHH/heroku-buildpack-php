@@ -75,7 +75,7 @@ function install_composer_deps() {
     echo "-----> Vendoring Composer"
     if [ -f "$CACHE_DIR/composer.phar" ]; then
         {
-            "$BUILD_DIR/vendor/php/bin/php" "$CACHE_DIR/composer.phar" self-update
+            php "$CACHE_DIR/composer.phar" self-update
         } | indent
     else
         {
@@ -89,7 +89,7 @@ function install_composer_deps() {
         echo "-----> Bundling additional extensions $required_extensions"
         for ext in $required_extensions; do
             echo "$ext" | indent
-            fetch_package "ext/$(php_api_version)/php-${ext}" "${target}/vendor/php" | indent
+            fetch_package "ext/$(php_api_version)/php-${ext}" "/app/vendor/php" | indent
         done
     fi
 
@@ -98,8 +98,7 @@ function install_composer_deps() {
     echo "-----> Installing application dependencies with Composer"
     {
         cd "$target"
-        "$BUILD_DIR/vendor/php/bin/php" \
-            "$target/vendor/composer/bin/composer.phar" install \
+        php "$target/vendor/composer/bin/composer.phar" install \
             --prefer-dist \
             --optimize-autoloader \
             --no-interaction \
@@ -129,17 +128,17 @@ function install_newrelic() {
 
     local version="$1"
     local cwd=$(pwd)
-    local ext_dir=$BUILD_DIR/vendor/php/lib/php/extensions/no-debug-non-zts-$(php_api_version)
+    local ext_dir=/app/vendor/php/lib/php/extensions/no-debug-non-zts-$(php_api_version)
     local tempdir=$(mktmpdir "newrelic")
     cd "$tempdir"
 
     curl --silent -L "http://download.newrelic.com/php_agent/archive/${version}/newrelic-php5-${version}-linux.tar.gz" | tar xz
     mkdir -p $BUILD_DIR/vendor/newrelic/{bin,etc}
     cd "newrelic-php5-${version}-linux"
+
     cp -f "daemon/newrelic-daemon.x64" $BUILD_DIR/vendor/newrelic/bin/newrelic-daemon
     cp -f "agent/x64/newrelic-$(php_api_version).so" "${ext_dir}/newrelic.so"
-
-    cp "$basedir/../conf/php/newrelic.ini" "$BUILD_DIR/vendor/php/etc/conf.d/newrelic.ini"
+    cp -f "$basedir/../conf/php/newrelic.ini" "/app/vendor/php/etc/conf.d/newrelic.ini"
 
     cd "$cwd"
 }
@@ -192,7 +191,7 @@ function package_newrelic_enabled() {
 
 # Download jq binary for JSON processing
 export PATH="$HOME/bin:$PATH"
-curl "http://stedolan.github.com/jq/download/linux64/jq" -L -s -o - > "$HOME/bin/jq"
+curl "http://${S3_BUCKET}.s3.amazonaws.com/jq/jq" -L -s -o - > "$HOME/bin/jq"
 chmod +x "$HOME/bin/jq"
 
 DEFAULT_PHP="5.5.3"
@@ -259,40 +258,38 @@ echo "-----> Bundling PHP ${PHP_VERSION}"
 fetch_package "libicu-51" /app/vendor/libicu > /dev/null
 fetch_package "libmcrypt-${MCRYPT_VERSION}" /app/vendor/libmcrypt > /dev/null
 
-fetch_engine_package php "$PHP_VERSION" "$VENDORED_PHP" | indent
+fetch_engine_package php "$PHP_VERSION" /app/vendor/php | indent
 
-echo "-----> Vendoring binaries into slug"
-cp -R /app/vendor/libmcrypt/ vendor/libmcrypt
-cp -R /app/vendor/libicu/ vendor/libicu
-cp -R "$VENDORED_NGINX/" "vendor/nginx"
-cp -R "$VENDORED_PHP/" "vendor/php"
+test ! -d ".profile.d" && mkdir -p .profile.d || true
 
-export PHP_INI_SCAN_DIR="$BUILD_DIR/vendor/php/etc/conf.d"
-export PATH=$BUILD_DIR/vendor/nginx/sbin:$BUILD_DIR/vendor/php/bin:$BUILD_DIR/vendor/php/sbin:$PATH
-EXTENSION_DIR="$BUILD_DIR/vendor/php/lib/php/extensions/no-debug-non-zts-$(php_api_version)"
+cat > ".profile.d/php.sh" <<SH
+export PATH=/sbin:/bin:/usr/sbin:/usr/bin:/app/bin:/app/vendor/nginx/sbin:/app/vendor/php/sbin:/app/vendor/php/bin:/app/vendor/bin:\$PATH
+SH
+
+source ".profile.d/php.sh"
+
+# export PHP_INI_SCAN_DIR="$BUILD_DIR/vendor/php/etc/conf.d"
+# export PATH=$BUILD_DIR/vendor/nginx/sbin:$BUILD_DIR/vendor/php/bin:$BUILD_DIR/vendor/php/sbin:$PATH
+# EXTENSION_DIR="$BUILD_DIR/vendor/php/lib/php/extensions/no-debug-non-zts-$(php_api_version)"
 
 # Temporarily set the extension dir relative to the build dir so
 # dynamically loaded extensions (like redis or mongo) are available at build time.
-echo "extension_dir=$EXTENSION_DIR" > $BUILD_DIR/vendor/php/etc/conf.d/00_extensions.ini
+# echo "extension_dir=$EXTENSION_DIR" > $BUILD_DIR/vendor/php/etc/conf.d/00_extensions.ini
 
 # Disable opcache at build time so php doesn't warn us that it couldn't load
 # the opcache extension because of the hardcoded paths not matching the build environment.
-sed -e 's/^/;/' --in-place="" $BUILD_DIR/vendor/php/etc/conf.d/opcache.ini
+# sed -e 's/^/;/' --in-place="" $BUILD_DIR/vendor/php/etc/conf.d/opcache.ini
 
 # Fetch additional extensions
 echo "-----> Bundling extensions"
 echo "       phpredis"
-fetch_package "ext/$(php_api_version)/php-redis" "vendor/php" | indent
+fetch_package "ext/$(php_api_version)/php-redis" "/app/vendor/php" | indent
 echo "       mongo"
-fetch_package "ext/$(php_api_version)/php-mongo" "vendor/php" | indent
+fetch_package "ext/$(php_api_version)/php-mongo" "/app/vendor/php" | indent
 
 if [ -f "$BUILD_DIR/composer.json" ] && package_newrelic_enabled; then
     install_newrelic "$NEWRELIC_VERSION"
 fi
-
-# Test that all packages were fetched and extracted successfully
-test -d "vendor/nginx"
-test -d "vendor/php"
 
 if [ -n "$BUILDPACK_DEBUG" ]; then
     ls -R vendor/nginx
@@ -301,11 +298,11 @@ fi
 
 mkdir -p "conf"
 cp "$basedir/../conf/nginx/base.conf.erb" "conf/nginx.conf.erb"
-cp "$basedir/../conf/php/php-fpm.conf" "vendor/php/etc/php-fpm.conf"
-cp "$basedir/../conf/php/php.ini" "vendor/php/etc/php.ini"
+cp "$basedir/../conf/php/php-fpm.conf" "/app/vendor/php/etc/php-fpm.conf"
+cp "$basedir/../conf/php/php.ini" "/app/vendor/php/etc/php.ini"
 
 for conf in $PHP_EXTRA_CONFIG; do
-    echo "$conf" >> "vendor/php/etc/php.ini"
+    echo "$conf" >> "/app/vendor/php/etc/php.ini"
 done
 
 for include in $PHP_INCLUDES; do
@@ -332,12 +329,6 @@ if [ -n "$FRAMEWORK" ] && [ -f "$FRAMEWORK" ]; then
     "$FRAMEWORK" compile "$BUILD_DIR" "$CACHE_DIR"
 fi
 
-test ! -d ".profile.d" && mkdir -p .profile.d || true
-
-cat > ".profile.d/php.sh" <<SH
-export PATH=/sbin:/bin:/usr/sbin:/usr/bin:/app/bin:/app/vendor/nginx/sbin:/app/vendor/php/sbin:/app/vendor/php/bin:/app/vendor/bin:\$PATH
-SH
-
 install_composer_deps "$BUILD_DIR"
 
 if [ -n "$COMPILE_CMD" ]; then
@@ -350,10 +341,16 @@ if [ -n "$COMPILE_CMD" ]; then
     done
 fi
 
+echo "-----> Vendoring binaries into slug"
+cp -R /app/vendor/libmcrypt/ vendor/libmcrypt
+cp -R /app/vendor/libicu/ vendor/libicu
+cp -R /app/vendor/nginx/ vendor/nginx
+cp -R /app/vendor/php/ vendor/php
+
 mkdir -p "bin"
-rm $BUILD_DIR/vendor/php/etc/conf.d/00_extensions.ini
+# rm $BUILD_DIR/vendor/php/etc/conf.d/00_extensions.ini
 # Enable opcache again
-sed -e 's/^;//' --in-place="" $BUILD_DIR/vendor/php/etc/conf.d/opcache.ini
+# sed -e 's/^;//' --in-place="" $BUILD_DIR/vendor/php/etc/conf.d/opcache.ini
 
 cat > "bin/run" <<SH
 #!/usr/bin/env bash
