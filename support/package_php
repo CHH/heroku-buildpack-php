@@ -54,13 +54,17 @@ SH
 fi
 
 build_command=$(cat <<BUILD_CMD
-    mkdir -p "/app/vendor/php/zlib" "/app/vendor/php/libmcrypt" \
+    mkdir -p "/app/vendor/php/zlib" "/app/vendor/php/libmcrypt" "/app/vendor/libicu" \
+    && curl "http://${S3_BUCKET}.s3.amazonaws.com/package/libicu-51.tgz" | tar xzv -C /app/vendor/libicu \
+    && export LD_LIBRARY_PATH=/app/vendor/libicu/lib \
+    && export PATH=/app/vendor/libicu/bin:\$PATH \
     && mkdir -p "/app/vendor/php/etc/conf.d" \
     && cd zlib-${PHP_ZLIB_VERSION} && ./configure --prefix=/app/vendor/php/zlib && make && make install \
     && cd ../libmcrypt-${mcrypt_version} && ./configure --disable-posix-threads --prefix=/app/vendor/php/libmcrypt && make && make install \
     && cd ../php-${php_version} && ./configure --prefix=/app/vendor/php \
     --with-config-file-path=/app/vendor/php/etc \
     --with-config-file-scan-dir=/app/vendor/php/etc/conf.d \
+    --enable-intl \
     --with-gd \
     --with-mysql \
     --with-mysqli \
