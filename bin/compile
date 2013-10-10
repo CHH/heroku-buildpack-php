@@ -201,6 +201,7 @@ DEFAULT_NGINX="1.4.2"
 AVAILABLE_PHP_VERSIONS=$(curl "http://${S3_BUCKET}.s3.amazonaws.com/manifest.php" 2> /dev/null)
 AVAILABLE_NGINX_VERSIONS=$(curl "http://${S3_BUCKET}.s3.amazonaws.com/manifest.nginx" 2> /dev/null)
 
+MCRYPT_VERSION="2.5.8"
 PHP_VERSION="default"
 NGINX_VERSION="default"
 DOCUMENT_ROOT=
@@ -246,14 +247,17 @@ fi
 VENDORED_NGINX=$(mktmpdir nginx)
 VENDORED_PHP=$(mktmpdir php)
 
+[ ! -d "$BUILD_DIR/vendor" ] && mkdir -p "$BUILD_DIR/vendor"
+
 echo "-----> Bundling NGINX ${NGINX_VERSION}"
 fetch_engine_package nginx "$NGINX_VERSION" "$VENDORED_NGINX" | indent
 
 echo "-----> Bundling PHP ${PHP_VERSION}"
+fetch_package "libicu-51" /app/vendor/libicu > /dev/null
+fetch_package "libmcrypt-${MCRYPT_VERSION}" /app/vendor/libmcrypt > /dev/null
 fetch_engine_package php "$PHP_VERSION" "$VENDORED_PHP" | indent
 
 echo "-----> Vendoring binaries into slug"
-[ ! -d "$BUILD_DIR/vendor" ] && mkdir -p "$BUILD_DIR/vendor"
 cp -R "$VENDORED_NGINX/" "vendor/nginx"
 cp -R "$VENDORED_PHP/" "vendor/php"
 
