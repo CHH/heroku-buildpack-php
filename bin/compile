@@ -4,7 +4,6 @@ set -e
 shopt -s dotglob
 
 basedir="$( cd -P "$( dirname "$0" )" && pwd )"
-
 source "$basedir/../conf/buildpack.conf"
 
 if [ -n "$BUILDPACK_DEBUG" ]; then

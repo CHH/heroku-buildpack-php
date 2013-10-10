@@ -1,0 +1,13 @@
+#!/usr/bin/env bash
+
+basedir="$( cd -P "$( dirname "$0" )" && pwd )"
+source "$basedir/../conf/buildpack.conf"
+
+tempdir="$( mktemp -t jq_xxxx )"
+rm -rf $tempdir
+mkdir -p $tempdir
+cd $tempdir
+
+echo "----> Vendoring 'jq'"
+curl -L http://stedolan.github.io/jq/download/linux64/jq > jq
+s3cmd put --verbose --acl-public ./jq s3://$S3_BUCKET/jq/jq
