@@ -253,15 +253,17 @@ echo "-----> Bundling NGINX ${NGINX_VERSION}"
 fetch_engine_package nginx "$NGINX_VERSION" "$VENDORED_NGINX" | indent
 
 echo "-----> Bundling PHP ${PHP_VERSION}"
-fetch_package "libicu-51" $BUILD_DIR/vendor/libicu > /dev/null
-fetch_package "libmcrypt-${MCRYPT_VERSION}" $BUILD_DIR/vendor/libmcrypt > /dev/null
+
+# Install libraries also on build container, so PHP doesn't wayne about missing
+# dynamic libraries when running it during the slug compilation.
+fetch_package "libicu-51" /app/vendor/libicu > /dev/null
+fetch_package "libmcrypt-${MCRYPT_VERSION}" /app/vendor/libmcrypt > /dev/null
+
 fetch_engine_package php "$PHP_VERSION" "$VENDORED_PHP" | indent
 
-mkdir -p /app/vendor
-cp -R $BUILD_DIR/vendor/libmcrypt/ /app/vendor/libmcrypt
-cp -R $BUILD_DIR/vendor/libicu/ /app/vendor/libicu
-
 echo "-----> Vendoring binaries into slug"
+cp -R /app/vendor/libmcrypt/ vendor/libmcrypt
+cp -R /app/vendor/libicu/ vendor/libicu
 cp -R "$VENDORED_NGINX/" "vendor/nginx"
 cp -R "$VENDORED_PHP/" "vendor/php"
 
