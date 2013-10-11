@@ -1,6 +1,7 @@
 #!/bin/bash
 
 set -e
+set -o pipefail
 shopt -s dotglob
 
 basedir="$( cd -P "$( dirname "$0" )" && pwd )"
@@ -102,11 +103,6 @@ function install_composer_deps() {
             --optimize-autoloader \
             --no-interaction \
             --no-dev
-
-        if (($? > 0)); then
-            exit 1
-        fi
-
         cd "$cwd"
     } | indent
 }
@@ -339,6 +335,10 @@ mkdir -p "bin"
 cat > "bin/run" <<SH
 #!/usr/bin/env bash
 
+pmsgr=/tmp/pmsgr
+rm -f \$pmsgr
+mkfifo \$pmsgr
+
 for var in \`env | cut -f1 -d=\`; do
     echo "env[\$var] = \\$\${var}" >> /app/vendor/php/etc/php-fpm.conf
 done
@@ -363,10 +363,24 @@ touch /app/vendor/nginx/logs/access.log \
 
 touch /app/vendor/php/var/log/error.log
 
-(tail -qF -n 0 /app/vendor/nginx/logs/access.log /app/vendor/nginx/logs/error.log /app/vendor/php/var/log/*.log &)
+(
+    tail -qF -n 0 /app/vendor/nginx/logs/access.log /app/vendor/nginx/logs/error.log /app/vendor/php/var/log/*.log
+    \$pmsgr < "tail"
+)&
 
-php-fpm -p "/app/vendor/php"
-nginx -p "/app/vendor/nginx" -c /app/vendor/nginx/conf/nginx.conf
+(
+    php-fpm -p "/app/vendor/php"
+    \$pmsgr < "php-fpm"
+)&
+
+(
+    nginx -p "/app/vendor/nginx" -c /app/vendor/nginx/conf/nginx.conf
+    \$pmsgr < "nginx"
+)&
+
+read exitproc <\$pmsgr
+echo "Boot failed: \$exitproc"
+exit 1
 SH
 
 chmod a+x "bin/run"
