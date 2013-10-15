@@ -72,12 +72,14 @@ function install_composer_deps() {
     mkdir -p $COMPOSER_CACHE_DIR
     mkdir -p "$target/vendor/composer/bin"
 
-    local checksum=$(curl --silent "http://${S3_BUCKET.s3.amazonaws.com}.s3.amazonaws.com/composer/composer.phar.md5")
+    local checksum=$(curl --silent "http://${S3_BUCKET}.s3.amazonaws.com.s3.amazonaws.com/composer/composer.phar.md5")
 
     echo "-----> Vendoring Composer"
-    if [ ! -f "$CACHE_DIR/composer.phar" ] || [ "$(md5 $CACHE_DIR/composer.phar)" != "$checksum" ]; then
+    if [ ! -f "$CACHE_DIR/composer.phar" ] || [ "$(cat $CACHE_DIR/composer.phar.md5)" != "$checksum" ]; then
+        echo "Updating Composer" | indent
         curl "http://${S3_BUCKET}.s3.amazonaws.com/composer/composer.phar" > "$CACHE_DIR/composer.phar" | indent
         chmod a+x "$CACHE_DIR/composer.phar"
+        echo "$checksum" > $CACHE_DIR/composer.phar.md5
     fi
 
     cp "$CACHE_DIR/composer.phar" "$target/vendor/composer/bin/"
