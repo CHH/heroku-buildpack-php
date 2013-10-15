@@ -282,6 +282,8 @@ cp "$basedir/../conf/nginx/base.conf.erb" "conf/nginx.conf.erb"
 cp "$basedir/../conf/php/php-fpm.conf" "/app/vendor/php/etc/php-fpm.conf"
 cp "$basedir/../conf/php/php.ini" "/app/vendor/php/etc/php.ini"
 
+pear config-set php_ini /app/vendor/php/etc/php.ini > /dev/null
+
 for conf in $PHP_EXTRA_CONFIG; do
     echo "$conf" >> "/app/vendor/php/etc/php.ini"
 done
