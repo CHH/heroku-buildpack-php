@@ -72,17 +72,15 @@ function install_composer_deps() {
     mkdir -p $COMPOSER_CACHE_DIR
     mkdir -p "$target/vendor/composer/bin"
 
+    local checksum=$(curl --silent "http://${S3_BUCKET.s3.amazonaws.com}.s3.amazonaws.com/composer/composer.phar.md5")
+
     echo "-----> Vendoring Composer"
-    if [ -f "$CACHE_DIR/composer.phar" ]; then
-        {
-            php "$CACHE_DIR/composer.phar" self-update
-        } | indent
-    else
-        {
-            curl -L "http://getcomposer.org/composer.phar" > "$CACHE_DIR/composer.phar"
-            chmod a+x "$CACHE_DIR/composer.phar"
-        } | indent
+    if [ ! -f "$CACHE_DIR/composer.phar" ] || [ "$(md5 $CACHE_DIR/composer.phar)" != "$checksum" ]; then
+        curl "http://${S3_BUCKET}.s3.amazonaws.com/composer/composer.phar" > "$CACHE_DIR/composer.phar" | indent
+        chmod a+x "$CACHE_DIR/composer.phar"
     fi
+
+    cp "$CACHE_DIR/composer.phar" "$target/vendor/composer/bin/"
 
     local required_extensions=$(jq --raw-output '.require | keys | .[]' < "$BUILD_DIR/composer.json" | grep '^ext-' | sed 's/^ext-//')
     if [ -n "$required_extensions" ]; then
@@ -92,8 +90,6 @@ function install_composer_deps() {
             fetch_package "ext/$(php_api_version)/php-${ext}" "/app/vendor/php" | indent
         done
     fi
-
-    cp "$CACHE_DIR/composer.phar" "$target/vendor/composer/bin/"
 
     echo "-----> Installing application dependencies with Composer"
     {

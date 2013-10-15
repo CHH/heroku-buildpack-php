@@ -1,0 +1,18 @@
+#!/usr/bin/env bash
+
+basedir="$( cd -P "$( dirname "$0" )" && pwd )"
+source "$basedir/../conf/buildpack.conf"
+
+tempdir="$( mktemp -t composer_xxxx )"
+rm -rf $tempdir
+mkdir -p $tempdir
+cd $tempdir
+
+curl -L http://getcomposer.org/composer.phar > composer.phar
+md5 -q composer.phar > composer.phar.md5
+
+s3cmd put --verbose --acl-public \
+    ./composer.phar s3://$S3_BUCKET/composer/composer.phar
+
+s3cmd put --verbose --acl-public \
+    ./composer.phar.md5 s3://$S3_BUCKET/composer/composer.phar.md5
