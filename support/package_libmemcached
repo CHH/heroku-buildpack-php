@@ -7,10 +7,10 @@ source "$basedir/../conf/buildpack.conf"
 
 if [ -z "$S3_BUCKET" ]; then
     echo "Must set S3_BUCKET environment variable" >&2
-    exit $E_S3_BUCKET_MISSING
+    exit 1
 fi
 
-tempdir="$( mktemp -t nginx_xxxx )"
+tempdir="$( mktemp -t libmemcached_xxxx )"
 rm -rf $tempdir
 mkdir -p $tempdir
 cd $tempdir

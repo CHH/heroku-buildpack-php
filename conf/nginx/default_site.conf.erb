@@ -1,5 +1,5 @@
 # Default configuration for non-framework apps
-root <%= ENV['DOCUMENT_ROOT'] %>;
+root /app/<%= ENV['DOCUMENT_ROOT'] %>;
 
 location ~ \.php {
     include fastcgi_params;
