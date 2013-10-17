@@ -1,0 +1,49 @@
+#!/usr/bin/env bash
+
+set -e
+
+mcrypt_version="$1"
+
+if [ -z "$mcrypt_version" ]; then
+    echo "Usage: $(basename "$0") VERSION" >&2
+    exit 1
+fi
+
+basedir="$( cd -P "$( dirname "$0" )" && pwd )"
+source "$basedir/../conf/buildpack.conf"
+
+if [ -z "$S3_BUCKET" ]; then
+    echo "Must set S3_BUCKET environment variable" >&2
+    exit 1
+fi
+
+tempdir="$( mktemp -t libmcrypt_xxxx )"
+rm -rf $tempdir
+mkdir -p $tempdir
+cd $tempdir
+
+echo "-----> Downloading libmcrypt ${mcrypt_version}"
+curl -L "http://sourceforge.net/projects/mcrypt/files/Libmcrypt/${mcrypt_version}/libmcrypt-${mcrypt_version}.tar.gz/download" \
+    | tar xzv
+
+build_cmd=$(cat <<SH
+    mkdir -p /app/vendor/libmcrypt \
+    && cd libmcrypt-${mcrypt_version} \
+    && ./configure --disable-posix-threads --prefix=/app/vendor/libmcrypt \
+    && make && make install
+SH
+)
+
+vulcan build --verbose \
+    --prefix /app/vendor/libmcrypt \
+    --source "." \
+    --output "${tempdir}/libmcrypt-${mcrypt_version}.tgz" \
+    --name libmcrypt \
+    --command "$build_cmd"
+
+s3cmd put \
+    --verbose --acl-public \
+    "$tempdir/libmcrypt-${mcrypt_version}.tgz" \
+    "s3://$S3_BUCKET/package/libmcrypt-${mcrypt_version}.tgz"
+
+"$basedir/package-checksum" "libmcrypt-${mcrypt_version}"

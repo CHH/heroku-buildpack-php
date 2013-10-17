@@ -1,0 +1,14 @@
+#!/usr/bin/env bash
+
+libevent_version="0.1.0"
+
+curl -L "http://pecl.php.net/get/libevent-${libevent_version}.tgz" \
+    | tar xzv
+
+cd libevent-${libevent_version}
+/app/vendor/php/bin/phpize
+./configure --with-php-config=/app/vendor/php/bin/php-config
+
+make
+cp modules/libevent.so "$EXT_DIR/libevent.so"
+echo "extension=libevent.so" > "$PREFIX/etc/conf.d/libevent.ini"

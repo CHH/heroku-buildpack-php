@@ -1,0 +1,26 @@
+#!/usr/bin/env bash
+
+set -e
+
+basedir="$( cd -P "$( dirname "$0" )" && pwd )"
+source "$basedir/../conf/buildpack.conf"
+
+if [ -z "$S3_BUCKET" ]; then
+    echo "Must set S3_BUCKET environment variable" >&2
+    exit $E_S3_BUCKET_MISSING
+fi
+
+package="$1"
+
+tempdir="$( mktemp -t s3_xxxx )"
+rm -rf $tempdir
+mkdir -p $tempdir
+cd $tempdir
+
+echo "-----> Creating checksum for ${package}"
+
+s3cmd get "s3://$S3_BUCKET/package/${package}.tgz" "${package}.tgz"
+md5 -q "${package}.tgz" > "${package}.md5"
+s3cmd put \
+    --verbose --acl-public \
+    "${package}.md5" "s3://$S3_BUCKET/package/${package}.md5"

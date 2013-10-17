@@ -1,26 +1,55 @@
 #!/bin/bash
 
 set -e
+set -o pipefail
 shopt -s dotglob
 
 basedir="$( cd -P "$( dirname "$0" )" && pwd )"
-
 source "$basedir/../conf/buildpack.conf"
 
 if [ -n "$BUILDPACK_DEBUG" ]; then
     set -x
 fi
 
-function fetch_package() {
+BUILD_DIR="$1"
+CACHE_DIR="$2"
+
+cd "$BUILD_DIR"
+mkdir -p "$CACHE_DIR/package"
+
+function fetch_engine_package() {
     local engine="$1"
     local version="$2"
     local location="$3"
 
+    fetch_package "${engine}-${version}" "$location"
+}
+
+function fetch_package() {
+    local package="$1"
+    local location="$2"
+
     mkdir -p "$location"
 
-    local package="http://${S3_BUCKET}.s3.amazonaws.com/package/${engine}-${version}.tgz"
+    local checksum_url="http://${S3_BUCKET}.s3.amazonaws.com/package/${package}.md5"
+    local package_url="http://${S3_BUCKET}.s3.amazonaws.com/package/${package}.tgz"
+    local checksum=$(curl "$checksum_url" 2> /dev/null)
+    local cache_checksum=
 
-    curl "$package" -L -s -o - | tar xzf - -C "$location"
+    if [ -f "$CACHE_DIR/package/${package}.md5" ]; then
+        local cache_checksum=$(cat "$CACHE_DIR/package/${package}.md5")
+    fi
+
+    mkdir -p "$CACHE_DIR/package/$(dirname "$package")"
+
+    if [ "$cache_checksum" != "$checksum" ]; then
+        curl "$package_url" -L -s > "$CACHE_DIR/package/${package}.tgz"
+        echo "$checksum" > "$CACHE_DIR/package/${package}.md5"
+    else
+        echo "Checksums match. Fetching from cache."
+    fi
+
+    tar xzf "$CACHE_DIR/package/${package}.tgz" -C "$location"
 }
 
 function indent() {
@@ -41,23 +70,37 @@ function install_composer_deps() {
 
     export COMPOSER_CACHE_DIR=$CACHE_DIR/composer
     mkdir -p $COMPOSER_CACHE_DIR
+    mkdir -p "$target/vendor/composer/bin"
+
+    local checksum=$(curl --silent "http://${S3_BUCKET}.s3.amazonaws.com/composer/composer.phar.md5")
 
     echo "-----> Vendoring Composer"
-    {
-        mkdir -p "$target/vendor/composer/bin"
-        curl -L "http://getcomposer.org/composer.phar" > "$target/vendor/composer/bin/composer.phar"
-        chmod a+x "$target/vendor/composer/bin/composer.phar"
-    } | indent
+    if [ ! -f "$CACHE_DIR/composer.phar.md5" ] || [ "$(cat $CACHE_DIR/composer.phar.md5)" != "$checksum" ]; then
+        echo "Updating Composer" | indent
+        curl --silent "http://${S3_BUCKET}.s3.amazonaws.com/composer/composer.phar" > "$CACHE_DIR/composer.phar" | indent
+        chmod a+x "$CACHE_DIR/composer.phar"
+        echo "$checksum" > $CACHE_DIR/composer.phar.md5
+    fi
+
+    cp "$CACHE_DIR/composer.phar" "$target/vendor/composer/bin/"
+
+    local required_extensions=$(jq --raw-output '.require | keys | .[]' < "$BUILD_DIR/composer.json" | grep '^ext-' | sed 's/^ext-//')
+    if [ -n "$required_extensions" ]; then
+        echo "-----> Bundling additional extensions $required_extensions"
+        for ext in $required_extensions; do
+            echo "$ext" | indent
+            fetch_package "ext/$(php_api_version)/php-${ext}" "/app/vendor/php" | indent
+        done
+    fi
 
     echo "-----> Installing application dependencies with Composer"
     {
         cd "$target"
-        "$BUILD_DIR/vendor/php/bin/php" \
-            "$target/vendor/composer/bin/composer.phar" install \
+        php "vendor/composer/bin/composer.phar" install \
             --prefer-dist \
             --optimize-autoloader \
-            --no-interaction
-
+            --no-interaction \
+            --no-dev
         cd "$cwd"
     } | indent
 }
@@ -69,9 +112,32 @@ function mktmpdir() {
     echo $dir
 }
 
+function php_api_version() {
+    basename "$(php-config --extension-dir)" | tr '-' ' ' | cut -f 5 -d ' '
+}
+
+function install_newrelic() {
+    echo "-----> Enabling Newrelic support"
+
+    local version="$1"
+    local cwd=$(pwd)
+    local ext_dir=/app/vendor/php/lib/php/extensions/no-debug-non-zts-$(php_api_version)
+    local tempdir=$(mktmpdir "newrelic")
+    cd "$tempdir"
+
+    curl --silent -L "http://download.newrelic.com/php_agent/archive/${version}/newrelic-php5-${version}-linux.tar.gz" | tar xz
+    mkdir -p $BUILD_DIR/vendor/newrelic/{bin,etc}
+    cd "newrelic-php5-${version}-linux"
+
+    cp -f "daemon/newrelic-daemon.x64" $BUILD_DIR/vendor/newrelic/bin/newrelic-daemon
+    cp -f "agent/x64/newrelic-$(php_api_version).so" "${ext_dir}/newrelic.so"
+    cp -f "$basedir/../conf/php/newrelic.ini" "/app/vendor/php/etc/conf.d/newrelic.ini"
+
+    cd "$cwd"
+}
+
 function package_document_root() {
-    local doc_root=$(jq --raw-output '.extra.heroku["document-root"] // ""' < "$BUILD_DIR/composer.json")
-    echo "/app/$doc_root"
+    jq --raw-output '.extra.heroku["document-root"] // ""' < "$BUILD_DIR/composer.json"
 }
 
 function package_index_file() {
@@ -106,31 +172,38 @@ function package_compile_cmd() {
     jq --raw-output '.extra.heroku["compile"] // [] | .[]' < "$BUILD_DIR/composer.json"
 }
 
-BUILD_DIR="$1"
-CACHE_DIR="$2"
+function package_newrelic_enabled() {
+    local val=$(jq --raw-output '.extra.heroku["newrelic"] // false' < "$BUILD_DIR/composer.json")
 
-cd "$BUILD_DIR"
+    if [ "$val" = "true" ]; then
+        return 0
+    else
+        return 1
+    fi
+}
 
 # Download jq binary for JSON processing
 export PATH="$HOME/bin:$PATH"
-curl "http://stedolan.github.com/jq/download/linux64/jq" -L -s -o - > "$HOME/bin/jq"
+curl "http://${S3_BUCKET}.s3.amazonaws.com/jq/jq" -L -s -o - > "$HOME/bin/jq"
 chmod +x "$HOME/bin/jq"
 
-DEFAULT_PHP="5.5.3"
+DEFAULT_PHP="5.5.4"
 DEFAULT_NGINX="1.4.2"
 
 AVAILABLE_PHP_VERSIONS=$(curl "http://${S3_BUCKET}.s3.amazonaws.com/manifest.php" 2> /dev/null)
 AVAILABLE_NGINX_VERSIONS=$(curl "http://${S3_BUCKET}.s3.amazonaws.com/manifest.nginx" 2> /dev/null)
 
+MCRYPT_VERSION="2.5.8"
 PHP_VERSION="default"
 NGINX_VERSION="default"
-DOCUMENT_ROOT="/app"
+DOCUMENT_ROOT=
 INDEX_DOCUMENT="index.php"
 FRAMEWORK=
 PHP_EXTRA_CONFIG=
 PHP_INCLUDES=
 COMPILE_CMD=
 NGINX_INCLUDES=
+NEWRELIC_VERSION=4.0.5.18
 
 # Read config variables from composer.json if it exists
 if [ -f "$BUILD_DIR/composer.json" ]; then
@@ -163,25 +236,41 @@ if echo "$NGINX_VERSION" | grep '\*' &>/dev/null; then
     NGINX_VERSION=$(echo "$AVAILABLE_NGINX_VERSIONS" | grep "^$NGINX_VERSION$" | sort -r | head -n1)
 fi
 
-VENDORED_NGINX=$(mktmpdir nginx)
-VENDORED_PHP=$(mktmpdir php)
+VENDORED_NGINX=/app/vendor/nginx
+VENDORED_PHP=/app/vendor/php
+
+[ ! -d "$BUILD_DIR/vendor" ] && mkdir -p "$BUILD_DIR/vendor"
 
 echo "-----> Bundling NGINX ${NGINX_VERSION}"
-fetch_package nginx "$NGINX_VERSION" "$VENDORED_NGINX"
+fetch_engine_package nginx "$NGINX_VERSION" /app/vendor/nginx | indent
 
 echo "-----> Bundling PHP ${PHP_VERSION}"
-fetch_package php "$PHP_VERSION" "$VENDORED_PHP"
 
-echo "-----> Vendoring binaries into slug"
-[ ! -d "$BUILD_DIR/vendor" ] && mkdir -p "$BUILD_DIR/vendor"
-cp -R "$VENDORED_NGINX/" "vendor/nginx"
-cp -R "$VENDORED_PHP/" "vendor/php"
+# Install libraries also on build container, so PHP doesn't wayne about missing
+# dynamic libraries when running it during the slug compilation.
+fetch_package "libicu-51" /app/vendor/libicu > /dev/null
+fetch_package "libmcrypt-${MCRYPT_VERSION}" /app/vendor/libmcrypt > /dev/null
 
-export PATH=/app/vendor/nginx/sbin:/app/vendor/php/bin:/app/vendor/php/sbin:$PATH
+fetch_engine_package php "$PHP_VERSION" /app/vendor/php | indent
 
-# Test that all packages were fetched and extracted successfully
-test -d "vendor/nginx"
-test -d "vendor/php"
+test ! -d ".profile.d" && mkdir -p .profile.d || true
+
+cat > ".profile.d/php.sh" <<SH
+export PATH=/sbin:/bin:/usr/sbin:/usr/bin:/app/bin:/app/vendor/nginx/sbin:/app/vendor/php/sbin:/app/vendor/php/bin:/app/vendor/bin:\$PATH
+SH
+
+source ".profile.d/php.sh"
+
+# Fetch additional extensions
+echo "-----> Bundling extensions"
+echo "       phpredis"
+fetch_package "ext/$(php_api_version)/php-redis" "/app/vendor/php" | indent
+echo "       mongo"
+fetch_package "ext/$(php_api_version)/php-mongo" "/app/vendor/php" | indent
+
+if [ -f "$BUILD_DIR/composer.json" ] && package_newrelic_enabled; then
+    install_newrelic "$NEWRELIC_VERSION"
+fi
 
 if [ -n "$BUILDPACK_DEBUG" ]; then
     ls -R vendor/nginx
@@ -190,17 +279,20 @@ fi
 
 mkdir -p "conf"
 cp "$basedir/../conf/nginx/base.conf.erb" "conf/nginx.conf.erb"
-cp "$basedir/../conf/php/php-fpm.conf" "vendor/php/etc/php-fpm.conf"
-cp "$basedir/../conf/php/php.ini" "vendor/php/etc/php.ini"
+cp "$basedir/../conf/php/php-fpm.conf" "/app/vendor/php/etc/php-fpm.conf"
+cp "$basedir/../conf/php/php.ini" "/app/vendor/php/etc/php.ini"
+
+pear config-set php_ini /app/vendor/php/etc/php.ini &> /dev/null
 
 for conf in $PHP_EXTRA_CONFIG; do
-    echo "$conf" >> "vendor/php/etc/php.ini"
+    echo "$conf" >> "/app/vendor/php/etc/php.ini"
 done
 
 for include in $PHP_INCLUDES; do
     cp "$BUILD_DIR/$include" "vendor/php/etc/conf.d"
 done
 
+# Detect PHP framework
 for f in "$basedir/../frameworks/"*; do
     if "$f" detect "$BUILD_DIR"; then
         FRAMEWORK="$f"
@@ -220,12 +312,6 @@ if [ -n "$FRAMEWORK" ] && [ -f "$FRAMEWORK" ]; then
     "$FRAMEWORK" compile "$BUILD_DIR" "$CACHE_DIR"
 fi
 
-test ! -d ".profile.d" && mkdir -p .profile.d || true
-
-cat > ".profile.d/php.sh" <<SH
-export PATH=/sbin:/bin:/usr/sbin:/usr/bin:/app/bin:/app/vendor/nginx/sbin:/app/vendor/php/sbin:/app/vendor/php/bin:/app/vendor/bin:\$PATH
-SH
-
 install_composer_deps "$BUILD_DIR"
 
 if [ -n "$COMPILE_CMD" ]; then
@@ -238,10 +324,20 @@ if [ -n "$COMPILE_CMD" ]; then
     done
 fi
 
+echo "-----> Vendoring binaries into slug"
+mv /app/vendor/libmcrypt vendor/libmcrypt
+mv /app/vendor/libicu vendor/libicu
+mv /app/vendor/nginx vendor/nginx
+mv /app/vendor/php vendor/php
+
 mkdir -p "bin"
 
 cat > "bin/run" <<SH
 #!/usr/bin/env bash
+
+pmsgr=/tmp/pmsgr
+rm -f \$pmsgr
+mkfifo \$pmsgr
 
 for var in \`env | cut -f1 -d=\`; do
     echo "env[\$var] = \\$\${var}" >> /app/vendor/php/etc/php-fpm.conf
@@ -250,6 +346,10 @@ done
 export DOCUMENT_ROOT="$DOCUMENT_ROOT"
 export INDEX_DOCUMENT="$INDEX_DOCUMENT"
 export NGINX_INCLUDES="$NGINX_INCLUDES"
+
+if [ -n "\$NEW_RELIC_LICENSE_KEY" ]; then
+    echo "newrelic.license=\"\$NEW_RELIC_LICENSE_KEY\"" > /app/vendor/php/etc/conf.d/newrelic_license.ini
+fi
 
 erb conf/nginx.conf.erb > /app/vendor/nginx/conf/nginx.conf
 erb conf/site.conf.erb > /app/vendor/nginx/conf/site.conf
@@ -263,10 +363,24 @@ touch /app/vendor/nginx/logs/access.log \
 
 touch /app/vendor/php/var/log/error.log
 
-(tail -qF -n 0 /app/vendor/nginx/logs/access.log /app/vendor/nginx/logs/error.log /app/vendor/php/var/log/*.log &)
+(
+    tail -qF -n 0 /app/vendor/nginx/logs/access.log /app/vendor/nginx/logs/error.log /app/vendor/php/var/log/*.log
+    \$pmsgr < "tail"
+)&
 
-php-fpm -p "/app/vendor/php"
-nginx -p "/app/vendor/nginx" -c /app/vendor/nginx/conf/nginx.conf
+(
+    php-fpm -p "/app/vendor/php"
+    \$pmsgr < "php-fpm"
+)&
+
+(
+    nginx -p "/app/vendor/nginx" -c /app/vendor/nginx/conf/nginx.conf
+    \$pmsgr < "nginx"
+)&
+
+read exitproc <\$pmsgr
+echo "Boot failed: \$exitproc"
+exit 1
 SH
 
 chmod a+x "bin/run"

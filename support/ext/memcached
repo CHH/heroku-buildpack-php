@@ -1,0 +1,20 @@
+#!/usr/bin/env bash
+
+php_memcached_version=40ce9b4633de5d70f056e4d434d9b064263348d0
+
+curl -L "https://github.com/andreiz/php-memcached/archive/${php_memcached_version}.tar.gz" \
+    | tar xzv
+
+mkdir -p /app/vendor/libmemcached
+curl "https://s3-eu-west-1.amazonaws.com/chh-heroku-buildpack-php/package/libmemcached-1.0.17.tgz" \
+    | tar xzv -C /app/vendor/libmemcached
+
+cd php-memcached-${php_memcached_version}
+/app/vendor/php/bin/phpize
+./configure --with-php-config=/app/vendor/php/bin/php-config \
+            --with-libmemcached-dir=/app/vendor/libmemcached
+            --enable-memcached
+
+make
+cp modules/memcached.so "$EXT_DIR/memcached.so"
+echo "extension=memcached.so" > "$PREFIX/etc/conf.d/memcached.ini"
