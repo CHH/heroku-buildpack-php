@@ -14,6 +14,9 @@ http {
     error_log logs/error.log notice;
     access_log logs/access.log;
 
+    client_max_body_size 100m;
+    client_body_timeout 600s;
+
     upstream php {
         server unix:/tmp/php-fpm.sock max_fails=3 fail_timeout=3s;
         keepalive 16;
