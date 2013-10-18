@@ -304,13 +304,18 @@ if [ -z "$FRAMEWORK" ]; then
     FRAMEWORK="$basedir/../frameworks/default"
 fi
 
+# Try to load the framework from the "frameworks" directory if it's just a 
+# simple framework name like "symfony2"
 if [ ! -f "$FRAMEWORK" ] && [ -f "$basedir/../frameworks/$FRAMEWORK" ]; then
     FRAMEWORK="$basedir/../frameworks/$FRAMEWORK"
 fi
 
-if [ -n "$FRAMEWORK" ] && [ -f "$FRAMEWORK" ]; then
-    "$FRAMEWORK" compile "$BUILD_DIR" "$CACHE_DIR"
+if [ ! -f "$FRAMEWORK" ]; then
+    echo "Framework \"$FRAMEWORK\" not found!"
+    exit 1
 fi
+
+"$FRAMEWORK" compile "$BUILD_DIR" "$CACHE_DIR"
 
 install_composer_deps "$BUILD_DIR"
 
@@ -323,6 +328,8 @@ if [ -n "$COMPILE_CMD" ]; then
         } | indent
     done
 fi
+
+"$FRAMEWORK" post-compile "$BUILD_DIR" "$CACHE_DIR" || true
 
 echo "-----> Vendoring binaries into slug"
 mv /app/vendor/libmcrypt vendor/libmcrypt
