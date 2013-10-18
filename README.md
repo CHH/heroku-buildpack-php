@@ -78,10 +78,6 @@ Is detected when the app requires the `slim/slim` package or when the
 requests which don't match an existing file are routed to 
 the `index.php` file in the document root.
 
-Options:
-
-* `document-root`
-
 ### Classic PHP
 
 The classic PHP configuration is used as fallback when no framework was detected. It serves every `.php` file relative to the document root.
