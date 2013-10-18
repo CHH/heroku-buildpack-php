@@ -4,7 +4,7 @@ BUILD_DIR="$2"
 basedir="$( cd -P "$( dirname "$0" )" && pwd )"
 
 function requires_symfony2() {
-    [ $(jq --raw-output '.require["symfony/symfony"]' < "$BUILD_DIR/composer.json") != "null" ]
+    jq --raw-output '.packages | .[] | .name' < "$BUILD_DIR/composer.lock" | grep -q '^symfony/symfony$'
 }
 
 function sets_framework_symfony2() {
