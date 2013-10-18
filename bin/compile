@@ -69,7 +69,7 @@ function install_composer_deps() {
     fi
 
     if [ ! -f "$target/composer.lock" ]; then
-        echo "Lockfile required. Please check it in."
+        echo " !     Lockfile required. Please check it in."
         return 1
     fi
 
