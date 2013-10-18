@@ -44,7 +44,7 @@ url.
 
 ## Detection
 
-This buildpack detects apps when the app has a `composer.json` in the
+This buildpack detects apps when the app has a `composer.lock` in the
 app's root.
 
 If an `index.php` is detected in the app's root, then it switches to
@@ -56,20 +56,31 @@ and the document root is set to the app root.
 ### Symfony 2
 
 Is detected when the app requires the `symfony/symfony` package or when the 
-`extra.heroku.framework` key is set to `symfony2` in the `composer.json`.
+`framework` setting is set to `symfony2` in the `composer.json`.
 
 This framework preset doesn't need any configuration to work.
 
 ### Silex
 
 Is used when the app requires the `silex/silex` package or when the 
-`extra.heroku.framework` key is set to `silex` in the `composer.json`.
+`framework` setting is set to `silex` in the `composer.json`.
 
 Options:
 
 * `index-document`: With Silex apps, this should be the file where `$app->run()`
   is called. All requests which don't match an existing file will be forwarded to
   this document.
+
+### Slim
+
+Is detected when the app requires the `slim/slim` package or when the
+`framework` setting is set to `slim` in the `composer.json`. All
+requests which don't match an existing file are routed to 
+the `index.php` file in the document root.
+
+Options:
+
+* `document-root`
 
 ### Classic PHP
 
