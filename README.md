@@ -51,6 +51,9 @@ If an `index.php` is detected in the app's root, then it switches to
 "classic mode", which means that every ".php" file is served with PHP,
 and the document root is set to the app root.
 
+When a `composer.lock` is detected, then the buildpack does `composer
+install --no-dev`.
+
 ## Frameworks
 
 ### Symfony 2
