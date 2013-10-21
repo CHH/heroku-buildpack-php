@@ -38,4 +38,6 @@ s3cmd put --verbose \
     "$tempdir/libmemcached-${memcached_version}.tgz" \
     "${s3_path}"
 
+"$basedir/package-checksum" libmemcached-${memcached_version}
+
 echo "-----> Done building libmemcached package!"
