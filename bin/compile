@@ -52,8 +52,16 @@ function fetch_package() {
     tar xzf "$CACHE_DIR/package/${package}.tgz" -C "$location"
 }
 
+function log_error() {
+    local c='s/^/ !     /'
+    case $(uname) in
+        Darwin) echo "$*" | sed -l "$c";;
+        *)      echo "$*" | sed -u "$c";;
+    esac
+}
+
 function indent() {
-    c='s/^/       /'
+    local c='s/^/       /'
     case $(uname) in
         Darwin) sed -l "$c";;
         *)      sed -u "$c";;
@@ -69,7 +77,7 @@ function install_composer_deps() {
     fi
 
     if [ ! -f "$target/composer.lock" ]; then
-        echo " !     Lockfile required. Please check it in."
+        log_error "Lockfile required. Please check it in."
         return 1
     fi
 
@@ -316,7 +324,7 @@ if [ ! -f "$FRAMEWORK" ] && [ -f "$basedir/../frameworks/$FRAMEWORK" ]; then
 fi
 
 if [ ! -f "$FRAMEWORK" ]; then
-    echo "Framework \"$FRAMEWORK\" not found!"
+    log_error "Framework \"$FRAMEWORK\" not found!"
     exit 1
 fi
 
