@@ -60,6 +60,16 @@ Is detected when the app requires the `symfony/symfony` package or when the
 
 This framework preset doesn't need any configuration to work.
 
+It's recommended to enable the `user-env-compile` Heroku labs feature for better compatibility
+with Symfony's Composer hooks. But please note that if you use config vars in Composer hooks, or in `compile`
+scripts, then a new code push may be necessary if you decide to change a config variable.
+
+You can enable the labs feature for your app with:
+
+```
+$ heroku labs:enable user-env-compile
+```
+
 ### Silex
 
 Is used when the app requires the `silex/silex` package or when the 
