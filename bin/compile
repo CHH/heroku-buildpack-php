@@ -218,6 +218,11 @@ COMPILE_CMD=
 NGINX_INCLUDES=
 NEWRELIC_VERSION=4.0.5.18
 
+# Try reading PHP version from .php-version file in project
+if [ -f "$BUILD_DIR/.php-version" ]; then
+    PHP_VERSION=$(cat "$BUILD_DIR/.php-version")
+fi
+
 # Read config variables from composer.json if it exists
 if [ -f "$BUILD_DIR/composer.json" ]; then
     PHP_VERSION=$(package_php_version)
@@ -270,6 +275,7 @@ test ! -d ".profile.d" && mkdir -p .profile.d || true
 
 cat > ".profile.d/php.sh" <<SH
 export PATH=/sbin:/bin:/usr/sbin:/usr/bin:/app/bin:/app/vendor/nginx/sbin:/app/vendor/php/sbin:/app/vendor/php/bin:/app/vendor/bin:\$PATH
+export HEROKU_BUILD_TIME=$(date +%Y%m%d%H%M)
 SH
 
 source ".profile.d/php.sh"

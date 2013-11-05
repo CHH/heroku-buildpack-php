@@ -12,6 +12,8 @@ fi
 basedir="$( cd -P "$( dirname "$0" )" && pwd )"
 source "$basedir/../conf/buildpack.conf"
 
+export PATH=${basedir}/../vendor/bin:$PATH
+
 if [ -z "$S3_BUCKET" ]; then
     echo "Must set S3_BUCKET environment variable" >&2
     exit 1

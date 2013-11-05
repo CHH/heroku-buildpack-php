@@ -65,6 +65,8 @@ EOF
 basedir="$( cd -P "$( dirname "$0" )" && pwd )"
 source "$basedir/../conf/buildpack.conf"
 
+export PATH=${basedir}/../vendor/bin:$PATH
+
 php_versions=$(curl --silent "http://${S3_BUCKET}.s3.amazonaws.com/manifest.php")
 
 ext_name="$1"
