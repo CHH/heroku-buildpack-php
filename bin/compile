@@ -218,11 +218,6 @@ COMPILE_CMD=
 NGINX_INCLUDES=
 NEWRELIC_VERSION=4.0.5.18
 
-# Try reading PHP version from .php-version file in project
-if [ -f "$BUILD_DIR/.php-version" ]; then
-    PHP_VERSION=$(cat "$BUILD_DIR/.php-version")
-fi
-
 # Read config variables from composer.json if it exists
 if [ -f "$BUILD_DIR/composer.json" ]; then
     PHP_VERSION=$(package_php_version)
@@ -234,6 +229,11 @@ if [ -f "$BUILD_DIR/composer.json" ]; then
     PHP_INCLUDES=$(package_php_includes)
     COMPILE_CMD=$(package_compile_cmd)
     NGINX_INCLUDES=$(package_nginx_includes)
+fi
+
+# Try reading PHP version from .php-version file in project
+if [ -f "$BUILD_DIR/.php-version" ]; then
+    PHP_VERSION=$(cat "$BUILD_DIR/.php-version")
 fi
 
 if [ "$PHP_VERSION" = "default" ]; then
