@@ -289,7 +289,7 @@ for conf in $PHP_EXTRA_CONFIG; do
 done
 
 for include in $PHP_INCLUDES; do
-    cp "$BUILD_DIR/$include" "vendor/php/etc/conf.d"
+    cp "$BUILD_DIR/$include" "/app/vendor/php/etc/conf.d/"
 done
 
 # Detect PHP framework
