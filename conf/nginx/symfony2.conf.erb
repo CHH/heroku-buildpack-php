@@ -14,7 +14,7 @@ location @rewriteapp {
     rewrite ^(.*)$ /app.php/$1 last;
 }
 
-location ~ ^/(app|app_dev)\.php(/|$) {
+location ~ ^/app\.php(/|$) {
     fastcgi_pass php;
     fastcgi_split_path_info ^(.+\.php)(/.*)$;
     include fastcgi_params;
