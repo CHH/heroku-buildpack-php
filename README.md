@@ -52,7 +52,7 @@ install --no-dev`.
 
 This buildpack sets environment variables during compile and runtime:
 
-* `HEROKU_BUILD_TIME`: Time when the slug was compiled. Format is `%Y%m%d%H%M%S`, e.g. `2013110311158`
+* `HEROKU_BUILD_TIME`: Time when the slug was compiled. Format is `%Y%m%d%H%M%S`, e.g. `20131103111548`
 
 ## Frameworks
 
