@@ -275,7 +275,7 @@ test ! -d ".profile.d" && mkdir -p .profile.d || true
 
 cat > ".profile.d/php.sh" <<SH
 export PATH=/sbin:/bin:/usr/sbin:/usr/bin:/app/bin:/app/vendor/nginx/sbin:/app/vendor/php/sbin:/app/vendor/php/bin:/app/vendor/bin:\$PATH
-export HEROKU_BUILD_TIME=$(date +%Y%m%d%H%M)
+export HEROKU_BUILD_TIME=$(date +%Y%m%d%H%M%S)
 SH
 
 source ".profile.d/php.sh"

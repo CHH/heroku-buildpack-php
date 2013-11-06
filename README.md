@@ -9,12 +9,6 @@
 * No writing NGINX configuration files: supports Classic PHP, Silex and Symfony 2 apps with simple configuration driven by your `composer.json`.
 * Zero-Configuration Symfony 2 deployment.
 
-## What works?
-
-* Basic provisioning
-* NGINX Configuration for frameworks `silex` and `symfony2`
-* Reading configuration from `composer.json`
-
 ## How to use it
 
 Use the `--buildpack` parameter when creating a new app:
@@ -53,6 +47,12 @@ and the document root is set to the app root.
 
 When a `composer.lock` is detected, then the buildpack does `composer
 install --no-dev`.
+
+## Environment
+
+This buildpack sets environment variables during compile and runtime:
+
+* `HEROKU_BUILD_TIME`: Time when the slug was compiled. Format is `%Y%m%d%H%M%S`, e.g. `2013110311158`
 
 ## Frameworks
 
