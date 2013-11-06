@@ -273,8 +273,8 @@ if [ -f "$BUILD_DIR/composer.json" ] && package_newrelic_enabled; then
 fi
 
 if [ -n "$BUILDPACK_DEBUG" ]; then
-    ls -R vendor/nginx
-    ls -R vendor/php
+    ls -R /app/vendor/nginx
+    ls -R /app/vendor/php
 fi
 
 mkdir -p "conf"
