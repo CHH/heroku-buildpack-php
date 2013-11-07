@@ -165,6 +165,9 @@ The version identifiers can also include wildcards, e.g. `5.4.*`. At the
 time of writing, PHP `5.4.19` would be used in this case. This also
 works for NGINX.
 
+When a file named `.php-version` exists in the project root, then the
+PHP version is read from this file instead.
+
 See also:
 
 * [Available NGINX Versions][]
