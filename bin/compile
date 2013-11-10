@@ -136,6 +136,19 @@ function install_newrelic() {
     cd "$cwd"
 }
 
+function install_node() {
+    echo "-----> Enabling Node support"
+
+    local version="$1"
+    local node_path='vendor/node'
+    fetch_engine_package node "$version" /app/${node_path} | indent
+    ln -s ${BUILD_DIR}/${node_path}/ /app/${node_path}
+    export INCLUDE_PATH="/app/${node_path}/include"
+    export PATH="$PATH:/app/${node_path}/bin"
+
+    echo "Node " `node -v` | indent
+}
+
 function package_document_root() {
     jq --raw-output '.extra.heroku["document-root"] // ""' < "$BUILD_DIR/composer.json"
 }
@@ -172,10 +185,24 @@ function package_compile_cmd() {
     jq --raw-output '.extra.heroku["compile"] // [] | .[]' < "$BUILD_DIR/composer.json"
 }
 
+function package_npm_packages() {
+    jq --raw-output '.extra.heroku["npm-packages"] // [] | .[]' < "$BUILD_DIR/composer.json"
+}
+
 function package_newrelic_enabled() {
     local val=$(jq --raw-output '.extra.heroku["newrelic"] // false' < "$BUILD_DIR/composer.json")
 
     if [ "$val" = "true" ]; then
+        return 0
+    else
+        return 1
+    fi
+}
+
+function package_node_enabled() {
+    local val=$(jq --raw-output '.extra.heroku["node"] // false' < "$BUILD_DIR/composer.json")
+
+    if [ "$val" = "true" ] || [[ -n $NPM_PACKAGES ]] ; then
         return 0
     else
         return 1
@@ -204,6 +231,8 @@ PHP_INCLUDES=
 COMPILE_CMD=
 NGINX_INCLUDES=
 NEWRELIC_VERSION=4.0.5.18
+NODE_VERSION=0.10.18
+NPM_PACKAGES=
 
 # Read config variables from composer.json if it exists
 if [ -f "$BUILD_DIR/composer.json" ]; then
@@ -216,6 +245,7 @@ if [ -f "$BUILD_DIR/composer.json" ]; then
     PHP_INCLUDES=$(package_php_includes)
     COMPILE_CMD=$(package_compile_cmd)
     NGINX_INCLUDES=$(package_nginx_includes)
+    NPM_PACKAGES=$(package_npm_packages)
 fi
 
 if [ "$PHP_VERSION" = "default" ]; then
@@ -270,6 +300,13 @@ fetch_package "ext/$(php_api_version)/php-mongo" "/app/vendor/php" | indent
 
 if [ -f "$BUILD_DIR/composer.json" ] && package_newrelic_enabled; then
     install_newrelic "$NEWRELIC_VERSION"
+fi
+
+if [ -f "$BUILD_DIR/composer.json" ] && package_node_enabled; then
+    install_node "$NODE_VERSION"
+    for package in $NPM_PACKAGES; do
+        npm install -g $package | indent
+    done
 fi
 
 if [ -n "$BUILDPACK_DEBUG" ]; then
