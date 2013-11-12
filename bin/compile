@@ -340,6 +340,10 @@ if [ -n "$COMPILE_CMD" ]; then
     done
 fi
 
+if [ -n "$FRAMEWORK" ] && [ -f "$FRAMEWORK" ]; then
+    "$FRAMEWORK" end "$BUILD_DIR" "$CACHE_DIR"
+fi
+
 status "Vendoring binaries into slug"
 mv /app/vendor/libmcrypt vendor/libmcrypt
 mv /app/vendor/libicu vendor/libicu

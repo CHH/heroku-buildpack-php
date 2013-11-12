@@ -2,6 +2,7 @@
 
 BUILD_DIR="$2"
 basedir="$( cd -P "$( dirname "$0" )" && pwd )"
+source $basedir/../bin/common.sh
 
 function requires_symfony2() {
     [ $(jq --raw-output '.require["symfony/symfony"]' < "$BUILD_DIR/composer.json") != "null" ]
@@ -27,5 +28,18 @@ case "$1" in
     compile)
         echo "-----> Setting up Symfony2 app"
         cp "$basedir/../conf/nginx/symfony2.conf.erb" "$BUILD_DIR/conf/site.conf.erb"
+        ;;
+    end)
+        BUILD_DIR="$1"
+        CACHE_DIR="$2"
+        APP_DIR="/app"
+
+        status "Warmuping cache, and seding cache path"
+        php app/console cache:warmup --env=prod --no-debug | indent
+
+        find $CACHE_DIR $CACHE_DIR/app -type f -exec perl -pi -e 's|$CACHE_DIR|$APP_DIR|g' {} \; | indent
+        # grep $CACHE_DIR -r . && error "Could find some '$CACHE_DIR' :/ "
+
+        status "End"
         ;;
 esac
