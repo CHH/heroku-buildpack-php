@@ -51,6 +51,9 @@ If an `index.php` is detected in the app's root, then it switches to
 "classic mode", which means that every ".php" file is served with PHP,
 and the document root is set to the app root.
 
+This buildpack also detects when the app has a node `package.json` in the
+app's root. And will install node dependencies like less for example.
+
 ## Frameworks
 
 ### Symfony 2
@@ -227,7 +230,39 @@ can also set your license key manually by setting the `NEW_RELIC_LICENSE_KEY` co
 
     "newrelic": true
 
-# Contributing
+## Node.Js
+
+If your app contains a `package.json` node and its dependencies will be installed
+
+The nodejs buildpack is based on the [heroku diet node.js buildpack](https://github.com/heroku/heroku-buildpack-nodejs/tree/diet).
+This diet branch of the buildpack is intended to replace the official Node.js buildpack once it has been tested by some users.
+
+It :
+- Uses the latest stable version of node and npm by default.
+- Allows any recent version of node to be used, including pre-release versions, as soon as they become available on [nodejs.org/dist](http://nodejs.org/dist/).
+- Uses the version of npm that comes bundled with node instead of downloading and compiling them separately. npm has been bundled with node since [v0.6.3 (Nov 2011)](http://blog.nodejs.org/2011/11/25/node-v0-6-3/). This effectively means that node versions `<0.6.3` are no longer supported, and that the `engines.npm` field in package.json is now ignored.
+- Makes use of an s3 caching proxy of nodejs.org for faster downloads of the node binaries.
+- Makes fewer HTTP requests when resolving node versions.
+- Uses an updated version of [node-semver](https://github.com/isaacs/node-semver) for dependency resolution.
+- No longer depends on SCONS.
+- Caches the `node_modules` directory across builds.
+- Runs `npm prune` after restoring cached modules, to ensure that any modules formerly used by your app aren't needlessly installed and/or compiled.
+
+A minimal `package.json` file with less will look like this :
+```json
+{
+    "author": "Your Name",
+    "name": "App",
+    "dependencies": {
+        "less": ">= 1.4.*"
+    }
+}
+```
+
+Node and its modules will be available at compilation meaning you could process nodejs script at that time.
+
+
+## Contributing
 
 Please see the [CONTRIBUTING](/CONTRIBUTING.md) file for all the
 details.
