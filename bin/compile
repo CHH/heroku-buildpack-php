@@ -86,6 +86,8 @@ function install_composer_deps() {
         done
     fi
 
+    php "vendor/composer/bin/composer.phar" self-update
+
     status "Installing application dependencies with Composer"
     {
         cd "$target"
