@@ -6,6 +6,7 @@ shopt -s dotglob
 
 basedir="$( cd -P "$( dirname "$0" )" && pwd )"
 source "$basedir/../conf/buildpack.conf"
+source $basedir/common.sh
 
 if [ -n "$BUILDPACK_DEBUG" ]; then
     set -x
@@ -52,14 +53,6 @@ function fetch_package() {
     tar xzf "$CACHE_DIR/package/${package}.tgz" -C "$location"
 }
 
-function indent() {
-    c='s/^/       /'
-    case $(uname) in
-        Darwin) sed -l "$c";;
-        *)      sed -u "$c";;
-    esac
-}
-
 function install_composer_deps() {
     local cwd=$(pwd)
     local target="$1"
@@ -74,7 +67,7 @@ function install_composer_deps() {
 
     local checksum=$(curl --silent "http://${S3_BUCKET}.s3.amazonaws.com/composer/composer.phar.md5")
 
-    echo "-----> Vendoring Composer"
+    status "Vendoring Composer"
     if [ ! -f "$CACHE_DIR/composer.phar.md5" ] || [ "$(cat $CACHE_DIR/composer.phar.md5)" != "$checksum" ]; then
         echo "Updating Composer" | indent
         curl --silent "http://${S3_BUCKET}.s3.amazonaws.com/composer/composer.phar" > "$CACHE_DIR/composer.phar" | indent
@@ -86,14 +79,14 @@ function install_composer_deps() {
 
     local required_extensions=$(jq --raw-output '.require | keys | .[]' < "$BUILD_DIR/composer.json" | grep '^ext-' | sed 's/^ext-//')
     if [ -n "$required_extensions" ]; then
-        echo "-----> Bundling additional extensions $required_extensions"
+        status "Bundling additional extensions $required_extensions"
         for ext in $required_extensions; do
             echo "$ext" | indent
             fetch_package "ext/$(php_api_version)/php-${ext}" "/app/vendor/php" | indent
         done
     fi
 
-    echo "-----> Installing application dependencies with Composer"
+    status "Installing application dependencies with Composer"
     {
         cd "$target"
         php "vendor/composer/bin/composer.phar" install \
@@ -103,6 +96,28 @@ function install_composer_deps() {
             --no-dev
         cd "$cwd"
     } | indent
+}
+
+function install_node_deps() {
+    local cwd=$(pwd)
+    local target="$1"
+
+    if [ ! -f "$target/package.json" ]; then
+        return 0
+    fi
+
+    status "NODE (package.json) app detected"
+
+    source ${basedir}/compile_node $BUILD_DIR $CACHE_DIR
+
+    local node_path='vendor/node'
+    
+    # Symlink node to /app/vendor/node so node and its modules are runnable.
+
+    ln -s ${BUILD_DIR}/${node_path}/ /app/${node_path}
+    ln -s ${BUILD_DIR}/node_modules /app/node_modules
+
+    echo "Node " `node -v` | indent
 }
 
 function mktmpdir() {
@@ -117,7 +132,7 @@ function php_api_version() {
 }
 
 function install_newrelic() {
-    echo "-----> Enabling Newrelic support"
+    status "Enabling Newrelic support"
 
     local version="$1"
     local cwd=$(pwd)
@@ -241,10 +256,10 @@ VENDORED_PHP=/app/vendor/php
 
 [ ! -d "$BUILD_DIR/vendor" ] && mkdir -p "$BUILD_DIR/vendor"
 
-echo "-----> Bundling NGINX ${NGINX_VERSION}"
+status "Bundling NGINX ${NGINX_VERSION}"
 fetch_engine_package nginx "$NGINX_VERSION" /app/vendor/nginx | indent
 
-echo "-----> Bundling PHP ${PHP_VERSION}"
+status "Bundling PHP ${PHP_VERSION}"
 
 # Install libraries also on build container, so PHP doesn't wayne about missing
 # dynamic libraries when running it during the slug compilation.
@@ -262,7 +277,7 @@ SH
 source ".profile.d/php.sh"
 
 # Fetch additional extensions
-echo "-----> Bundling extensions"
+status "Bundling extensions"
 echo "       phpredis"
 fetch_package "ext/$(php_api_version)/php-redis" "/app/vendor/php" | indent
 echo "       mongo"
@@ -312,10 +327,11 @@ if [ -n "$FRAMEWORK" ] && [ -f "$FRAMEWORK" ]; then
     "$FRAMEWORK" compile "$BUILD_DIR" "$CACHE_DIR"
 fi
 
+install_node_deps "$BUILD_DIR"
 install_composer_deps "$BUILD_DIR"
 
 if [ -n "$COMPILE_CMD" ]; then
-    echo "-----> Running compile commands"
+    status "Running compile commands"
     for cmd in "$COMPILE_CMD"; do
         {
             echo "Running '$cmd'"
@@ -324,7 +340,7 @@ if [ -n "$COMPILE_CMD" ]; then
     done
 fi
 
-echo "-----> Vendoring binaries into slug"
+status "Vendoring binaries into slug"
 mv /app/vendor/libmcrypt vendor/libmcrypt
 mv /app/vendor/libicu vendor/libicu
 mv /app/vendor/nginx vendor/nginx
