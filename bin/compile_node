@@ -1,0 +1,106 @@
+#!/usr/bin/env bash
+
+set -e            # fail fast
+set -o pipefail   # don't ignore exit codes when piping output
+# set -x          # enable debugging
+
+# Configure directories
+build_dir=$1
+cache_basedir=$2
+bp_dir=$(cd $(dirname $0); cd ..; pwd)
+
+# Load some convenience functions like status() echo(), indent()
+source $bp_dir/bin/common.sh
+
+# Output npm debug info on error
+trap cat_npm_debug_log ERR
+
+# Look in package.json's engines.node field for a semver range
+semver_range=$(cat $build_dir/package.json | jq -r .engines.node)
+
+# Resolve node version using semver.io
+semver_url=http://semver.io/node/resolve/$semver_range
+node_version=$(curl --silent $semver_url)
+
+# Recommend using semver ranges in a safe manner
+if [ "$semver_range" == "null" ]; then
+  protip "Specify a node version in package.json"
+  semver_range=""
+elif [ "$semver_range" == "*" ]; then
+  protip "Avoid using semver ranges like '*' in engines.node"
+elif [ ${semver_range:0:1} == ">" ]; then
+  protip "Avoid using semver ranges starting with '>' in engines.node"
+fi
+
+# Output info about requested range and resolved node version
+if [ "$semver_range" == "" ]; then
+  status "Defaulting to latest stable node: $node_version"
+else
+  status "Requested node range:  $semver_range"
+  status "Resolved node version: $node_version"
+fi
+
+# Download node from Heroku's S3 mirror of nodejs.org/dist
+status "Downloading and installing node"
+node_url="http://s3pository.heroku.com/node/v$node_version/node-v$node_version-linux-x64.tar.gz"
+curl $node_url -s -o - | tar xzf - -C $build_dir
+
+# Move node into ./vendor and make it executable
+mkdir -p $build_dir/vendor
+mv $build_dir/node-v$node_version-linux-x64 $build_dir/vendor/node
+chmod +x $build_dir/vendor/node/bin/*
+PATH=$PATH:$build_dir/vendor/node/bin
+
+# Run subsequent node/npm commands from the build path
+cd $build_dir
+
+if test -f $build_dir/npm-shrinkwrap.json; then
+  # Use npm-shrinkwrap.json's checksum as the cachebuster
+  status "Found npm-shrinkwrap.json"
+  shrinkwrap_checksum=$(cat $build_dir/npm-shrinkwrap.json | md5sum | awk '{print $1}')
+  cache_dir="$cache_basedir/$shrinkwrap_checksum"
+  test -d $cache_dir && status "npm-shrinkwrap.json unchanged since last build"
+else
+  # Fall back to package.json as the cachebuster.
+  protip "Use npm shrinkwrap to lock down dependency versions"
+  package_json_checksum=$(cat $build_dir/package.json | md5sum | awk '{print $1}')
+  cache_dir="$cache_basedir/$package_json_checksum"
+  test -d $cache_dir && status "package.json unchanged since last build"
+fi
+
+if test -d $cache_dir; then
+  status "Restoring node_modules from cache"
+  test -d $cache_dir/node_modules && cp -r $cache_dir/node_modules $build_dir/
+fi
+
+status "Installing dependencies"
+npm install --production 2>&1 | indent
+
+status "Pruning unused dependencies"
+npm prune 2>&1 | indent
+
+status "Caching node_modules for future builds"
+rm -rf $cache_dir
+mkdir -p $cache_dir
+test -d $build_dir/node_modules && cp -r $build_dir/node_modules $cache_dir/
+
+status "Cleaning up node-gyp and npm artifacts"
+rm -rf "$build_dir/.node-gyp"
+rm -rf "$build_dir/.npm"
+
+# Update the PATH
+status "Building runtime environment"
+mkdir -p $build_dir/.profile.d
+echo "export PATH=\"\$HOME/vendor/node/bin:\$HOME/bin:\$HOME/node_modules/.bin:\$PATH\"" > $build_dir/.profile.d/nodejs.sh
+
+# Post package.json to nomnom service
+# Use a subshell so it can't break the build.
+(
+  curl \
+    --data @$build_dir/package.json \
+    --fail \
+    --silent \
+    --request POST \
+    --header "content-type: application/json" \
+    https://nomnom.heroku.com/?request_id=$REQUEST_ID
+) &

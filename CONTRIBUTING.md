@@ -40,6 +40,10 @@ Setup `vulcan`:
 Setup an S3 Bucket in Amazon. Then note the name of your bucket
 and set it as `S3_BUCKET` in `conf/buildpack.conf`.
 
+If s3cmd is not configured you can run ``s3cmd --configure`
+
+You can copy our bucket by running ``s3cmd cp --recursive --acl-public s3://chh-heroku-buildpack-php s3://your-bucket``
+
 Then create a Heroku app with your fork as buildpack:
 
     mkdir myexampleapp
