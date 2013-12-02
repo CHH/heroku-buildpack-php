@@ -86,6 +86,8 @@ function install_composer_deps() {
         done
     fi
 
+    php "vendor/composer/bin/composer.phar" self-update
+
     status "Installing application dependencies with Composer"
     {
         cd "$target"
@@ -338,6 +340,10 @@ if [ -n "$COMPILE_CMD" ]; then
             eval "$cmd"
         } | indent
     done
+fi
+
+if [ -n "$FRAMEWORK" ] && [ -f "$FRAMEWORK" ]; then
+    "$FRAMEWORK" end "$BUILD_DIR" "$CACHE_DIR"
 fi
 
 status "Vendoring binaries into slug"
