@@ -113,7 +113,7 @@ function install_node_deps() {
     source ${basedir}/compile_node $BUILD_DIR $CACHE_DIR
 
     local node_path='vendor/node'
-    
+
     # Symlink node to /app/vendor/node so node and its modules are runnable.
 
     ln -s ${BUILD_DIR}/${node_path}/ /app/${node_path}
@@ -334,12 +334,10 @@ install_composer_deps "$BUILD_DIR"
 
 if [ -n "$COMPILE_CMD" ]; then
     status "Running compile commands"
-    for cmd in "$COMPILE_CMD"; do
-        {
-            echo "Running '$cmd'"
-            eval "$cmd"
-        } | indent
-    done
+    while read -r cmd; do
+        echo "Running '$cmd'" | indent
+        eval $cmd             | indent
+    done <<< "$COMPILE_CMD"
 fi
 
 if [ -n "$FRAMEWORK" ] && [ -f "$FRAMEWORK" ]; then
