@@ -84,6 +84,10 @@ Options:
   is called. All requests which don't match an existing file will be forwarded to
   this document.
 
+### Magento
+
+Is used when the `extra.heroku.framework` key is set to `magento` in the `composer.json`.
+
 ### Classic PHP
 
 The classic PHP configuration is used as fallback when no framework was detected. It serves every `.php` file relative to the document root.
