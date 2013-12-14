@@ -1,0 +1,43 @@
+root /app/<%= ENV['DOCUMENT_ROOT'] %>;
+
+include fastcgi_params;
+fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;
+
+# http://alanstorm.com/magento_exception_handling_developer_mode
+# fastcgi_param MAGE_IS_DEVELOPER_MODE true;
+
+location @handler {
+        rewrite / /index.php;
+}
+location / {
+        index index.php index.html;
+        try_files $uri $uri/ @handler;
+        expires 30d;
+}
+location ^~ /app/ {
+        deny all;
+}
+location ^~ /includes/ {
+        deny all;
+}
+location ^~ /media/downloadable/ {
+        deny all;
+}
+location ^~ /pkginfo/ {
+        deny all;
+}
+location ^~ /report/config.xml {
+        deny all;
+}
+location ^~ /var/ {
+        deny all;
+}
+location /. {
+        return 404;
+}
+location ~ \.php {
+    if (!-e $request_filename) {
+             rewrite / /index.php last;
+    }
+    fastcgi_pass php;
+}
