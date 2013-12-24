@@ -64,6 +64,9 @@ http {
         server_name localhost;
         listen <%= ENV['PORT'] %>;
 
+        #Specify a charset
+        charset utf-8;
+
         include site.conf;
 
         <% Shellwords.split(ENV['NGINX_INCLUDES'].to_s).each do |f| %>
