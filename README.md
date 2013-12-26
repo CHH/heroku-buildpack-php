@@ -12,7 +12,7 @@
 ## What works?
 
 * Basic provisioning
-* NGINX Configuration for frameworks `silex` and `symfony2`
+* NGINX Configuration for frameworks `cakephp2`, `magento`, `silex`, `slim` and `symfony2`
 * Reading configuration from `composer.json`
 
 ## How to use it
@@ -56,9 +56,20 @@ app's root. And will install node dependencies like less for example.
 
 ## Frameworks
 
+### CakePHP
+
+Is used when the app requires the `pear-pear.cakephp.org/CakePHP` Pear package or when the
+`extra.heroku.framework` key is set to `cakephp2` in the `composer.json`.
+
+Options:
+
+* `index-document`: With Slim apps, this should be the file where `$Dispatcher->dispatch(new CakeRequest(), new CakeResponse());`
+  is called. All requests which don't match an existing file will be forwarded to
+  this document.
+
 ### Symfony 2
 
-Is detected when the app requires the `symfony/symfony` package or when the 
+Is detected when the app requires the `symfony/symfony` package or when the
 `extra.heroku.framework` key is set to `symfony2` in the `composer.json`.
 
 This framework preset doesn't need any configuration to work.
@@ -75,12 +86,24 @@ $ heroku labs:enable user-env-compile
 
 ### Silex
 
-Is used when the app requires the `silex/silex` package or when the 
+Is used when the app requires the `silex/silex` package or when the
 `extra.heroku.framework` key is set to `silex` in the `composer.json`.
 
 Options:
 
 * `index-document`: With Silex apps, this should be the file where `$app->run()`
+  is called. All requests which don't match an existing file will be forwarded to
+  this document.
+
+
+### Slim
+
+Is used when the app requires the `slim/slim` package or when the
+`extra.heroku.framework` key is set to `slim` in the `composer.json`.
+
+Options:
+
+* `index-document`: With Slim apps, this should be the file where `$app->run()`
   is called. All requests which don't match an existing file will be forwarded to
   this document.
 
@@ -133,8 +156,12 @@ be overriden!
 
 Available presets:
 
+* `cakephp2`
+* `magento`
 * `silex` (needs `document-root` and `index-document` set)
+* `slim`
 * `symfony2`
+
 
 Example:
 
@@ -209,7 +236,7 @@ framework provided config. File paths are treated relative to the app
 root.
 
 Example:
-    
+
     "nginx-includes": ["etc/nginx.conf"]
 
 #### compile
