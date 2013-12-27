@@ -4,7 +4,7 @@ BUILD_DIR="$2"
 basedir="$( cd -P "$( dirname "$0" )" && pwd )"
 
 function requires_slim() {
-    [ $(jq --raw-output '.require["slim/slim"]' < "$BUILD_DIR/composer.json") != "null" ]
+    jq --raw-output '.packages | .[] | .name' < "$BUILD_DIR/composer.lock" | grep -q '^slim/slim$'
 }
 
 function sets_framework_slim() {

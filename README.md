@@ -9,12 +9,6 @@
 * No writing NGINX configuration files: supports Classic PHP, Silex and Symfony 2 apps with simple configuration driven by your `composer.json`.
 * Zero-Configuration Symfony 2 deployment.
 
-## What works?
-
-* Basic provisioning
-* NGINX Configuration for frameworks `cakephp2`, `magento`, `silex`, `slim` and `symfony2`
-* Reading configuration from `composer.json`
-
 ## How to use it
 
 Use the `--buildpack` parameter when creating a new app:
@@ -44,12 +38,21 @@ url.
 
 ## Detection
 
-This buildpack detects apps when the app has a `composer.json` in the
+This buildpack detects apps when the app has a `composer.lock` in the
 app's root.
 
 If an `index.php` is detected in the app's root, then it switches to
 "classic mode", which means that every ".php" file is served with PHP,
 and the document root is set to the app root.
+
+When a `composer.lock` is detected, then the buildpack does `composer
+install --no-dev`.
+
+## Environment
+
+This buildpack sets environment variables during compile and runtime:
+
+* `HEROKU_BUILD_TIME`: Time when the slug was compiled. Format is `%Y%m%d%H%M%S`, e.g. `20131103111548`
 
 This buildpack also detects when the app has a node `package.json` in the
 app's root. And will install node dependencies like less for example.
@@ -69,8 +72,8 @@ Options:
 
 ### Symfony 2
 
-Is detected when the app requires the `symfony/symfony` package or when the
-`extra.heroku.framework` key is set to `symfony2` in the `composer.json`.
+Is detected when the app requires the `symfony/symfony` package or when the 
+`framework` setting is set to `symfony2` in the `composer.json`.
 
 This framework preset doesn't need any configuration to work.
 
@@ -86,15 +89,14 @@ $ heroku labs:enable user-env-compile
 
 ### Silex
 
-Is used when the app requires the `silex/silex` package or when the
-`extra.heroku.framework` key is set to `silex` in the `composer.json`.
+Is used when the app requires the `silex/silex` package or when the 
+`framework` setting is set to `silex` in the `composer.json`.
 
 Options:
 
 * `index-document`: With Silex apps, this should be the file where `$app->run()`
   is called. All requests which don't match an existing file will be forwarded to
   this document.
-
 
 ### Slim
 
@@ -162,7 +164,6 @@ Available presets:
 * `slim`
 * `symfony2`
 
-
 Example:
 
     "framework": "silex"
@@ -198,6 +199,9 @@ default versions are NGINX `1.4.2` and PHP `5.5.3`.
 The version identifiers can also include wildcards, e.g. `5.4.*`. At the
 time of writing, PHP `5.4.19` would be used in this case. This also
 works for NGINX.
+
+When a file named `.php-version` exists in the project root, then the
+PHP version is read from this file instead.
 
 See also:
 

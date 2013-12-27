@@ -3,8 +3,9 @@
 set -e
 
 basedir="$( cd -P "$( dirname "$0" )" && pwd )"
-
 source "$basedir/../conf/buildpack.conf"
+
+export PATH=${basedir}/../vendor/bin:$PATH
 
 if [ -z "$1" ]; then
     echo "Usage: $0 <version>" >&2
