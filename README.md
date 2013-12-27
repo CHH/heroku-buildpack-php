@@ -63,7 +63,7 @@ Is used when the app requires the `pear-pear.cakephp.org/CakePHP` Pear package o
 
 Options:
 
-* `index-document`: With Slim apps, this should be the file where `$Dispatcher->dispatch(new CakeRequest(), new CakeResponse());`
+* `index-document`: With CakePHP apps, this should be the file where `$Dispatcher->dispatch(new CakeRequest(), new CakeResponse());`
   is called. All requests which don't match an existing file will be forwarded to
   this document.
 
