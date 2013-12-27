@@ -1,6 +1,6 @@
 # Changelog
 
-## v0.3.0, yyyy-mm-dd
+## v0.3.0, 2013-12-27
 
 ### Changes
 
@@ -14,6 +14,28 @@
   including additional PHP config files.
 * PHP, NGINX and Composer binaries are now cached and revalidated
   against MD5 hashes. This should provide notably faster deployments.
+* Add scripts for pre-building some popular extensions, like Mongo, Redis,
+Imagick, Libevent,…
+* Add support for adding extensions like Mongo on-demand, driven by
+  `ext-` requirements in `composer.json`, e.g. require `ext-libevent` to
+  add the `libevent` extension
+* Add BCMath and EXIF extensions to PHP
+* Add mcrypt to PHP
+* Add the `intl` extension
+* Add support for Slim, CakePHP and Magento frameworks
+* Add `sockets` to PHP
+* Add support for installing NPM packages found in `package.json` files,
+  which can be used at compile time (e.g. the LESS compiler)
+* Add NewRelic support.
+* Add support for `imagick` extension
+* Frameworks now support a `post-compile` method
+* `composer.lock` is now mandatory
+* Composer packages are now detected by looking at the `composer.lock`.
+* Vulcan is now installed with bundler
+* A `HEROKU_BUILD_TIME` variable is now set when compiling the slug,
+  which is available at runtime.
+* Symfony apps now only expose `app.php`, previously also `app_dev.php`
+  was reachable.
 
 [phpredis]: http://github.com/nicolasff/phpredis
 
