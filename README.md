@@ -59,6 +59,17 @@ app's root. And will install node dependencies like less for example.
 
 ## Frameworks
 
+### CakePHP
+
+Is used when the app requires the `pear-pear.cakephp.org/CakePHP` Pear package or when the
+`extra.heroku.framework` key is set to `cakephp2` in the `composer.json`.
+
+Options:
+
+* `index-document`: With CakePHP apps, this should be the file where `$Dispatcher->dispatch(new CakeRequest(), new CakeResponse());`
+  is called. All requests which don't match an existing file will be forwarded to
+  this document.
+
 ### Symfony 2
 
 Is detected when the app requires the `symfony/symfony` package or when the 
@@ -89,10 +100,18 @@ Options:
 
 ### Slim
 
-Is detected when the app requires the `slim/slim` package or when the
-`framework` setting is set to `slim` in the `composer.json`. All
-requests which don't match an existing file are routed to 
-the `index.php` file in the document root.
+Is used when the app requires the `slim/slim` package or when the
+`extra.heroku.framework` key is set to `slim` in the `composer.json`.
+
+Options:
+
+* `index-document`: With Slim apps, this should be the file where `$app->run()`
+  is called. All requests which don't match an existing file will be forwarded to
+  this document.
+
+### Magento
+
+Is used when the `extra.heroku.framework` key is set to `magento` in the `composer.json`.
 
 ### Classic PHP
 
@@ -139,7 +158,10 @@ be overriden!
 
 Available presets:
 
+* `cakephp2`
+* `magento`
 * `silex` (needs `document-root` and `index-document` set)
+* `slim`
 * `symfony2`
 
 Example:
@@ -218,7 +240,7 @@ framework provided config. File paths are treated relative to the app
 root.
 
 Example:
-    
+
     "nginx-includes": ["etc/nginx.conf"]
 
 #### compile

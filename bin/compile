@@ -107,6 +107,8 @@ function install_composer_deps() {
         done
     fi
 
+    php "vendor/composer/bin/composer.phar" self-update
+
     status "Installing application dependencies with Composer"
     {
         cd "$target"
@@ -132,7 +134,7 @@ function install_node_deps() {
     source ${basedir}/compile_node $BUILD_DIR $CACHE_DIR
 
     local node_path='vendor/node'
-    
+
     # Symlink node to /app/vendor/node so node and its modules are runnable.
 
     ln -s ${BUILD_DIR}/${node_path}/ /app/${node_path}
@@ -315,8 +317,8 @@ if [ -f "$BUILD_DIR/composer.json" ] && package_newrelic_enabled; then
 fi
 
 if [ -n "$BUILDPACK_DEBUG" ]; then
-    ls -R vendor/nginx
-    ls -R vendor/php
+    ls -R /app/vendor/nginx
+    ls -R /app/vendor/php
 fi
 
 mkdir -p "conf"
@@ -364,12 +366,14 @@ install_composer_deps "$BUILD_DIR"
 
 if [ -n "$COMPILE_CMD" ]; then
     status "Running compile commands"
-    for cmd in "$COMPILE_CMD"; do
-        {
-            echo "Running '$cmd'"
-            eval "$cmd"
-        } | indent
-    done
+    while read -r cmd; do
+        echo "Running '$cmd'" | indent
+        eval $cmd             | indent
+    done <<< "$COMPILE_CMD"
+fi
+
+if [ -n "$FRAMEWORK" ] && [ -f "$FRAMEWORK" ]; then
+    "$FRAMEWORK" end "$BUILD_DIR" "$CACHE_DIR"
 fi
 
 "$FRAMEWORK" post-compile "$BUILD_DIR" "$CACHE_DIR" || true

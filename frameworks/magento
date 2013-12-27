@@ -1,0 +1,27 @@
+#!/bin/bash
+
+BUILD_DIR="$2"
+basedir="$( cd -P "$( dirname "$0" )" && pwd )"
+
+function sets_framework_magento() {
+    [ $(jq --raw-output '.extra.heroku.framework' < "$BUILD_DIR/composer.json") == "magento" ]
+}
+
+case "$1" in
+    detect)
+        if [ ! -f "$BUILD_DIR/composer.json" ]; then
+            exit 1
+        fi
+
+        if sets_framework_magento; then
+            echo "-----> Detected Magento app"
+            exit 0
+        else
+            exit 1
+        fi
+        ;;
+    compile)
+        echo "-----> Setting up Magento app"
+        cp "$basedir/../conf/nginx/magento.conf.erb" "$BUILD_DIR/conf/site.conf.erb"
+        ;;
+esac
