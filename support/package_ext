@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 
 set -e
+#set -o pipefail
 
 if [ -z "$1" ]; then
     echo "Usage: package_ext EXT API..."
@@ -25,11 +26,11 @@ build_ext() {
     mkdir -p $tempdir
     cd $tempdir
 
-    echo "-----> Building $ext_name for PHP module API version ${zend_api_version} (PHP ${php_series})"
-
     local php_version=$(\
         echo "$php_versions" \
         | grep "^${php_series}.*$" | sort -r | head -n1)
+
+    echo "-----> Building $ext_name for PHP module API version ${zend_api_version} using PHP ${php_version}"
 
     local ext_dir="lib/php/extensions/no-debug-non-zts-${zend_api_version}"
     local php_package="http://${S3_BUCKET}.s3.amazonaws.com/package/php-${php_version}.tgz"
@@ -45,7 +46,6 @@ build_ext() {
 EOF
     )
 
-    {
         vulcan build --verbose \
             --name "php-${ext_name}" \
             --prefix "/tmp/out" \
@@ -57,7 +57,6 @@ EOF
             --acl-public \
             "$tempdir/php-${ext_name}.tgz" \
             "s3://$S3_BUCKET/package/ext/${zend_api_version}/php-${ext_name}.tgz"
-    } | indent
 
     "$basedir/package-checksum" "ext/${zend_api_version}/php-${ext_name}"
 }
@@ -78,7 +77,7 @@ if [ ! -f "$basedir/ext/$ext_name" ]; then
     exit 1
 fi
 
-echo "-----> Building $ext_name for PHP versions $php_api"
+echo "-----> Building $ext_name for PHP versions [$php_api]"
 
 for api in $php_api; do
     build_ext "$ext_name" "$api"
