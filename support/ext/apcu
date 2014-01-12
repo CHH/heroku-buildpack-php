@@ -1,0 +1,14 @@
+#!/usr/bin/env bash
+
+apcu_version=4.0.2
+
+curl -L "http://pecl.php.net/get/apcu-${apcu_version}.tgz" \
+    | tar xzv
+
+cd apcu-${apcu_version}
+/app/vendor/php/bin/phpize
+./configure --with-php-config=/app/vendor/php/bin/php-config
+
+make
+cp modules/apcu.so "$EXT_DIR/apcu.so"
+echo "extension=apcu.so" > "$PREFIX/etc/conf.d/apcu.ini"
