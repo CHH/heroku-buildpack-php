@@ -1,5 +1,15 @@
 # Changelog
 
+## v0.3.1, 2014-01-12
+
+### Changes
+
+* Add `apcu` as a separate extension bundle for easy updating
+* Install `apcu` from the separate extension bundle in `compile` to
+  update all existing installations to APCU 4.0.2. This release features
+  the return of the `apc_` functions for a real drop in replacement.
+* Merge PR #72
+
 ## v0.3.0, 2013-12-27
 
 ### Changes
