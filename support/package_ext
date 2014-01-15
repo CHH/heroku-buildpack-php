@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 set -e
-#set -o pipefail
+set -o pipefail
 
 if [ -z "$1" ]; then
     echo "Usage: package_ext EXT API..."

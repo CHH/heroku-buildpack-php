@@ -1,5 +1,12 @@
 # Changelog
 
+## v0.3.2, 2014-01-14
+
+### Changes
+
+* Update PHP to 5.5.8
+* Update NGINX to 1.4.4
+
 ## v0.3.1, 2014-01-12
 
 ### Changes
