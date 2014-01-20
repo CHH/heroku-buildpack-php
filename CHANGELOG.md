@@ -1,5 +1,12 @@
 # Changelog
 
+## v0.3.3, 2014-01-20
+
+### Changes
+
+* Ignore when a prebuilt extension bundle was not found in S3, which
+  fixes Composer requires for `ext-curl` for example.
+
 ## v0.3.2, 2014-01-14
 
 ### Changes
