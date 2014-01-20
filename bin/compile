@@ -103,7 +103,8 @@ function install_composer_deps() {
         status "Bundling additional extensions $required_extensions"
         for ext in $required_extensions; do
             echo "$ext" | indent
-            fetch_package "ext/$(php_api_version)/php-${ext}" "/app/vendor/php" | indent
+            # TODO: Find a better way to ignore extensions which were not found in S3
+            fetch_package "ext/$(php_api_version)/php-${ext}" "/app/vendor/php" 2>/dev/null || true | indent
         done
     fi
 
@@ -219,6 +220,7 @@ function package_newrelic_enabled() {
         return 1
     fi
 }
+
 # Download jq binary for JSON processing
 export PATH="$HOME/bin:$PATH"
 curl "http://${S3_BUCKET}.s3.amazonaws.com/jq/jq" -L -s -o - > "$HOME/bin/jq"
