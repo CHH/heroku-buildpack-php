@@ -103,7 +103,8 @@ function install_composer_deps() {
         status "Bundling additional extensions $required_extensions"
         for ext in $required_extensions; do
             echo "$ext" | indent
-            fetch_package "ext/$(php_api_version)/php-${ext}" "/app/vendor/php" || true | indent
+            # TODO: Find a better way to ignore extensions which were not found in S3
+            fetch_package "ext/$(php_api_version)/php-${ext}" "/app/vendor/php" 2>/dev/null || true | indent
         done
     fi
 
