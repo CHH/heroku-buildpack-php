@@ -1,0 +1,14 @@
+#!/usr/bin/env bash
+
+sundown_version=0.3.11
+
+curl -L "http://pecl.php.net/get/sundown-${sundown_version}.tgz" \
+    | tar xzv
+
+cd sundown-${sundown_version}
+/app/vendor/php/bin/phpize
+./configure --with-php-config=/app/vendor/php/bin/php-config
+
+make
+cp modules/sundown.so "$EXT_DIR/sundown.so"
+echo "extension=sundown.so" > "$PREFIX/etc/conf.d/sundown.ini"
