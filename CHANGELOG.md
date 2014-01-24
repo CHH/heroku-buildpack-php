@@ -1,5 +1,11 @@
 # Changelog
 
+## v0.3.4, 2014-01-24
+
+### Changes
+
+* Add `application/x-javascript` to GZIP-able types
+
 ## v0.3.3, 2014-01-20
 
 ### Changes
