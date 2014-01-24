@@ -30,9 +30,14 @@ You need the following tools to hack on this project:
 
 * An Amazon S3 bucket
 * `s3cmd` from <http://s3tools.org>
-* `vulcan` from Heroku via `gem install vulcan`
+* `vulcan` from Heroku `bundle install --path vendor`
 
-First setup an S3 Bucket in Amazon. Then note the name of your bucket
+Setup `vulcan`:
+
+    bundle install --path vendor
+    ./vendor/bin/vulcan create <yourname>-buildserver
+
+Setup an S3 Bucket in Amazon. Then note the name of your bucket
 and set it as `S3_BUCKET` in `conf/buildpack.conf`.
 
 If s3cmd is not configured you can run ``s3cmd --configure`

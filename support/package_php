@@ -3,8 +3,9 @@
 set -e
 
 basedir="$( cd -P "$( dirname "$0" )" && pwd )"
-
 source "$basedir/../conf/buildpack.conf"
+
+export PATH=${basedir}/../vendor/bin:$PATH
 
 if [ -z "$1" ]; then
     echo "Usage: $0 <version>" >&2
@@ -92,9 +93,7 @@ build_command=$(cat <<BUILD_CMD
     && make \
     && make install \
     && /app/vendor/php/bin/pear config-set php_dir /app/vendor/php \
-    && $install_zend_optimizer \
-    && yes '' | /app/vendor/php/bin/pecl install apcu-beta \
-    && echo "extension=apcu.so" > /app/vendor/php/etc/conf.d/apcu.ini
+    && $install_zend_optimizer
 BUILD_CMD
 )
 

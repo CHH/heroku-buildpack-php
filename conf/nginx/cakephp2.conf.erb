@@ -1,0 +1,20 @@
+<% if ENV.has_key? "DOCUMENT_ROOT" and ENV['DOCUMENT_ROOT'].to_s != "" %>
+root /app/<%= ENV['DOCUMENT_ROOT'] %>;
+<% else %>
+root /app/webroot;
+<% end %>
+
+#all locations try other files first and go to our front controller if none of them exists
+location / {
+    try_files $uri $uri/ /<%= ENV['INDEX_DOCUMENT'] %>?$uri&$args;
+}
+
+location ~ \.php$ {
+    try_files $uri =404;
+    fastcgi_pass php;
+    include fastcgi_params;
+    fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;
+    fastcgi_buffers 256 4k;
+    #uncomment when running via https
+    #fastcgi_param HTTPS on;
+}

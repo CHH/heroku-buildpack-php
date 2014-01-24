@@ -1,6 +1,30 @@
 # Changelog
 
-## v0.3.0, yyyy-mm-dd
+## v0.3.3, 2014-01-20
+
+### Changes
+
+* Ignore when a prebuilt extension bundle was not found in S3, which
+  fixes Composer requires for `ext-curl` for example.
+
+## v0.3.2, 2014-01-14
+
+### Changes
+
+* Update PHP to 5.5.8
+* Update NGINX to 1.4.4
+
+## v0.3.1, 2014-01-12
+
+### Changes
+
+* Add `apcu` as a separate extension bundle for easy updating
+* Install `apcu` from the separate extension bundle in `compile` to
+  update all existing installations to APCU 4.0.2. This release features
+  the return of the `apc_` functions for a real drop in replacement.
+* Merge PR #72
+
+## v0.3.0, 2013-12-27
 
 ### Changes
 
@@ -14,6 +38,28 @@
   including additional PHP config files.
 * PHP, NGINX and Composer binaries are now cached and revalidated
   against MD5 hashes. This should provide notably faster deployments.
+* Add scripts for pre-building some popular extensions, like Mongo, Redis,
+Imagick, Libevent,…
+* Add support for adding extensions like Mongo on-demand, driven by
+  `ext-` requirements in `composer.json`, e.g. require `ext-libevent` to
+  add the `libevent` extension
+* Add BCMath and EXIF extensions to PHP
+* Add mcrypt to PHP
+* Add the `intl` extension
+* Add support for Slim, CakePHP and Magento frameworks
+* Add `sockets` to PHP
+* Add support for installing NPM packages found in `package.json` files,
+  which can be used at compile time (e.g. the LESS compiler)
+* Add NewRelic support.
+* Add support for `imagick` extension
+* Frameworks now support a `post-compile` method
+* `composer.lock` is now mandatory
+* Composer packages are now detected by looking at the `composer.lock`.
+* Vulcan is now installed with bundler
+* A `HEROKU_BUILD_TIME` variable is now set when compiling the slug,
+  which is available at runtime.
+* Symfony apps now only expose `app.php`, previously also `app_dev.php`
+  was reachable.
 
 [phpredis]: http://github.com/nicolasff/phpredis
 

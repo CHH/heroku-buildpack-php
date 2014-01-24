@@ -1,0 +1,35 @@
+GEM
+  remote: https://rubygems.org/
+  specs:
+    addressable (2.3.5)
+    excon (0.31.0)
+    heroku (2.41.0)
+      heroku-api (~> 0.3.7)
+      launchy (>= 0.3.2)
+      netrc (~> 0.7.7)
+      rest-client (~> 1.6.1)
+      rubyzip
+    heroku-api (0.3.16)
+      excon (~> 0.27)
+      multi_json (~> 1.8.2)
+    launchy (2.4.2)
+      addressable (~> 2.3)
+    mime-types (2.0)
+    multi_json (1.8.4)
+    multipart-post (1.2.0)
+    netrc (0.7.7)
+    rest-client (1.6.7)
+      mime-types (>= 1.16)
+    rubyzip (1.1.0)
+    thor (0.14.6)
+    vulcan (0.8.2)
+      heroku (>= 2.26.0, < 3.0)
+      multipart-post (~> 1.2.0)
+      rest-client (~> 1.6.7)
+      thor (~> 0.14.6)
+
+PLATFORMS
+  ruby
+
+DEPENDENCIES
+  vulcan

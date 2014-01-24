@@ -1,0 +1,14 @@
+#!/usr/bin/env bash
+
+imagick_version="3.1.2"
+
+curl -L "http://pecl.php.net/get/imagick-${imagick_version}.tgz" \
+    | tar xzv
+
+cd imagick-${imagick_version}
+/app/vendor/php/bin/phpize
+./configure --with-php-config=/app/vendor/php/bin/php-config
+
+make
+cp modules/imagick.so "$EXT_DIR/imagick.so"
+echo "extension=imagick.so" > "$PREFIX/etc/conf.d/imagick.ini"

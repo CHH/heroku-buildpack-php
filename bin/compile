@@ -53,12 +53,33 @@ function fetch_package() {
     tar xzf "$CACHE_DIR/package/${package}.tgz" -C "$location"
 }
 
+function log_error() {
+    local c='s/^/ !     /'
+    case $(uname) in
+        Darwin) echo "$*" | sed -l "$c";;
+        *)      echo "$*" | sed -u "$c";;
+    esac
+}
+
+function indent() {
+    local c='s/^/       /'
+    case $(uname) in
+        Darwin) sed -l "$c";;
+        *)      sed -u "$c";;
+    esac
+}
+
 function install_composer_deps() {
     local cwd=$(pwd)
     local target="$1"
 
     if [ ! -f "$target/composer.json" ]; then
         return 0
+    fi
+
+    if [ ! -f "$target/composer.lock" ]; then
+        log_error "Lockfile required. Please check it in."
+        return 1
     fi
 
     export COMPOSER_CACHE_DIR=$CACHE_DIR/composer
@@ -82,7 +103,8 @@ function install_composer_deps() {
         status "Bundling additional extensions $required_extensions"
         for ext in $required_extensions; do
             echo "$ext" | indent
-            fetch_package "ext/$(php_api_version)/php-${ext}" "/app/vendor/php" | indent
+            # TODO: Find a better way to ignore extensions which were not found in S3
+            fetch_package "ext/$(php_api_version)/php-${ext}" "/app/vendor/php" 2>/dev/null || true | indent
         done
     fi
 
@@ -204,8 +226,8 @@ export PATH="$HOME/bin:$PATH"
 curl "http://${S3_BUCKET}.s3.amazonaws.com/jq/jq" -L -s -o - > "$HOME/bin/jq"
 chmod +x "$HOME/bin/jq"
 
-DEFAULT_PHP="5.5.5"
-DEFAULT_NGINX="1.4.3"
+DEFAULT_PHP="5.5.8"
+DEFAULT_NGINX="1.4.4"
 
 AVAILABLE_PHP_VERSIONS=$(curl "http://${S3_BUCKET}.s3.amazonaws.com/manifest.php" 2> /dev/null)
 AVAILABLE_NGINX_VERSIONS=$(curl "http://${S3_BUCKET}.s3.amazonaws.com/manifest.nginx" 2> /dev/null)
@@ -233,6 +255,11 @@ if [ -f "$BUILD_DIR/composer.json" ]; then
     PHP_INCLUDES=$(package_php_includes)
     COMPILE_CMD=$(package_compile_cmd)
     NGINX_INCLUDES=$(package_nginx_includes)
+fi
+
+# Try reading PHP version from .php-version file in project
+if [ -f "$BUILD_DIR/.php-version" ]; then
+    PHP_VERSION=$(cat "$BUILD_DIR/.php-version")
 fi
 
 if [ "$PHP_VERSION" = "default" ]; then
@@ -274,12 +301,15 @@ test ! -d ".profile.d" && mkdir -p .profile.d || true
 
 cat > ".profile.d/php.sh" <<SH
 export PATH=/sbin:/bin:/usr/sbin:/usr/bin:/app/bin:/app/vendor/nginx/sbin:/app/vendor/php/sbin:/app/vendor/php/bin:/app/vendor/bin:\$PATH
+export HEROKU_BUILD_TIME=$(date +%Y%m%d%H%M%S)
 SH
 
 source ".profile.d/php.sh"
 
 # Fetch additional extensions
 status "Bundling extensions"
+echo "       apcu"
+fetch_package "ext/$(php_api_version)/php-apcu" "/app/vendor/php" | indent
 echo "       phpredis"
 fetch_package "ext/$(php_api_version)/php-redis" "/app/vendor/php" | indent
 echo "       mongo"
@@ -321,13 +351,18 @@ if [ -z "$FRAMEWORK" ]; then
     FRAMEWORK="$basedir/../frameworks/default"
 fi
 
+# Try to load the framework from the "frameworks" directory if it's just a 
+# simple framework name like "symfony2"
 if [ ! -f "$FRAMEWORK" ] && [ -f "$basedir/../frameworks/$FRAMEWORK" ]; then
     FRAMEWORK="$basedir/../frameworks/$FRAMEWORK"
 fi
 
-if [ -n "$FRAMEWORK" ] && [ -f "$FRAMEWORK" ]; then
-    "$FRAMEWORK" compile "$BUILD_DIR" "$CACHE_DIR"
+if [ ! -f "$FRAMEWORK" ]; then
+    log_error "Framework \"$FRAMEWORK\" not found!"
+    exit 1
 fi
+
+"$FRAMEWORK" compile "$BUILD_DIR" "$CACHE_DIR"
 
 install_node_deps "$BUILD_DIR"
 install_composer_deps "$BUILD_DIR"
@@ -343,6 +378,8 @@ fi
 if [ -n "$FRAMEWORK" ] && [ -f "$FRAMEWORK" ]; then
     "$FRAMEWORK" end "$BUILD_DIR" "$CACHE_DIR"
 fi
+
+"$FRAMEWORK" post-compile "$BUILD_DIR" "$CACHE_DIR" || true
 
 status "Vendoring binaries into slug"
 mv /app/vendor/libmcrypt vendor/libmcrypt
