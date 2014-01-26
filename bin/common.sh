@@ -28,3 +28,31 @@ indent() {
 cat_npm_debug_log() {
   test -f $build_dir/npm-debug.log && cat $build_dir/npm-debug.log
 }
+
+unique_array() {
+  echo "$*" | tr ' ' '\n' | sort -u | tr '\n' ' '
+}
+
+init_log_plex_fifo() {
+  for log_file in $*; do
+    echo "mkdir -p `dirname ${log_file}`"
+  done
+  for log_file in $*; do
+    echo "mkfifo ${log_file}"
+  done
+}
+
+init_log_plex() {
+  for log_file in $*; do
+    echo "mkdir -p `dirname ${log_file}`"
+  done
+  for log_file in $*; do
+    echo "touch ${log_file}"
+  done
+}
+
+tail_log_plex() {
+  for log_file in $*; do
+    echo "tail -n 0 -qF --pid=\$\$ ${log_file} &"
+  done
+}
