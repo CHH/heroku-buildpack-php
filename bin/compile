@@ -247,9 +247,7 @@ PHP_INCLUDES=
 COMPILE_CMD=
 NGINX_INCLUDES=
 NEWRELIC_VERSION=4.0.5.18
-SYS_LOG_FILES=( "/app/vendor/nginx/logs/access.log" "/app/vendor/nginx/logs/error.log" "/app/vendor/php/var/log/error.log" )
-#app wont startup using named pipe files
-LOG_FILES=()
+LOG_FILES=( "/app/vendor/nginx/logs/access.log" "/app/vendor/nginx/logs/error.log" "/app/vendor/php/var/log/error.log" )
 
 # Read config variables from composer.json if it exists
 if [ -f "$BUILD_DIR/composer.json" ]; then
@@ -425,24 +423,23 @@ fi
 erb conf/nginx.conf.erb > /app/vendor/nginx/conf/nginx.conf
 erb conf/site.conf.erb > /app/vendor/nginx/conf/site.conf
 
-`init_log_plex ${SYS_LOG_FILES}`
-`init_log_plex ${LOG_FILES}`
-
-`tail_log_plex ${LOG_FILES} ${NGINX_LOG_FILES}` &
+`init_log_plex_fifo ${LOG_FILES}`
+`tail_log_plex ${LOG_FILES} ${SYS_LOG_FILES}`
 
 (
-    php-fpm -p "/app/vendor/php"
+    exec php-fpm -p "/app/vendor/php"
     \$pmsgr < "php-fpm"
 )&
 
 (
-    nginx -p "/app/vendor/nginx" -c /app/vendor/nginx/conf/nginx.conf
+    exec nginx -p "/app/vendor/nginx" -c /app/vendor/nginx/conf/nginx.conf
     \$pmsgr < "nginx"
 )&
+
 
 read exitproc <\$pmsgr
 echo "Boot failed: \$exitproc"
 exit 1
 SH
 
-chmod a+x "bin/run"
+chmod +x "bin/run"
