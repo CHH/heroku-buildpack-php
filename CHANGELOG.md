@@ -5,6 +5,8 @@
 ### Changes
 
 * Add `application/x-javascript` to GZIP-able types
+* Add support for the Sundown extension. Add `ext-sundown` to your
+  requirements in your `composer.json` and update your lockfile to enable it.
 
 ## v0.3.3, 2014-01-20
 
