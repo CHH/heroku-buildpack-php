@@ -242,7 +242,7 @@ PHP_EXTRA_CONFIG=
 PHP_INCLUDES=
 COMPILE_CMD=
 NGINX_INCLUDES=
-NEWRELIC_VERSION=4.0.5.18
+NEWRELIC_VERSION=4.4.5.35
 
 # Read config variables from composer.json if it exists
 if [ -f "$BUILD_DIR/composer.json" ]; then
