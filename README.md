@@ -72,7 +72,7 @@ Options:
 
 ### Symfony 2
 
-Is detected when the app requires the `symfony/symfony` package or when the 
+Is detected when the app requires the `symfony/symfony` package or when the
 `framework` setting is set to `symfony2` in the `composer.json`.
 
 This framework preset doesn't need any configuration to work.
@@ -89,7 +89,7 @@ $ heroku labs:enable user-env-compile
 
 ### Silex
 
-Is used when the app requires the `silex/silex` package or when the 
+Is used when the app requires the `silex/silex` package or when the
 `framework` setting is set to `silex` in the `composer.json`.
 
 Options:
@@ -119,6 +119,11 @@ The classic PHP configuration is used as fallback when no framework was detected
 
 This is also used when an `index.php` file was found in the root of your
 project and no `composer.json`.
+
+##Logging
+
+This buildpack defines default log files by framework.
+It also defines log files nginx and php.
 
 ## Configuration
 
@@ -264,6 +269,20 @@ It's recommended to add the New Relic addon to your Heroku app, but you
 can also set your license key manually by setting the `NEW_RELIC_LICENSE_KEY` config var via `heroku config:set`.
 
     "newrelic": true
+
+#### log-files
+
+_Default: []_
+
+The buildpack defines default log files by framework and some log files for php-fpm and nginx.
+Any file put in `log-files` will be be appended to the list.
+A tail on each unique log file will be run at application startup
+
+    "log-files": [
+        "app/logs/rabbit-mq.log",
+        "vendor/nginx/stuff.log"
+    ],
+
 
 ## Node.Js
 
