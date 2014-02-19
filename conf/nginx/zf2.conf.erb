@@ -1,5 +1,8 @@
-# Default configuration for non-framework apps
+<% if ENV.has_key? "DOCUMENT_ROOT" and ENV['DOCUMENT_ROOT'].to_s != "" %>
 root /app/<%= ENV['DOCUMENT_ROOT'] %>;
+<% else %>
+root /app/public;
+<% end %>
 
 try_files $uri /index.php?$args;
 
