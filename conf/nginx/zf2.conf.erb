@@ -1,0 +1,18 @@
+<% if ENV.has_key? "DOCUMENT_ROOT" and ENV['DOCUMENT_ROOT'].to_s != "" %>
+root /app/<%= ENV['DOCUMENT_ROOT'] %>;
+<% else %>
+root /app/public;
+<% end %>
+
+try_files $uri /index.php?$args;
+
+# this will only pass index.php to the fastcgi process which is generally safer but
+# assumes the whole site is run via Zend 2.
+location /index.php {
+    include fastcgi_params;
+    fastcgi_connect_timeout 3s;
+    fastcgi_read_timeout 10s;
+    fastcgi_buffers 256 4k;
+    fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;
+    fastcgi_pass php;
+}
