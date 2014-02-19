@@ -1,13 +1,15 @@
-root /app/public;
+# Default configuration for non-framework apps
+root /app/<%= ENV['DOCUMENT_ROOT'] %>;
 
-location / {
-    try_files $uri $uri/ /index.php$is_args$args;
-}
+try_files $uri /index.php?$args;
 
-location ~ \.php$ {
-    fastcgi_pass    unix:/usr/local/zend/tmp/php-fastcgi.socket;
-    fastcgi_param   SCRIPT_FILENAME $document_root$fastcgi_script_name;
-    fastcgi_param   HTTPS off;
+# this will only pass index.php to the fastcgi process which is generally safer but
+# assumes the whole site is run via Zend 2.
+location /index.php {
+    include fastcgi_params;
+    fastcgi_connect_timeout 3s;
+    fastcgi_read_timeout 10s;
     fastcgi_buffers 256 4k;
-    include         fastcgi_params;
+    fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;
+    fastcgi_pass php;
 }
