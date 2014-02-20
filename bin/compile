@@ -15,8 +15,6 @@ fi
 BUILD_DIR="$1"
 CACHE_DIR="$2"
 
-export_env_dir "$3"
-
 cd "$BUILD_DIR"
 mkdir -p "$CACHE_DIR/package"
 
@@ -238,6 +236,8 @@ function package_newrelic_enabled() {
         return 1
     fi
 }
+
+export_env_dir "$3"
 
 # Download jq binary for JSON processing
 export PATH="$HOME/bin:$PATH"
