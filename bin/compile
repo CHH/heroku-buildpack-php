@@ -237,6 +237,7 @@ function package_newrelic_enabled() {
     fi
 }
 
+echo "$3"
 export_env_dir "$3"
 
 # Download jq binary for JSON processing
