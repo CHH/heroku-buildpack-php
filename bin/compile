@@ -15,6 +15,8 @@ fi
 BUILD_DIR="$1"
 CACHE_DIR="$2"
 
+export_env_dir "$3"
+
 cd "$BUILD_DIR"
 mkdir -p "$CACHE_DIR/package"
 
@@ -142,6 +144,19 @@ function install_node_deps() {
     ln -s ${BUILD_DIR}/node_modules /app/node_modules
 
     echo "Node " `node -v` | indent
+}
+
+export_env_dir() {
+    env_dir=$1
+    whitelist_regex=${2:-''}
+    blacklist_regex=${3:-'^(PATH|GIT_DIR|CPATH|CPPATH|LD_PRELOAD|LIBRARY_PATH)$'}
+    if [ -d "$env_dir" ]; then
+        for e in $(ls $env_dir); do
+            echo "$e" | grep -E "$whitelist_regex" | grep -qvE "$blacklist_regex" &&
+            export "$e=$(cat $env_dir/$e)"
+            :
+        done
+    fi
 }
 
 function mktmpdir() {
