@@ -25,6 +25,9 @@ case "$1" in
             exit 1
         fi
         ;;
+    get-log-files)
+        echo "app/logs/prod.log" "app/logs/dev.log"
+        ;;
     compile)
         echo "-----> Setting up Symfony2 app"
         cp "$basedir/../conf/nginx/symfony2.conf.erb" "$BUILD_DIR/conf/site.conf.erb"

@@ -73,6 +73,7 @@ build_command=$(cat <<BUILD_CMD
     --enable-zip \
     --with-jpeg-dir=/usr \
     --with-png-dir=/usr \
+    --with-freetype-dir=/usr \
     --enable-exif \
     --with-zlib=/app/vendor/php/zlib \
     --with-bz2 \

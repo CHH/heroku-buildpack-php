@@ -144,6 +144,18 @@ function install_node_deps() {
     echo "Node " `node -v` | indent
 }
 
+export_env_dir() {
+    env_dir=$1
+    blacklist_regex=${3:-'^(PATH|GIT_DIR|CPATH|CPPATH|LD_PRELOAD|LIBRARY_PATH|LD_LIBRARY_PATH)$'}
+    if [ -d "$env_dir" ]; then
+        for e in $(ls $env_dir); do
+            echo "$e" | grep -qvE "$blacklist_regex" &&
+            export "$e=$(cat $env_dir/$e)"
+            :
+        done
+    fi
+}
+
 function mktmpdir() {
     dir=$(mktemp -t php-$1-XXXX)
     rm -rf $dir
@@ -207,6 +219,10 @@ function package_nginx_includes() {
     jq --raw-output '.extra.heroku["nginx-includes"] // [] | .[]' < "$BUILD_DIR/composer.json"
 }
 
+function package_log_files() {
+    jq --raw-output '.extra.heroku["log-files"] // [] | .[]' < "$BUILD_DIR/composer.json"
+}
+
 function package_compile_cmd() {
     jq --raw-output '.extra.heroku["compile"] // [] | .[]' < "$BUILD_DIR/composer.json"
 }
@@ -221,12 +237,14 @@ function package_newrelic_enabled() {
     fi
 }
 
+export_env_dir "$3"
+
 # Download jq binary for JSON processing
 export PATH="$HOME/bin:$PATH"
 curl "http://${S3_BUCKET}.s3.amazonaws.com/jq/jq" -L -s -o - > "$HOME/bin/jq"
 chmod +x "$HOME/bin/jq"
 
-DEFAULT_PHP="5.5.8"
+DEFAULT_PHP="5.5.9"
 DEFAULT_NGINX="1.4.4"
 
 AVAILABLE_PHP_VERSIONS=$(curl "http://${S3_BUCKET}.s3.amazonaws.com/manifest.php" 2> /dev/null)
@@ -243,6 +261,7 @@ PHP_INCLUDES=
 COMPILE_CMD=
 NGINX_INCLUDES=
 NEWRELIC_VERSION=4.4.5.35
+LOG_FILES=( "/app/vendor/nginx/logs/access.log" "/app/vendor/nginx/logs/error.log" "/app/vendor/php/var/log/error.log" )
 
 # Read config variables from composer.json if it exists
 if [ -f "$BUILD_DIR/composer.json" ]; then
@@ -255,6 +274,7 @@ if [ -f "$BUILD_DIR/composer.json" ]; then
     PHP_INCLUDES=$(package_php_includes)
     COMPILE_CMD=$(package_compile_cmd)
     NGINX_INCLUDES=$(package_nginx_includes)
+    USER_LOG_FILES=$(package_log_files)
 fi
 
 # Try reading PHP version from .php-version file in project
@@ -351,7 +371,7 @@ if [ -z "$FRAMEWORK" ]; then
     FRAMEWORK="$basedir/../frameworks/default"
 fi
 
-# Try to load the framework from the "frameworks" directory if it's just a 
+# Try to load the framework from the "frameworks" directory if it's just a
 # simple framework name like "symfony2"
 if [ ! -f "$FRAMEWORK" ] && [ -f "$basedir/../frameworks/$FRAMEWORK" ]; then
     FRAMEWORK="$basedir/../frameworks/$FRAMEWORK"
@@ -366,6 +386,12 @@ fi
 
 install_node_deps "$BUILD_DIR"
 install_composer_deps "$BUILD_DIR"
+
+LOG_FILES=$(unique_array ${LOG_FILES[@]} ${USER_LOG_FILES[@]})
+if [ -n "$FRAMEWORK" ] && [ -f "$FRAMEWORK" ]; then
+    FRAMEWORK_LOG_FILES=$("$FRAMEWORK" get-log-files)
+    LOG_FILES=$(unique_array ${LOG_FILES[@]} ${FRAMEWORK_LOG_FILES[@]})
+fi
 
 if [ -n "$COMPILE_CMD" ]; then
     status "Running compile commands"
@@ -411,33 +437,23 @@ fi
 erb conf/nginx.conf.erb > /app/vendor/nginx/conf/nginx.conf
 erb conf/site.conf.erb > /app/vendor/nginx/conf/site.conf
 
-mkdir -p /app/vendor/nginx/logs
-mkdir -p /app/vendor/php/var/log
-mkdir -p /app/vendor/php/run
-
-touch /app/vendor/nginx/logs/access.log \
-      /app/vendor/nginx/logs/error.log
-
-touch /app/vendor/php/var/log/error.log
+`init_log_plex_fifo ${LOG_FILES}`
+`tail_log_plex ${LOG_FILES} ${SYS_LOG_FILES}`
 
 (
-    tail -qF -n 0 /app/vendor/nginx/logs/access.log /app/vendor/nginx/logs/error.log /app/vendor/php/var/log/*.log
-    \$pmsgr < "tail"
-)&
-
-(
-    php-fpm -p "/app/vendor/php"
+    exec php-fpm -p "/app/vendor/php"
     \$pmsgr < "php-fpm"
 )&
 
 (
-    nginx -p "/app/vendor/nginx" -c /app/vendor/nginx/conf/nginx.conf
+    exec nginx -p "/app/vendor/nginx" -c /app/vendor/nginx/conf/nginx.conf
     \$pmsgr < "nginx"
 )&
+
 
 read exitproc <\$pmsgr
 echo "Boot failed: \$exitproc"
 exit 1
 SH
 
-chmod a+x "bin/run"
+chmod +x "bin/run"
