@@ -1,5 +1,18 @@
 # Changelog
 
+## v0.3.5, 2014-02-25
+
+### Changes
+
+* Add support for new Heroku API for compile time user config variables.
+  Variables set with `heroku config:set` are now always available at
+  compile time.
+* Add support for Zend Framework 2
+* Enable Freetype support in PHP GD
+* Updated PHP to 5.5.9
+* Frameworks can now define which log files should be additionally
+  "tailed" so they show up in `heroku logs`
+
 ## v0.3.4, 2014-01-24
 
 ### Changes
@@ -76,7 +89,7 @@ Imagick, Libevent,…
 ### Changes
 
 * Fix compile command evaluation
-* #28: Fix NGINX error caused by duplicate `root` directives 
+* #28: Fix NGINX error caused by duplicate `root` directives
 
 ## v0.2.0, 2013-09-03
 
