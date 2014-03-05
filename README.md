@@ -8,6 +8,7 @@
 * Supports Composer out of the box
 * No writing NGINX configuration files: supports Classic PHP, Silex and Symfony 2 apps with simple configuration driven by your `composer.json`.
 * Zero-Configuration Symfony 2 deployment.
+* Dynamic installing of [supported extensions](support/ext) listed as `ext-` requirments in `composer.json`.
 
 ## How to use it
 
@@ -119,6 +120,23 @@ The classic PHP configuration is used as fallback when no framework was detected
 
 This is also used when an `index.php` file was found in the root of your
 project and no `composer.json`.
+
+## Extensions
+
+When the buildpack encounters `ext-` requirements in your `composer.json`, it will look
+up the extension name in the [supported extensions](support/ext) and install them.
+
+The version constraint is ignored currently.
+
+For example, to install the Sundown extension:
+
+```
+{
+    "require": {
+        "ext-sundown": "*"
+    }
+}
+```
 
 ##Logging
 
