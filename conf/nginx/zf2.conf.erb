@@ -14,5 +14,6 @@ location /index.php {
     fastcgi_read_timeout 10s;
     fastcgi_buffers 256 4k;
     fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;
+    fastcgi_param HTTPS $proxied_https;
     fastcgi_pass php;
 }

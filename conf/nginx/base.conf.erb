@@ -20,9 +20,10 @@ http {
 
     client_max_body_size 100m;
     client_body_timeout 600s;
-    
-    # define the $https variable based on the forwarded proto as Nginx is not the SSL endpoint
-    map $http_x_forwarded_proto $https {
+
+    # define the $proxied_https variable based on the forwarded proto as Nginx is not the SSL endpoint
+    # The name $https cannot be used as the variable is already defined in Nginx core
+    map $http_x_forwarded_proto $proxied_https {
         default off;
         https on;
     }
