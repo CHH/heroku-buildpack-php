@@ -244,7 +244,7 @@ export PATH="$HOME/bin:$PATH"
 curl "http://${S3_BUCKET}.s3.amazonaws.com/jq/jq" -L -s -o - > "$HOME/bin/jq"
 chmod +x "$HOME/bin/jq"
 
-DEFAULT_PHP="5.5.9"
+DEFAULT_PHP="5.5.10"
 DEFAULT_NGINX="1.4.4"
 
 AVAILABLE_PHP_VERSIONS=$(curl "http://${S3_BUCKET}.s3.amazonaws.com/manifest.php" 2> /dev/null)
