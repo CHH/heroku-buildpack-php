@@ -1,5 +1,18 @@
 # Changelog
 
+## v0.3.6, 2014-03-26
+
+### Changes
+
+* Update PHP to 5.5.10
+* Tail CakePHP log files
+* Add `memcache` extension, you can enable it by putting
+  `"ext-memcache": "*"` into your `composer.json` requirements
+* Set UTC as default timezone to prevent PHP notices. This can be
+  changed anytime by your app via `date_default_timezone_set` or by
+  setting `date.timezone` in your `php-config` section in
+  `composer.json`
+
 ## v0.3.5, 2014-02-25
 
 ### Changes
