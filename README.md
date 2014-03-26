@@ -63,7 +63,7 @@ app's root. And will install node dependencies like less for example.
 ### CakePHP
 
 Is used when the app requires the `pear-pear.cakephp.org/CakePHP` Pear package or when the
-`extra.heroku.framework` key is set to `cakephp2` in the `composer.json`.
+`extra.heroku.framework` key is set to `cakephp2` in the `composer.json`. This project assumes the layout given in the [FriendsOfCake/app-template](https://github.com/FriendsOfCake/app-template) composer project.
 
 Options:
 
