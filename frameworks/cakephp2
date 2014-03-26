@@ -25,6 +25,9 @@ case "$1" in
             exit 1
         fi
         ;;
+    get-log-files)
+        echo "/app/tmp/logs/debug.log" "/app/tmp/logs/error.log"
+        ;;
     compile)
         echo "-----> Setting up CakePHP2 app"
         cp "$basedir/../conf/nginx/cakephp2.conf.erb" "$BUILD_DIR/conf/site.conf.erb"
