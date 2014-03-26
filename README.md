@@ -78,15 +78,8 @@ Is detected when the app requires the `symfony/symfony` package or when the
 
 This framework preset doesn't need any configuration to work.
 
-It's recommended to enable the `user-env-compile` Heroku labs feature for better compatibility
-with Symfony's Composer hooks. But please note that if you use config vars in Composer hooks, or in `compile`
+Please note that if you use config vars in Composer hooks, or in `compile`
 scripts, then a new code push may be necessary if you decide to change a config variable.
-
-You can enable the labs feature for your app with:
-
-```
-$ heroku labs:enable user-env-compile
-```
 
 ### Silex
 
@@ -137,6 +130,9 @@ For example, to install the Sundown extension:
     }
 }
 ```
+
+Note that the extension requirements defined by dependencies are not taken into account there.
+It must be required by the project itself.
 
 ##Logging
 
@@ -217,10 +213,10 @@ To launch the app with PHP 5.3.23 and NGINX 1.3.14:
     }
 
 Set the version to "default" to use the current default version. The current
-default versions are NGINX `1.4.2` and PHP `5.5.3`.
+default versions are NGINX `1.4.4` and PHP `5.5.10`.
 
 The version identifiers can also include wildcards, e.g. `5.4.*`. At the
-time of writing, PHP `5.4.19` would be used in this case. This also
+time of writing, PHP `5.4.26` would be used in this case. This also
 works for NGINX.
 
 When a file named `.php-version` exists in the project root, then the
