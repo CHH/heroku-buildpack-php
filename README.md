@@ -329,6 +329,18 @@ A minimal `package.json` file with less will look like this :
 
 Node and its modules will be available at compilation meaning you could process nodejs script at that time.
 
+## Authenticating Composer calls on the Github API
+
+Unauthenticated calls to the Github API are subject to a low rate limit. This includes calls to the download endpoint
+which is attempted by default during the Composer call because archives can be cached between deployments.
+
+The buildpack supports using authenticated API calls with Composer:
+
+- Create a personal API token on Github. You can [read more on this](https://github.com/blog/1509-personal-api-tokens).
+  The token should have the minimal permissions needed by your project. If your project only relies on public
+  Github repositories for its dependencies, the best choice is to restrict it to the "public access" permissions.
+- Set your token as the "COMPOSER_GITHUB_TOKEN" config variable in your heroku application. Any new deployment
+  will use it to authenticate the composer calls.
 
 ## Contributing
 
