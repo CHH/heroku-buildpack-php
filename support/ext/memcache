@@ -2,7 +2,7 @@
 
 php_memcache_version=53b491beb25b6ab4125a5fd86440307ab612fcdf
 
-curl -L "https://github.com/tricky/php-memcache/archive/${php_memcache_version}.tar.gz" \
+curl -L "https://github.com/php/pecl-caching-memcache/archive/${php_memcache_version}.tar.gz" \
     | tar xzv
 
 cd php-memcache-${php_memcache_version}
