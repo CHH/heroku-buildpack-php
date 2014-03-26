@@ -71,15 +71,16 @@ Options:
   is called. All requests which don't match an existing file will be forwarded to
   this document.
 
-### Symfony 2
+### Classic PHP
 
-Is detected when the app requires the `symfony/symfony` package or when the
-`framework` setting is set to `symfony2` in the `composer.json`.
+The classic PHP configuration is used as fallback when no framework was detected. It serves every `.php` file relative to the document root.
 
-This framework preset doesn't need any configuration to work.
+This is also used when an `index.php` file was found in the root of your
+project and no `composer.json`.
 
-Please note that if you use config vars in Composer hooks, or in `compile`
-scripts, then a new code push may be necessary if you decide to change a config variable.
+### Magento
+
+Is used when the `extra.heroku.framework` key is set to `magento` in the `composer.json`.
 
 ### Silex
 
@@ -103,16 +104,15 @@ Options:
   is called. All requests which don't match an existing file will be forwarded to
   this document.
 
-### Magento
+### Symfony 2
 
-Is used when the `extra.heroku.framework` key is set to `magento` in the `composer.json`.
+Is detected when the app requires the `symfony/symfony` package or when the
+`framework` setting is set to `symfony2` in the `composer.json`.
 
-### Classic PHP
+This framework preset doesn't need any configuration to work.
 
-The classic PHP configuration is used as fallback when no framework was detected. It serves every `.php` file relative to the document root.
-
-This is also used when an `index.php` file was found in the root of your
-project and no `composer.json`.
+Please note that if you use config vars in Composer hooks, or in `compile`
+scripts, then a new code push may be necessary if you decide to change a config variable.
 
 ## Extensions
 
