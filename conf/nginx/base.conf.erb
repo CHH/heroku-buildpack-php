@@ -20,6 +20,12 @@ http {
 
     client_max_body_size 100m;
     client_body_timeout 600s;
+    
+    # define the $https variable based on the forwarded proto as Nginx is not the SSL endpoint
+    map $http_x_forwarded_proto $https {
+        default off;
+        https on;
+    }
 
     upstream php {
         server unix:/tmp/php-fpm.sock max_fails=3 fail_timeout=3s;
