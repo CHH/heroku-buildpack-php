@@ -336,7 +336,7 @@ which is attempted by default during the Composer call because archives can be c
 
 The buildpack supports using authenticated API calls with Composer:
 
-- Create a personal API token on Github. You cna [read more on this](https://github.com/blog/1509-personal-api-tokens).
+- Create a personal API token on Github. You can [read more on this](https://github.com/blog/1509-personal-api-tokens).
   The token should have the minimal permissions needed by your project. If your project only relies on public
   Github repositories for its dependencies, the best choice is to restrict it to the "public access" permissions.
 - Set your token as the "COMPOSER_GITHUB_TOKEN" config variable in your heroku application. Any new deployment
