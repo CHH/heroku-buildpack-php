@@ -110,6 +110,11 @@ function install_composer_deps() {
 
     php "vendor/composer/bin/composer.phar" self-update
 
+    if [ -n "$COMPOSER_GITHUB_TOKEN" ]; then
+        status "Configuring the github authentication for Composer"
+        php "vendor/composer/bin/composer.phar" config -g github-oauth.github.com "$COMPOSER_GITHUB_TOKEN" --no-interaction
+    fi
+
     status "Installing application dependencies with Composer"
     {
         cd "$target"
