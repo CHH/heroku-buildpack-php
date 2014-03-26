@@ -20,6 +20,5 @@ location @site {
     include fastcgi_params;
     fastcgi_param  SCRIPT_FILENAME $document_root/<%= ENV['INDEX_DOCUMENT'] %>;
     fastcgi_buffers 256 4k;
-    #uncomment when running via https
-    #fastcgi_param HTTPS on;
+    fastcgi_param HTTPS $proxied_https;
 }

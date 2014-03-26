@@ -12,4 +12,5 @@ location /index.php {
     fastcgi_buffers 256 4k;
     fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;
     fastcgi_pass php;
+    fastcgi_param HTTPS $proxied_https;
 }
