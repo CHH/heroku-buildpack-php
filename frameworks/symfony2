@@ -37,12 +37,12 @@ case "$1" in
         CACHE_DIR="$2"
         APP_DIR="/app"
 
-        status "Warmuping cache"
+        status "Warming up cache"
         rm -rf app/cache/*
         php app/console cache:warmup --env=prod --no-debug | indent
 
 
-        status "Inplace replacment of $CACHE_DIR to $APP_DIR"
+        status "In-place replacement of $CACHE_DIR to $APP_DIR"
         find $CACHE_DIR/app/cache/prod -type f -exec sed -i "s@$CACHE_DIR@$APP_DIR@g" {} \; | indent
         grep $CACHE_DIR/app/cache/prod -r . && error "Could find some '$CACHE_DIR' :/ "
 
