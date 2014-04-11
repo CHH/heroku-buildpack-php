@@ -1,0 +1,31 @@
+#!/bin/bash
+
+BUILD_DIR="$2"
+basedir="$( cd -P "$( dirname "$0" )" && pwd )"
+
+function requires_yii() {
+    jq --raw-output '.packages | .[] | .name' < "$BUILD_DIR/composer.lock" | grep -q '^yiisoft/yii$'
+}
+
+function sets_framework_yii() {
+    [ $(jq --raw-output '.extra.heroku.framework' < "$BUILD_DIR/composer.json") == "yii" ]
+}
+
+case "$1" in
+    detect)
+        if [ ! -f "$BUILD_DIR/composer.json" ]; then
+            exit 1
+        fi
+
+        if requires_yii || sets_framework_yii; then
+            echo "-----> Detected Yii app"
+            exit 0
+        else
+            exit 1
+        fi
+        ;;
+    compile)
+        echo "-----> Setting up Yii app"
+        cp "$basedir/../conf/nginx/yii.conf.erb" "$BUILD_DIR/conf/site.conf.erb"
+        ;;
+esac
