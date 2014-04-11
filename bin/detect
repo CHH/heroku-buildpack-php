@@ -1,6 +1,6 @@
 #!/bin/bash
 
-if [ -f "$1/composer.lock" ]; then
+if [ -f "$1/composer.json" ]; then
     echo "PHP (composer.json)" && exit 0
 elif [ -f "$1/index.php" ]; then
     echo "PHP (classic)" && exit 0

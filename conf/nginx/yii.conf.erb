@@ -1,0 +1,5 @@
+# Attempt the uri, uri+/, then fall back to yii's index.php with args included
+# Note: old examples use IF statements, which nginx considers evil, this approach is more widely supported
+location / {
+    try_files $uri $uri/ /index.php?$args;
+}
