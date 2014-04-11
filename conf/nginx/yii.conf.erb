@@ -14,20 +14,7 @@ location ~ ^/(protected|framework|themes/\w+/views) {
     deny  all;
 }
 
-# this will only pass index.php and index-test.php to the fastcgi process which is generally safer but
-# assumes the whole site is run via Yii.
-
-location /index.php {
-    include fastcgi_params;
-    fastcgi_connect_timeout 3s;
-    fastcgi_read_timeout 10s;
-    fastcgi_buffers 256 4k;
-    fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;
-    fastcgi_param HTTPS $proxied_https;
-    fastcgi_pass php;
-}
-
-location /index-test.php {
+location ~ \.php {
     include fastcgi_params;
     fastcgi_connect_timeout 3s;
     fastcgi_read_timeout 10s;
