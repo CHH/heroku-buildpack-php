@@ -2,11 +2,10 @@
 
 ## What makes it unique?
 
-* **Fast** deployments, because the runtime environment is built from precompiled binaries via Heroku's "vulcan"
 * Supports PHP 5.3, 5.4 and 5.5
-* Uses the memory of the dyno more efficiently by going with NGINX and PHP-FPM.
+* Uses the memory of the dyno more efficiently by going with NGINX and PHP-FPM instead of Apache/mod_php
 * Supports Composer out of the box
-* No writing NGINX configuration files: supports CakePHP, Classic PHP applications, Magento, Silex, Slim, Symfony 2 and ZF2 apps with simple configuration driven by your `composer.json`.
+* No writing NGINX configuration files: supports CakePHP, Classic PHP applications, Magento, Silex, Slim, Symfony 2 and ZF2 apps with a simple configuration driven by your `composer.json`.
 * Zero-Configuration Symfony 2 deployment.
 * Dynamic installing of [supported extensions](support/ext) listed as `ext-` requirments in `composer.json`.
 
