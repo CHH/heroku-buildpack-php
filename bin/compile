@@ -231,9 +231,9 @@ function package_newrelic_enabled() {
     local val=$(jq --raw-output '.extra.heroku["newrelic"] // false' < "$BUILD_DIR/composer.json")
 
     if [ "$val" = "true" ]; then
-        return 0
-    else
         return 1
+    else
+        return 0
     fi
 }
 
