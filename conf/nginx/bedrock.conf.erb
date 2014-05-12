@@ -1,0 +1,20 @@
+root /app/<%= ENV['DOCUMENT_ROOT'] %>;
+
+fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;
+index index.php index.html;
+
+location / {
+    try_files $uri $uri/ /index.php?$query_string;
+}
+location ~* ^.+.(jpg|jpeg|gif|css|png|js|ico|ttf|woff)$ {
+    access_log off;
+}
+location /. {
+    return 404;
+}
+location ~ \.php {
+    include fastcgi_params;
+    fastcgi_pass php;
+    fastcgi_param   SCRIPT_FILENAME  $document_root$fastcgi_script_name;
+    fastcgi_buffers 256 4k;
+}
