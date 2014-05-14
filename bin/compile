@@ -443,7 +443,7 @@ erb conf/nginx.conf.erb > /app/vendor/nginx/conf/nginx.conf
 erb conf/site.conf.erb > /app/vendor/nginx/conf/site.conf
 
 `init_log_plex_fifo ${LOG_FILES}`
-`tail_log_plex ${LOG_FILES} ${SYS_LOG_FILES}`
+`cat_log_plex ${LOG_FILES} ${SYS_LOG_FILES}`
 
 (
     exec php-fpm -p "/app/vendor/php"

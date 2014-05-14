@@ -57,3 +57,10 @@ tail_log_plex() {
     echo "tail -n 0 -qF --pid=\$\$ ${log_file} &"
   done
 }
+
+cat_log_plex() {
+  for log_file in $*; do
+    echo "cat ${log_file} &"
+  done
+}
+
