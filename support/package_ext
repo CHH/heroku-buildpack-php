@@ -42,7 +42,7 @@ build_ext() {
         && mkdir -p "/tmp/out/$ext_dir" \
         && mkdir -p "/tmp/out/etc/conf.d" \
         && curl -L "$php_package" | tar -xzv -C /app/vendor/php \
-        && PREFIX="/tmp/out" EXT_DIR="/tmp/out/$ext_dir" ./build.sh
+        && PREFIX="/tmp/out" EXT_DIR="/tmp/out/$ext_dir" S3_BUCKET="$S3_BUCKET" ./build.sh
 EOF
     )
 
