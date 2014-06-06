@@ -21,7 +21,7 @@ build_ext() {
     local php_series="$2"
     local zend_api_version=${PHP_MODULE_API_VERSIONS["$php_series"]}
 
-    tempdir="$( mktemp -t php${ext_name}_xxxx )"
+    tempdir="$( mktemp -t php${ext_name}_XXXX )"
     rm -rf $tempdir
     mkdir -p $tempdir
     cd $tempdir
