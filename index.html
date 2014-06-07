@@ -1,0 +1,421 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="chrome=1">
+    <title>Heroku-buildpack-php by CHH</title>
+    <link rel="stylesheet" href="stylesheets/styles.css">
+    <link rel="stylesheet" href="stylesheets/pygment_trac.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>
+    <script src="javascripts/respond.js"></script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <!--[if lt IE 8]>
+    <link rel="stylesheet" href="stylesheets/ie.css">
+    <![endif]-->
+    <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+
+  </head>
+  <body>
+      <div id="header">
+        <nav>
+          <li class="fork"><a href="https://github.com/CHH/heroku-buildpack-php">View On GitHub</a></li>
+          <li class="downloads"><a href="https://github.com/CHH/heroku-buildpack-php/zipball/master">ZIP</a></li>
+          <li class="downloads"><a href="https://github.com/CHH/heroku-buildpack-php/tarball/master">TAR</a></li>
+          <li class="title">DOWNLOADS</li>
+        </nav>
+      </div><!-- end header -->
+
+    <div class="wrapper">
+
+      <section>
+        <div id="title">
+          <h1>Heroku-buildpack-php</h1>
+          <p>A more advanced PHP buildpack for Heroku, inspired by the Node.js buildpack</p>
+          <hr>
+          <span class="credits left">Project maintained by <a href="https://github.com/CHH">CHH</a></span>
+          <span class="credits right">Hosted on GitHub Pages &mdash; Theme by <a href="https://twitter.com/michigangraham">mattgraham</a></span>
+        </div>
+
+        <h1>
+<a name="advanced-php-heroku-build-pack" class="anchor" href="#advanced-php-heroku-build-pack"><span class="octicon octicon-link"></span></a>Advanced PHP Heroku Build Pack</h1>
+
+<h2>
+<a name="what-makes-it-unique" class="anchor" href="#what-makes-it-unique"><span class="octicon octicon-link"></span></a>What makes it unique?</h2>
+
+<ul>
+<li>Supports PHP 5.3, 5.4 and 5.5</li>
+<li>Uses the memory of the dyno more efficiently by going with NGINX and PHP-FPM instead of Apache/mod_php</li>
+<li>Supports Composer out of the box</li>
+<li>No writing NGINX configuration files: supports CakePHP, Classic PHP applications, Magento, Silex, Slim, Symfony 2 and ZF2 apps with a simple configuration driven by your <code>composer.json</code>.</li>
+<li>Zero-Configuration Symfony 2 deployment.</li>
+<li>Dynamic installing of <a href="support/ext">supported extensions</a> listed as <code>ext-</code> requirments in <code>composer.json</code>.</li>
+</ul><h2>
+<a name="how-to-use-it" class="anchor" href="#how-to-use-it"><span class="octicon octicon-link"></span></a>How to use it</h2>
+
+<p>Use the <code>--buildpack</code> parameter when creating a new app:</p>
+
+<pre><code>heroku create --buildpack https://github.com/CHH/heroku-buildpack-php myapp
+</code></pre>
+
+<p>Or set the <code>BUILDPACK_URL</code> config var on an existing app:</p>
+
+<pre><code>heroku config:set BUILDPACK_URL=https://github.com/CHH/heroku-buildpack-php
+</code></pre>
+
+<hr><p>If you want to be on the bleeding edge and use pre-release features, then use
+<code>git://github.com/CHH/heroku-buildpack-php#development</code> as buildpack
+url.</p>
+
+<h2>
+<a name="stack" class="anchor" href="#stack"><span class="octicon octicon-link"></span></a>Stack</h2>
+
+<ul>
+<li>NGINX 1.4 or 1.5</li>
+<li>PHP 5.3, 5.4 and 5.5, with <a href="http://pecl.php.net/package/ZendOpcache">ZendOpcache</a> and <a href="http://pecl.php.net/package/apcu">APCu</a> (<a href="https://chh-php-test.herokuapp.com/info">Info</a>)</li>
+<li>PHP-FPM</li>
+</ul><h2>
+<a name="detection" class="anchor" href="#detection"><span class="octicon octicon-link"></span></a>Detection</h2>
+
+<p>This buildpack detects apps when the app has a <code>composer.lock</code> in the
+app's root.</p>
+
+<p>If an <code>index.php</code> is detected in the app's root, then it switches to
+"classic mode", which means that every ".php" file is served with PHP,
+and the document root is set to the app root.</p>
+
+<p>When a <code>composer.lock</code> is detected, then the buildpack does <code>composer
+install --no-dev</code>.</p>
+
+<h2>
+<a name="environment" class="anchor" href="#environment"><span class="octicon octicon-link"></span></a>Environment</h2>
+
+<p>This buildpack sets environment variables during compile and runtime:</p>
+
+<ul>
+<li>
+<code>HEROKU_BUILD_TIME</code>: Time when the slug was compiled. Format is <code>%Y%m%d%H%M%S</code>, e.g. <code>20131103111548</code>
+</li>
+</ul><p>This buildpack also detects when the app has a node <code>package.json</code> in the
+app's root. And will install node dependencies like less for example.</p>
+
+<h2>
+<a name="frameworks" class="anchor" href="#frameworks"><span class="octicon octicon-link"></span></a>Frameworks</h2>
+
+<h3>
+<a name="cakephp" class="anchor" href="#cakephp"><span class="octicon octicon-link"></span></a>CakePHP</h3>
+
+<p>Is used when the app requires the <code>pear-pear.cakephp.org/CakePHP</code> Pear package or when the
+<code>extra.heroku.framework</code> key is set to <code>cakephp2</code> in the <code>composer.json</code>. This project assumes the layout given in the <a href="https://github.com/FriendsOfCake/app-template">FriendsOfCake/app-template</a> composer project.</p>
+
+<p>Options:</p>
+
+<ul>
+<li>
+<code>index-document</code>: With CakePHP apps, this should be the file where <code>$Dispatcher-&gt;dispatch(new CakeRequest(), new CakeResponse());</code>
+is called. All requests which don't match an existing file will be forwarded to
+this document.</li>
+</ul><h3>
+<a name="classic-php" class="anchor" href="#classic-php"><span class="octicon octicon-link"></span></a>Classic PHP</h3>
+
+<p>The classic PHP configuration is used as fallback when no framework was detected. It serves every <code>.php</code> file relative to the document root.</p>
+
+<p>This is also used when an <code>index.php</code> file was found in the root of your
+project and no <code>composer.json</code>.</p>
+
+<h3>
+<a name="magento" class="anchor" href="#magento"><span class="octicon octicon-link"></span></a>Magento</h3>
+
+<p>Is used when the <code>extra.heroku.framework</code> key is set to <code>magento</code> in the <code>composer.json</code>.</p>
+
+<h3>
+<a name="silex" class="anchor" href="#silex"><span class="octicon octicon-link"></span></a>Silex</h3>
+
+<p>Is used when the app requires the <code>silex/silex</code> package or when the
+<code>framework</code> setting is set to <code>silex</code> in the <code>composer.json</code>.</p>
+
+<p>Options:</p>
+
+<ul>
+<li>
+<code>index-document</code>: With Silex apps, this should be the file where <code>$app-&gt;run()</code>
+is called. All requests which don't match an existing file will be forwarded to
+this document.</li>
+</ul><h3>
+<a name="slim" class="anchor" href="#slim"><span class="octicon octicon-link"></span></a>Slim</h3>
+
+<p>Is used when the app requires the <code>slim/slim</code> package or when the
+<code>extra.heroku.framework</code> key is set to <code>slim</code> in the <code>composer.json</code>.</p>
+
+<p>Options:</p>
+
+<ul>
+<li>
+<code>index-document</code>: With Slim apps, this should be the file where <code>$app-&gt;run()</code>
+is called. All requests which don't match an existing file will be forwarded to
+this document.</li>
+</ul><h3>
+<a name="symfony-2" class="anchor" href="#symfony-2"><span class="octicon octicon-link"></span></a>Symfony 2</h3>
+
+<p>Is detected when the app requires the <code>symfony/symfony</code> package or when the
+<code>framework</code> setting is set to <code>symfony2</code> in the <code>composer.json</code>.</p>
+
+<p>This framework preset doesn't need any configuration to work.</p>
+
+<p>Please note that if you use config vars in Composer hooks, or in <code>compile</code>
+scripts, then a new code push may be necessary if you decide to change a config variable.</p>
+
+<h2>
+<a name="extensions" class="anchor" href="#extensions"><span class="octicon octicon-link"></span></a>Extensions</h2>
+
+<p>When the buildpack encounters <code>ext-</code> requirements in your <code>composer.json</code>, it will look
+up the extension name in the <a href="support/ext">supported extensions</a> and install them.</p>
+
+<p>The version constraint is ignored currently.</p>
+
+<p>For example, to install the Sundown extension:</p>
+
+<pre><code>{
+    "require": {
+        "ext-sundown": "*"
+    }
+}
+</code></pre>
+
+<p>Note that the extension requirements defined by dependencies are not taken into account there.
+It must be required by the project itself.</p>
+
+<h2>
+<a name="logging" class="anchor" href="#logging"><span class="octicon octicon-link"></span></a>Logging</h2>
+
+<p>This buildpack defines default log files by framework.
+It also defines log files nginx and php.</p>
+
+<h2>
+<a name="configuration" class="anchor" href="#configuration"><span class="octicon octicon-link"></span></a>Configuration</h2>
+
+<p>Configuration is done via a file named <code>composer.json</code> in the app's
+root.</p>
+
+<p>A simple configuration could look like this:</p>
+
+<pre><code>{
+    "require": {
+        "php": "&gt;=5.4.0",
+        "silex/silex": "~1.0@dev"
+    },
+    "extra": {
+        "heroku": {
+            "document-root": "web",
+            "index-document": "index.php"
+        }
+    }
+}
+</code></pre>
+
+<p>This configures an app with the document root set to the project's <code>web</code>
+directory, and sets that all requests should go through <code>web/index.php</code>
+which contains the application's front controller.</p>
+
+<h3>
+<a name="configuration-directives" class="anchor" href="#configuration-directives"><span class="octicon octicon-link"></span></a>Configuration Directives</h3>
+
+<p>This buildpack supports configuration through directives placed in the <code>heroku</code>
+key in the <code>extra</code> object.</p>
+
+<h4>
+<a name="framework" class="anchor" href="#framework"><span class="octicon octicon-link"></span></a>framework</h4>
+
+<p><em>Default: Null</em></p>
+
+<p>Use a framework preset for configuration. Some configuration keys cannot
+be overriden!</p>
+
+<p>Available presets:</p>
+
+<ul>
+<li><code>cakephp2</code></li>
+<li><code>magento</code></li>
+<li>
+<code>silex</code> (needs <code>document-root</code> and <code>index-document</code> set)</li>
+<li><code>slim</code></li>
+<li><code>symfony2</code></li>
+</ul><p>Example:</p>
+
+<pre><code>"framework": "silex"
+</code></pre>
+
+<h4>
+<a name="document-root" class="anchor" href="#document-root"><span class="octicon octicon-link"></span></a>document-root</h4>
+
+<p>Document root relative to the app root. Defaults to the app root.</p>
+
+<pre><code>"document-root": "web"
+</code></pre>
+
+<h4>
+<a name="index-document" class="anchor" href="#index-document"><span class="octicon octicon-link"></span></a>index-document</h4>
+
+<p><em>Default: "index.php"</em></p>
+
+<p>Index Document relative to the document root.</p>
+
+<pre><code>"index-document": "app.php"
+</code></pre>
+
+<h4>
+<a name="engines" class="anchor" href="#engines"><span class="octicon octicon-link"></span></a>engines</h4>
+
+<p>Set PHP and NGINX versions.</p>
+
+<p>To launch the app with PHP 5.3.23 and NGINX 1.3.14:</p>
+
+<pre><code>"engines": {
+    "php": "5.3.23",
+    "nginx": "1.3.14"
+}
+</code></pre>
+
+<p>Set the version to "default" to use the current default version. The current
+default versions are NGINX <code>1.4.4</code> and PHP <code>5.5.10</code>.</p>
+
+<p>The version identifiers can also include wildcards, e.g. <code>5.4.*</code>. At the
+time of writing, PHP <code>5.4.26</code> would be used in this case. This also
+works for NGINX.</p>
+
+<p>When a file named <code>.php-version</code> exists in the project root, then the
+PHP version is read from this file instead.</p>
+
+<p>See also:</p>
+
+<ul>
+<li><a href="http://chh-heroku-buildpack-php.s3.amazonaws.com/manifest.nginx">Available NGINX Versions</a></li>
+<li><a href="http://chh-heroku-buildpack-php.s3.amazonaws.com/manifest.php">Available PHP Versions</a></li>
+</ul><h4>
+<a name="php-config" class="anchor" href="#php-config"><span class="octicon octicon-link"></span></a>php-config</h4>
+
+<p><em>Default: []</em></p>
+
+<p>Add directives to the <code>php.ini</code>.</p>
+
+<pre><code>"php-config": [
+    "display_errors=off",
+    "short_open_tag=on"
+]
+</code></pre>
+
+<h4>
+<a name="php-includes" class="anchor" href="#php-includes"><span class="octicon octicon-link"></span></a>php-includes</h4>
+
+<p><em>Default: []</em></p>
+
+<p>Include additional .ini files that should be parsed after the default php.ini. File paths
+are treated relative to the app root.</p>
+
+<p>Example:</p>
+
+<pre><code>"php-includes": ["etc/php.ini"]
+</code></pre>
+
+<h4>
+<a name="nginx-includes" class="anchor" href="#nginx-includes"><span class="octicon octicon-link"></span></a>nginx-includes</h4>
+
+<p><em>Default: []</em></p>
+
+<p>Include additional config files into the NGINX configuration. Config
+files are included into the <code>server</code> scope and are loaded after the
+framework provided config. File paths are treated relative to the app
+root.</p>
+
+<p>Example:</p>
+
+<pre><code>"nginx-includes": ["etc/nginx.conf"]
+</code></pre>
+
+<h4>
+<a name="compile" class="anchor" href="#compile"><span class="octicon octicon-link"></span></a>compile</h4>
+
+<p><em>Default: []</em></p>
+
+<p>Run console commands on slug compilation.</p>
+
+<pre><code>"compile": [
+    "php app/console assetic:dump --env=prod --no-debug"
+]
+</code></pre>
+
+<p><em>Note: pecl is not runnable this way.</em></p>
+
+<h4>
+<a name="newrelic" class="anchor" href="#newrelic"><span class="octicon octicon-link"></span></a>newrelic</h4>
+
+<p><em>Default: false</em></p>
+
+<p>Enable instrumentation support via <a href="http://newrelic.com">New Relic</a>.
+It's recommended to add the New Relic addon to your Heroku app, but you
+can also set your license key manually by setting the <code>NEW_RELIC_LICENSE_KEY</code> config var via <code>heroku config:set</code>.</p>
+
+<pre><code>"newrelic": true
+</code></pre>
+
+<h4>
+<a name="log-files" class="anchor" href="#log-files"><span class="octicon octicon-link"></span></a>log-files</h4>
+
+<p><em>Default: []</em></p>
+
+<p>The buildpack defines default log files by framework and some log files for php-fpm and nginx.
+Any file put in <code>log-files</code> will be be appended to the list.
+A tail on each unique log file will be run at application startup</p>
+
+<pre><code>"log-files": [
+    "app/logs/rabbit-mq.log",
+    "vendor/nginx/stuff.log"
+],
+</code></pre>
+
+<h2>
+<a name="nodejs" class="anchor" href="#nodejs"><span class="octicon octicon-link"></span></a>Node.Js</h2>
+
+<p>If your app contains a <code>package.json</code> node and its dependencies will be installed</p>
+
+<p>The nodejs buildpack is based on the <a href="https://github.com/heroku/heroku-buildpack-nodejs/tree/diet">heroku diet node.js buildpack</a>.
+This diet branch of the buildpack is intended to replace the official Node.js buildpack once it has been tested by some users.</p>
+
+<p>It :</p>
+
+<ul>
+<li>Uses the latest stable version of node and npm by default.</li>
+<li>Allows any recent version of node to be used, including pre-release versions, as soon as they become available on <a href="http://nodejs.org/dist/">nodejs.org/dist</a>.</li>
+<li>Uses the version of npm that comes bundled with node instead of downloading and compiling them separately. npm has been bundled with node since <a href="http://blog.nodejs.org/2011/11/25/node-v0-6-3/">v0.6.3 (Nov 2011)</a>. This effectively means that node versions <code>&lt;0.6.3</code> are no longer supported, and that the <code>engines.npm</code> field in package.json is now ignored.</li>
+<li>Makes use of an s3 caching proxy of nodejs.org for faster downloads of the node binaries.</li>
+<li>Makes fewer HTTP requests when resolving node versions.</li>
+<li>Uses an updated version of <a href="https://github.com/isaacs/node-semver">node-semver</a> for dependency resolution.</li>
+<li>No longer depends on SCONS.</li>
+<li>Caches the <code>node_modules</code> directory across builds.</li>
+<li>Runs <code>npm prune</code> after restoring cached modules, to ensure that any modules formerly used by your app aren't needlessly installed and/or compiled.</li>
+</ul><p>A minimal <code>package.json</code> file with less will look like this :</p>
+
+<div class="highlight highlight-json"><pre><span class="p">{</span>
+    <span class="nt">"author"</span><span class="p">:</span> <span class="s2">"Your Name"</span><span class="p">,</span>
+    <span class="nt">"name"</span><span class="p">:</span> <span class="s2">"App"</span><span class="p">,</span>
+    <span class="nt">"dependencies"</span><span class="p">:</span> <span class="p">{</span>
+        <span class="nt">"less"</span><span class="p">:</span> <span class="s2">"&gt;= 1.4.*"</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+</pre></div>
+
+<p>Node and its modules will be available at compilation meaning you could process nodejs script at that time.</p>
+
+<h2>
+<a name="contributing" class="anchor" href="#contributing"><span class="octicon octicon-link"></span></a>Contributing</h2>
+
+<p>Please see the <a href="/CONTRIBUTING.md">CONTRIBUTING</a> file for all the
+details.</p>
+      </section>
+
+    </div>
+    <!--[if !IE]><script>fixScale(document);</script><![endif]-->
+    
+  </body>
+</html>
