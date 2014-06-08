@@ -4,8 +4,12 @@ BUILD_DIR="$2"
 basedir="$( cd -P "$( dirname "$0" )" && pwd )"
 source $basedir/../bin/common.sh
 
-function requires_cakephp2() {
+function requires_cakephp2_pear() {
     [ $(jq --raw-output '.require["pear-pear.cakephp.org/CakePHP"]' < "$BUILD_DIR/composer.json") != "null" ]
+}
+
+function requires_cakephp2_composer() {
+    [ $(jq --raw-output '.require["cakephp/cakephp"]' < "$BUILD_DIR/composer.json") != "null" ]
 }
 
 function sets_framework_cakephp2() {
@@ -18,7 +22,7 @@ case "$1" in
             exit 1
         fi
 
-        if requires_cakephp2 || sets_framework_cakephp2; then
+        if requires_cakephp2_pear || requires_cakephp2_composer || sets_framework_cakephp2; then
             echo "-----> Detected CakePHP2 App"
             exit 0
         else
