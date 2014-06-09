@@ -261,6 +261,16 @@ Example:
 
     "nginx-includes": ["etc/nginx.conf"]
 
+#### node-env
+
+_Default: "production" Options: ["production", "development"]_
+
+Run `node` and `npm` in this environment. This is helpful if you need to install a module like [grunt](http://gruntjs.com/) which is only available in `development`.
+
+Example:
+
+    "node-env": "development"
+
 #### compile
 
 _Default: []_
