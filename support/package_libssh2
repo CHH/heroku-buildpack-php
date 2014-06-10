@@ -1,0 +1,47 @@
+#!/usr/bin/env bash
+
+set -e
+
+basedir="$( cd -P "$( dirname "$0" )" && pwd )"
+source "$basedir/../conf/buildpack.conf"
+
+export PATH=${basedir}/../vendor/bin:$PATH
+
+if [ -z "$S3_BUCKET" ]; then
+    echo "Must set S3_BUCKET environment variable" >&2
+    exit 1
+fi
+
+tempdir="$( mktemp -t libssh2_XXXX )"
+rm -rf $tempdir
+mkdir -p $tempdir
+cd $tempdir
+
+libssh2_version=1.4.3
+
+echo "-----> Downloading libssh2"
+
+curl -L "http://www.libssh2.org/download/libssh2-${libssh2_version}.tar.gz" \
+    | tar xzv
+
+build_cmd=$(cat <<SH
+    mkdir -p /app/vendor/libssh2 \
+    && cd libssh2-${libssh2_version} \
+    && ./configure --prefix=/app/vendor/libssh2 --with-openssl \
+    && make && make install
+SH
+)
+
+vulcan build --verbose \
+    --prefix /app/vendor/libssh2 \
+    --source "." \
+    --output "${tempdir}/libssh2-${libssh2_version}.tgz" \
+    --name libssh2 \
+    --command "$build_cmd"
+
+s3cmd put \
+    --verbose --acl-public \
+    "$tempdir/libssh2-${libssh2_version}.tgz" \
+    "s3://$S3_BUCKET/package/libssh2-${libssh2_version}.tgz"
+
+"$basedir/package-checksum" "libssh2-${libssh2_version}"
