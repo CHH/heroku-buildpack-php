@@ -103,6 +103,16 @@ function install_composer_deps() {
         status "Bundling additional extensions $required_extensions"
         for ext in $required_extensions; do
             echo "$ext" | indent
+
+            local ext_dependency=${PHP_EXT_DEPENDENCIES["$ext"]}
+            if [ -n "$ext_dependency" ]; then
+                local ext_dependency_target=${DEPENDENCY_TARGET["$ext_dependency"]}
+                if [ -n "$ext_dependency_target" ]; then
+                    fetch_package "$ext_dependency" "$ext_dependency_target" | indent
+                    ADDITIONAL_INSTALLED_LIBS+=("$ext_dependency_target")
+                fi
+            fi
+
             # TODO: Find a better way to ignore extensions which were not found in S3
             fetch_package "ext/$(php_api_version)/php-${ext}" "/app/vendor/php" 2>/dev/null || true | indent
         done
@@ -267,6 +277,7 @@ COMPILE_CMD=
 NGINX_INCLUDES=
 NEWRELIC_VERSION=4.4.5.35
 LOG_FILES=( "/app/vendor/nginx/logs/access.log" "/app/vendor/nginx/logs/error.log" "/app/vendor/php/var/log/error.log" )
+ADDITIONAL_INSTALLED_LIBS=()
 
 # Read config variables from composer.json if it exists
 if [ -f "$BUILD_DIR/composer.json" ]; then
@@ -413,10 +424,16 @@ fi
 "$FRAMEWORK" post-compile "$BUILD_DIR" "$CACHE_DIR" || true
 
 status "Vendoring binaries into slug"
+ADDITIONAL_INSTALLED_LIBS=$(unique_array ${ADDITIONAL_INSTALLED_LIBS[@]})
+
 mv /app/vendor/libmcrypt vendor/libmcrypt
 mv /app/vendor/libicu vendor/libicu
 mv /app/vendor/nginx vendor/nginx
 mv /app/vendor/php vendor/php
+for lib in $ADDITIONAL_INSTALLED_LIBS; do
+    LIB_TARGET=$(basename "$lib")
+    mv "$lib" "vendor/$LIB_TARGET"
+done
 
 mkdir -p "bin"
 

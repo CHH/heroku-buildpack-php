@@ -1,0 +1,49 @@
+#!/usr/bin/env bash
+
+set -e
+
+basedir="$( cd -P "$( dirname "$0" )" && pwd )"
+source "$basedir/../conf/buildpack.conf"
+
+export PATH=${basedir}/../vendor/bin:$PATH
+
+if [ -z "$S3_BUCKET" ]; then
+    echo "Must set S3_BUCKET environment variable" >&2
+    exit 1
+fi
+
+tempdir="$( mktemp -t librabbitmq_XXXX )"
+rm -rf $tempdir
+mkdir -p $tempdir
+cd $tempdir
+
+rabbitmq_version=0.5.0
+
+echo "-----> Downloading librabbitmq"
+
+curl -L "https://github.com/alanxz/rabbitmq-c/releases/download/v${rabbitmq_version}/rabbitmq-c-${rabbitmq_version}.tar.gz" \
+    | tar xzv
+
+# Using the legacy autotools build rather than cmake as heroku does not provide cmake
+build_cmd=$(cat <<SH
+    mkdir -p /app/vendor/librabbitmq \
+    && cd rabbitmq-c-${rabbitmq_version} \
+    && autoreconf -i --force \
+    && ./configure --prefix=/app/vendor/librabbitmq \
+    && make && make install
+SH
+)
+
+vulcan build --verbose \
+    --prefix /app/vendor/librabbitmq \
+    --source "." \
+    --output "${tempdir}/librabbitmq-${rabbitmq_version}.tgz" \
+    --name librabbitmq \
+    --command "$build_cmd"
+
+s3cmd put \
+    --verbose --acl-public \
+    "$tempdir/librabbitmq-${rabbitmq_version}.tgz" \
+    "s3://$S3_BUCKET/package/librabbitmq-${rabbitmq_version}.tgz"
+
+"$basedir/package-checksum" "librabbitmq-${rabbitmq_version}"

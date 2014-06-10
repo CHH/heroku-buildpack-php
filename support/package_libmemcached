@@ -12,7 +12,7 @@ if [ -z "$S3_BUCKET" ]; then
     exit 1
 fi
 
-tempdir="$( mktemp -t libmemcached_xxxx )"
+tempdir="$( mktemp -t libmemcached_XXXX )"
 rm -rf $tempdir
 mkdir -p $tempdir
 cd $tempdir

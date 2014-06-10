@@ -1,0 +1,20 @@
+#!/usr/bin/env bash
+
+amqp_version=1.4.0
+librabbitmq_version=0.5.0
+
+mkdir -p /app/vendor/librabbitmq
+curl "http://${S3_BUCKET}.s3.amazonaws.com/package/librabbitmq-${rabbitmq_version}.tgz" | tar xzv -C /app/vendor/librabbitmq
+
+curl -L "http://pecl.php.net/get/amqp-${amqp_version}.tgz" \
+    | tar xzv
+
+cd amqp-${amqp_version}
+/app/vendor/php/bin/phpize
+./configure --with-php-config=/app/vendor/php/bin/php-config \
+    --with-librabbitmq-dir=/app/vendor/librabbitmq \
+    --with-amqp
+
+make
+cp modules/amqp.so "$EXT_DIR/amqp.so"
+echo "extension=amqp.so" > "$PREFIX/etc/conf.d/amqp.ini"
