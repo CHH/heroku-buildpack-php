@@ -26,7 +26,11 @@ case "$1" in
         fi
         ;;
     get-log-files)
-        echo "app/logs/prod.log" "app/logs/dev.log"
+        if [ ! -d "var/logs" ]; then
+            echo "var/logs/prod.log" "var/logs/dev.log"
+        else
+            echo "app/logs/prod.log" "app/logs/dev.log"
+        fi
         ;;
     compile)
         echo "-----> Setting up Symfony2 app"
@@ -37,14 +41,25 @@ case "$1" in
         CACHE_DIR="$2"
         APP_DIR="/app"
 
-        status "Warming up cache"
-        rm -rf app/cache/*
-        php app/console cache:warmup --env=prod --no-debug | indent
+        APP_CACHE_DIR="app/cache"
+        BIN_CONSOLE="app/console"
+
+        if [ -d "var/cache" ]; then
+            APP_CACHE_DIR="var/cache"
+        fi
+
+        if [ -f "bin/console" ]; then
+            BIN_CONSOLE="bin/console"
+        fi
+
+        status "Warmuping cache"
+        rm -rf $APP_CACHE_DIR/*
+        php $BIN_CONSOLE cache:warmup --env=prod --no-debug | indent
 
 
-        status "In-place replacement of $CACHE_DIR to $APP_DIR"
-        find $CACHE_DIR/app/cache/prod -type f -exec sed -i "s@$CACHE_DIR@$APP_DIR@g" {} \; | indent
-        grep $CACHE_DIR/app/cache/prod -r . && error "Could find some '$CACHE_DIR' :/ "
+        status "In-place replacment of $CACHE_DIR to $APP_DIR"
+        find $CACHE_DIR/$APP_CACHE_DIR/prod -type f -exec sed -i "s@$CACHE_DIR@$APP_DIR@g" {} \; | indent
+        grep $CACHE_DIR/$APP_CACHE_DIR/prod -r . && error "Could find some '$CACHE_DIR' :/ "
 
         status "End"
         ;;
