@@ -1,0 +1,27 @@
+#!/bin/bash
+
+BUILD_DIR="$2"
+basedir="$( cd -P "$( dirname "$0" )" && pwd )"
+
+function sets_framework_concrete5() {
+    [ $(jq --raw-output '.extra.heroku.framework' < "$BUILD_DIR/composer.json") == "concrete5" ]
+}
+
+case "$1" in
+    detect)
+        if [ ! -f "$BUILD_DIR/composer.json" ]; then
+            exit 1
+        fi
+
+        if sets_framework_concrete5; then
+            echo "-----> Detected Concrete5 app"
+            exit 0
+        else
+            exit 1
+        fi
+        ;;
+    compile)
+        echo "-----> Setting up Concrete5 app"
+        cp "$basedir/../conf/nginx/concrete5.conf.erb" "$BUILD_DIR/conf/site.conf.erb"
+        ;;
+esac
