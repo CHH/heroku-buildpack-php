@@ -276,7 +276,7 @@ PHP_INCLUDES=
 COMPILE_CMD=
 NGINX_INCLUDES=
 NEWRELIC_VERSION=4.4.5.35
-LOG_FILES=( "/app/vendor/nginx/logs/access.log" "/app/vendor/nginx/logs/error.log" "/app/vendor/php/var/log/error.log" )
+LOG_FILES=( )
 ADDITIONAL_INSTALLED_LIBS=()
 
 # Read config variables from composer.json if it exists
@@ -458,6 +458,9 @@ fi
 
 erb conf/nginx.conf.erb > /app/vendor/nginx/conf/nginx.conf
 erb conf/site.conf.erb > /app/vendor/nginx/conf/site.conf
+
+`init_log_plex_fifo ${LOG_FILES}`
+`tail_log_plex ${LOG_FILES} ${SYS_LOG_FILES}`
 
 (
     exec php-fpm -p "/app/vendor/php"
