@@ -463,13 +463,13 @@ erb conf/site.conf.erb > /app/vendor/nginx/conf/site.conf
 `tail_log_plex ${LOG_FILES} ${SYS_LOG_FILES}`
 
 (
-    exec php-fpm -p "/app/vendor/php"
-    \$pmsgr < "php-fpm"
+    php-fpm -p "/app/vendor/php"
+    echo "php-fpm" > $pmsgr
 )&
 
 (
-    exec nginx -p "/app/vendor/nginx" -c /app/vendor/nginx/conf/nginx.conf
-    \$pmsgr < "nginx"
+    nginx -p "/app/vendor/nginx" -c /app/vendor/nginx/conf/nginx.conf
+    echo "nginx" > $pmsgr
 )&
 
 
