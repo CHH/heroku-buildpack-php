@@ -464,12 +464,12 @@ erb conf/site.conf.erb > /app/vendor/nginx/conf/site.conf
 
 (
     php-fpm -p "/app/vendor/php"
-    echo "php-fpm" > $pmsgr
+    echo "php-fpm" > \$pmsgr
 )&
 
 (
     nginx -p "/app/vendor/nginx" -c /app/vendor/nginx/conf/nginx.conf
-    echo "nginx" > $pmsgr
+    echo "nginx" > \$pmsgr
 )&
 
 
