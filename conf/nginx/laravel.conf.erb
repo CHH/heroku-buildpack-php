@@ -1,0 +1,25 @@
+root /app/<%= ENV['DOCUMENT_ROOT'] %>;
+
+#site root is redirected to the app boot script
+location = / {
+    try_files @site @site;
+}
+
+#all other locations try other files first and go to our front controller if none of them exists
+location / {
+    try_files $uri $uri/ @site;
+}
+
+#return 404 for all php files as we do have a front controller
+location ~ \.php$ {
+    return 404;
+}
+
+location @site {
+    fastcgi_pass php;
+    include fastcgi_params;
+    fastcgi_param  SCRIPT_FILENAME $document_root/<%= ENV['INDEX_DOCUMENT'] %>;
+    fastcgi_buffers 256 4k;
+    #uncomment when running via https
+    #fastcgi_param HTTPS on;
+}
