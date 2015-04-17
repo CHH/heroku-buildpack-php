@@ -24,12 +24,21 @@ echo "-----> Downloading libmemcached"
 curl -LO "https://launchpad.net/libmemcached/1.0/${memcached_version}/+download/libmemcached-${memcached_version}.tar.gz"
 tar -xzvf "libmemcached-${memcached_version}.tar.gz"
 
-vulcan build --verbose \
-    --name libmemcached \
-    --prefix /app/vendor/libmemcached \
-    --source "$tempdir" \
-    --output "$tempdir/libmemcached-${memcached_version}.tgz" \
-    --command "cd libmemcached-${memcached_version} && mkdir -p /app/vendor/libmemcached && ./configure --without-memcached --prefix=/app/vendor/libmemcached && make && make install"
+echo "-----> Compiling"
+
+cd libmemcached-${memcached_version}
+mkdir -p /app/vendor/libmemcached
+./configure --without-memcached --prefix=/app/vendor/libmemcached
+make
+make install
+
+echo "-----> Building the archive"
+
+pushd /app/vendor/libmemcached
+
+tar czf "$tempdir/libmemcached-${memcached_version}.tgz" *
+
+popd
 
 s3_path=s3://$S3_BUCKET/package/libmemcached-${memcached_version}.tgz
 

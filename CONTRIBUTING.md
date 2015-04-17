@@ -29,37 +29,40 @@ which are available to _all_ users.
 You need the following tools to hack on this project:
 
 * An Amazon S3 bucket
-* `s3cmd` from <http://s3tools.org>
-* `vulcan` from Heroku `bundle install --path vendor`
-
-Setup `vulcan`:
-
-    bundle install --path vendor
-    ./vendor/bin/vulcan create <yourname>-buildserver
+* An heroku application using the cedar-10 stack (the buildpack is not compatible with the cedar-14 stack) to run the compilation
 
 Setup an S3 Bucket in Amazon. Then note the name of your bucket
 and set it as `S3_BUCKET` in `conf/buildpack.conf`.
 
-If s3cmd is not configured you can run ``s3cmd --configure`
-
 You can copy our bucket by running ``s3cmd cp --recursive --acl-public s3://chh-heroku-buildpack-php s3://your-bucket``
 
-Then create a Heroku app with your fork as buildpack:
+You should then configure the application to be ready to be used for packaging:
 
-    mkdir myexampleapp
-    cd myexampleapp
-    git init
-    heroku create --buildpack git://github.com/youruser/heroku-buildpack-php#feature/my-awesome-feature myexampleapp
+```bash
+# configure the application remote (assuming the app name "buildpack-packaging" here)
+$ heroku git:remote -a buildpack-packaging
+
+# configure the AWS credentials
+$ heroku config:set AWS_ACCESS_KEY='<access key>' AWS_SECRET_KEY='<secret key>'
+
+# deploy the buildpack code to heroku (the development branch here
+$ git push heroku development:master
+```
 
 ### Packaging
 
-Packaging is done with [Vulcan][] by Heroku. You need to setup a build
-server before packaging. _Note: This requires a Heroku account with a
-valid credit card on file! You don't get charged anything though._
+Packaging is done by running some scripts in a heroku dyno:
 
-[Vulcan]: http://github.com/heroku/vulcan
+```bash
+$ heroku run bash
+```
 
-    vulcan create youruser-buildserver
+Compilation scripts can then be run on this dyno:
+
+```bash
+$ cd support
+$ ./package_composer
+```
 
 All packaging scripts are in the `support` directory and are named
 `package_<type>`, where `<type>` is either `nginx` or `php`. All
@@ -67,9 +70,9 @@ packaging scripts take the desired package version as first argument.
 
 When the packaging is complete, the manifest which lists all available
 package version is updated for the package type. Manifests are plain
-text files which list each available version on a separate line. 
+text files which list each available version on a separate line.
 
-They're uploaded to the S3 bucket as `manifest.<type>` files, 
+They're uploaded to the S3 bucket as `manifest.<type>` files,
 e.g. the manifest for PHP is `manifest.php`.
 
 Before packaging anything, you need to make sure that you've a Zlib

@@ -19,21 +19,25 @@ rm -rf $tempdir
 mkdir -p $tempdir
 cd $tempdir
 
-build_cmd=$(cat <<SH
-    curl -L "$download_url" | tar xzv \
-    && mkdir -p /app/vendor/libicu \
-    && cd icu \
-    && ./source/runConfigureICU Linux --prefix=/app/vendor/libicu \
-    && make && make install
-SH
-)
+echo "-----> Downloading libicu"
 
-vulcan build --verbose \
-    --prefix /app/vendor/libicu \
-    --source "." \
-    --output "${tempdir}/libicu-51.tgz" \
-    --name libicu \
-    --command "$build_cmd"
+curl -L "$download_url" | tar xzv
+
+echo "-----> Compiling"
+
+mkdir -p /app/vendor/libicu
+cd icu
+./source/runConfigureICU Linux --prefix=/app/vendor/libicu
+make
+make install
+
+echo "-----> Building the archive"
+
+pushd /app/vendor/libicu
+
+tar czf "${tempdir}/libicu-51.tgz" *
+
+popd
 
 s3cmd put \
     --verbose --acl-public \

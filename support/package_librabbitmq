@@ -24,22 +24,23 @@ echo "-----> Downloading librabbitmq"
 curl -L "https://github.com/alanxz/rabbitmq-c/releases/download/v${rabbitmq_version}/rabbitmq-c-${rabbitmq_version}.tar.gz" \
     | tar xzv
 
-# Using the legacy autotools build rather than cmake as heroku does not provide cmake
-build_cmd=$(cat <<SH
-    mkdir -p /app/vendor/librabbitmq \
-    && cd rabbitmq-c-${rabbitmq_version} \
-    && autoreconf -i --force \
-    && ./configure --prefix=/app/vendor/librabbitmq \
-    && make && make install
-SH
-)
+echo "-----> Compiling"
 
-vulcan build --verbose \
-    --prefix /app/vendor/librabbitmq \
-    --source "." \
-    --output "${tempdir}/librabbitmq-${rabbitmq_version}.tgz" \
-    --name librabbitmq \
-    --command "$build_cmd"
+# Using the legacy autotools build rather than cmake as heroku does not provide cmake
+mkdir -p /app/vendor/librabbitmq
+cd rabbitmq-c-${rabbitmq_version}
+autoreconf -i --force
+./configure --prefix=/app/vendor/librabbitmq
+make
+make install
+
+echo "-----> Building the archive"
+
+pushd /app/vendor/librabbitmq
+
+tar czf "${tempdir}/librabbitmq-${rabbitmq_version}.tgz" *
+
+popd
 
 s3cmd put \
     --verbose --acl-public \
