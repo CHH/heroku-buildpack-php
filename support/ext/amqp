@@ -3,8 +3,8 @@
 set -e
 set -o pipefail
 
-amqp_version=1.4.0
-librabbitmq_version=0.5.0
+amqp_version=1.6.0beta2
+librabbitmq_version=0.5.2
 
 mkdir -p /app/vendor/librabbitmq
 curl "http://${S3_BUCKET}.s3.amazonaws.com/package/librabbitmq-${librabbitmq_version}.tgz" | tar xzv -C /app/vendor/librabbitmq
