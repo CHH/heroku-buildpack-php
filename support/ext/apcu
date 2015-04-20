@@ -1,5 +1,8 @@
 #!/usr/bin/env bash
 
+set -e
+set -o pipefail
+
 apcu_version=4.0.2
 
 curl -L "http://pecl.php.net/get/apcu-${apcu_version}.tgz" \

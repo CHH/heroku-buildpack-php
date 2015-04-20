@@ -1,5 +1,8 @@
 #!/usr/bin/env bash
 
+set -e
+set -o pipefail
+
 imagick_version="3.1.2"
 
 curl -L "http://pecl.php.net/get/imagick-${imagick_version}.tgz" \

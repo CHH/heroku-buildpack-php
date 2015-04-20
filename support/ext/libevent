@@ -1,5 +1,8 @@
 #!/usr/bin/env bash
 
+set -e
+set -o pipefail
+
 libevent_version="0.1.0"
 
 curl -L "http://pecl.php.net/get/libevent-${libevent_version}.tgz" \

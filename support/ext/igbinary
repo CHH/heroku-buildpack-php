@@ -1,5 +1,8 @@
 #!/usr/bin/env bash
 
+set -e
+set -o pipefail
+
 igbinary_version="1.1.1"
 
 curl -L "https://github.com/igbinary/igbinary/archive/${igbinary_version}.tar.gz" \

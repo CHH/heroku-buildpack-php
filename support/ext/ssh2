@@ -1,5 +1,8 @@
 #!/usr/bin/env bash
 
+set -e
+set -o pipefail
+
 ssh2_version=0.12
 libssh2_version=1.4.3
 

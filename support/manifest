@@ -1,5 +1,8 @@
 #!/usr/bin/env bash
 
+set -e
+set -o pipefail
+
 manifest_type="$1"
 
 if [ -z "$manifest_type" ]; then
