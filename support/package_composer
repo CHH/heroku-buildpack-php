@@ -12,7 +12,11 @@ mkdir -p $tempdir
 cd $tempdir
 
 curl -L http://getcomposer.org/composer.phar > composer.phar
-md5 -q composer.phar > composer.phar.md5
+if hash md5sum 2>/dev/null; then
+    md5sum composer.phar > composer.phar.md5
+else
+    md5 -r composer.phar > composer.phar.md5
+fi
 
 s3cmd put --verbose --acl-public \
     ./composer.phar s3://$S3_BUCKET/composer/composer.phar
