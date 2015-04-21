@@ -28,7 +28,7 @@ build_ext() {
 
     local php_version=$(\
         echo "$php_versions" \
-        | grep "^${php_series}.*$" | sort -r | head -n1)
+        | grep "^${php_series}.*$" | sort -r -V | head -n1)
 
     echo "-----> Building $ext_name for PHP module API version ${zend_api_version} using PHP ${php_version}"
 
