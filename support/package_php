@@ -89,6 +89,7 @@ cd php-${php_version}
     --enable-bcmath \
     --with-readline \
     --with-mcrypt=/app/vendor/libmcrypt \
+    --enable-ftp=shared \
     --disable-debug
 make
 make install
