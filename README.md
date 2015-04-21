@@ -194,6 +194,7 @@ Available presets:
 * `silex` (needs `document-root` and `index-document` set)
 * `slim`
 * `symfony2`
+* `zf2`
 
 Example:
 
