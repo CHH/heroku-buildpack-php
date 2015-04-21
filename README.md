@@ -5,7 +5,7 @@
 * Supports PHP 5.3, 5.4 and 5.5
 * Uses the memory of the dyno more efficiently by going with NGINX and PHP-FPM instead of Apache/mod_php
 * Supports Composer out of the box
-* No writing NGINX configuration files: supports CakePHP, Classic PHP applications, Magento, Silex, Slim, Symfony 2 and ZF2 apps with a simple configuration driven by your `composer.json`.
+* No writing NGINX configuration files: supports CakePHP, Classic PHP applications, Laravel, Magento, Silex, Slim, Symfony 2 and ZF2 apps with a simple configuration driven by your `composer.json`.
 * Zero-Configuration Symfony 2 deployment.
 * Dynamic installing of [supported extensions](support/ext) listed as `ext-` requirments in `composer.json`.
 
@@ -76,6 +76,11 @@ The classic PHP configuration is used as fallback when no framework was detected
 
 This is also used when an `index.php` file was found in the root of your
 project and no `composer.json`.
+
+### Laravel
+
+Is used when the app requires the `laravel\framework` package or when the
+`framework` setting is set to `laravel` in the `composer.json`
 
 ### Magento
 
