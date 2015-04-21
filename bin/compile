@@ -99,22 +99,32 @@ function install_composer_deps() {
     cp "$CACHE_DIR/composer.phar" "$target/vendor/composer/bin/"
 
     local required_extensions=$(jq --raw-output '.require | keys | .[]' < "$BUILD_DIR/composer.json" | grep '^ext-' | sed 's/^ext-//')
+    local ext_dir=/app/vendor/php/lib/php/extensions/no-debug-non-zts-$(php_api_version)
     if [ -n "$required_extensions" ]; then
-        status "Bundling additional extensions $required_extensions"
+        status "Bundling additional extensions"
         for ext in $required_extensions; do
             echo "$ext" | indent
 
-            local ext_dependency=${PHP_EXT_DEPENDENCIES["$ext"]}
-            if [ -n "$ext_dependency" ]; then
-                local ext_dependency_target=${DEPENDENCY_TARGET["$ext_dependency"]}
-                if [ -n "$ext_dependency_target" ]; then
-                    fetch_package "$ext_dependency" "$ext_dependency_target" | indent
-                    ADDITIONAL_INSTALLED_LIBS+=("$ext_dependency_target")
-                fi
-            fi
+            local ext_ini="/app/vendor/php/etc/conf.d/$ext.ini"
 
-            # TODO: Find a better way to ignore extensions which were not found in S3
-            fetch_package "ext/$(php_api_version)/php-${ext}" "/app/vendor/php" 2>/dev/null || true | indent
+            if [ -f "$ext_ini" ]; then
+                echo "Already installed" | indent
+            elif [ -f "$ext_dir/$ext.so" ]; then
+                echo "Enabling bundled extension" | indent
+                echo "extension=$ext.so" > "$ext_ini"
+            else
+                local ext_dependency=${PHP_EXT_DEPENDENCIES["$ext"]}
+                if [ -n "$ext_dependency" ]; then
+                    local ext_dependency_target=${DEPENDENCY_TARGET["$ext_dependency"]}
+                    if [ -n "$ext_dependency_target" ]; then
+                        fetch_package "$ext_dependency" "$ext_dependency_target" | indent
+                        ADDITIONAL_INSTALLED_LIBS+=("$ext_dependency_target")
+                    fi
+                fi
+
+                # TODO: Find a better way to ignore extensions which were not found in S3
+                fetch_package "ext/$(php_api_version)/php-${ext}" "/app/vendor/php" 2>/dev/null || true | indent
+            fi
         done
     fi
 
@@ -309,11 +319,11 @@ fi
 # Look for ".*" versions, match them against all available versions
 # and select the latest version which was found.
 if echo "$PHP_VERSION" | grep '\*' &>/dev/null; then
-    PHP_VERSION=$(echo "$AVAILABLE_PHP_VERSIONS" | grep "^$PHP_VERSION$" | sort -r | head -n1)
+    PHP_VERSION=$(echo "$AVAILABLE_PHP_VERSIONS" | grep "^$PHP_VERSION$" | sort -r -V | head -n1)
 fi
 
 if echo "$NGINX_VERSION" | grep '\*' &>/dev/null; then
-    NGINX_VERSION=$(echo "$AVAILABLE_NGINX_VERSIONS" | grep "^$NGINX_VERSION$" | sort -r | head -n1)
+    NGINX_VERSION=$(echo "$AVAILABLE_NGINX_VERSIONS" | grep "^$NGINX_VERSION$" | sort -r -V | head -n1)
 fi
 
 VENDORED_NGINX=/app/vendor/nginx
