@@ -1,3 +1,0 @@
-[submodule "support/php-build"]
-	path = support/php-build
-	url = git://github.com/CHH/php-build

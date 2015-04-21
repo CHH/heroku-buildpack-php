@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 
 set -e
+set -o pipefail
 
 mcrypt_version="$1"
 
@@ -28,20 +29,21 @@ echo "-----> Downloading libmcrypt ${mcrypt_version}"
 curl -L "http://sourceforge.net/projects/mcrypt/files/Libmcrypt/${mcrypt_version}/libmcrypt-${mcrypt_version}.tar.gz/download" \
     | tar xzv
 
-build_cmd=$(cat <<SH
-    mkdir -p /app/vendor/libmcrypt \
-    && cd libmcrypt-${mcrypt_version} \
-    && ./configure --disable-posix-threads --prefix=/app/vendor/libmcrypt \
-    && make && make install
-SH
-)
+echo "-----> Compiling"
 
-vulcan build --verbose \
-    --prefix /app/vendor/libmcrypt \
-    --source "." \
-    --output "${tempdir}/libmcrypt-${mcrypt_version}.tgz" \
-    --name libmcrypt \
-    --command "$build_cmd"
+mkdir -p /app/vendor/libmcrypt
+cd libmcrypt-${mcrypt_version}
+./configure --disable-posix-threads --prefix=/app/vendor/libmcrypt
+make
+make install
+
+echo "-----> Building the archive"
+
+pushd /app/vendor/libmcrypt
+
+tar czf "${tempdir}/libmcrypt-${mcrypt_version}.tgz" *
+
+popd
 
 s3cmd put \
     --verbose --acl-public \

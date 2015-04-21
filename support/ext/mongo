@@ -1,5 +1,8 @@
 #!/usr/bin/env bash
 
+set -e
+set -o pipefail
+
 mongo_version="1.4.4"
 
 curl -L "https://github.com/mongodb/mongo-php-driver/archive/${mongo_version}.tar.gz" \

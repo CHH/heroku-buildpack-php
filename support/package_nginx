@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 
 set -e
+set -o pipefail
 
 nginx_version="$1"
 
@@ -48,14 +49,20 @@ echo "-----> Downloading NGINX ${nginx_version}"
 curl -LO "http://nginx.org/download/nginx-${nginx_version}.tar.gz"
 tar -xzvf "nginx-${nginx_version}.tar.gz"
 
-echo "-----> Uploading source to build server"
+echo "-----> Compiling"
 
-vulcan build --verbose \
-    --name nginx \
-    --prefix /app/vendor/nginx \
-    --source "$tempdir" \
-    --output "$tempdir/nginx-${nginx_version}.tgz" \
-    --command "cd nginx-${nginx_version} && ./configure --prefix=/app/vendor/nginx --with-http_ssl_module --with-pcre=../pcre-${pcre_version} --with-zlib=../zlib-${zlib_version} && make && make install"
+cd nginx-${nginx_version}
+./configure --prefix=/app/vendor/nginx --with-http_ssl_module --with-pcre=../pcre-${pcre_version} --with-zlib=../zlib-${zlib_version}
+make
+make install
+
+echo "-----> Building the archive"
+
+pushd /app/vendor/nginx
+
+tar czf "$tempdir/nginx-${nginx_version}.tgz" *
+
+popd
 
 echo "-----> Uploading package to s3://$S3_BUCKET/package/nginx-${nginx_version}.tgz"
 

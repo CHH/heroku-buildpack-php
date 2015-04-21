@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 
 set -e
+set -o pipefail
 
 phpredis_version="2.2.4"
 curl -L "https://github.com/nicolasff/phpredis/archive/${phpredis_version}.tar.gz" \

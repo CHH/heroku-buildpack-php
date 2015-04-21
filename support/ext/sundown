@@ -1,5 +1,8 @@
 #!/usr/bin/env bash
 
+set -e
+set -o pipefail
+
 sundown_version=0.3.11
 
 curl -L "http://pecl.php.net/get/sundown-${sundown_version}.tgz" \
