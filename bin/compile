@@ -123,7 +123,7 @@ function install_composer_deps() {
                 fi
 
                 # TODO: Find a better way to ignore extensions which were not found in S3
-                fetch_package "ext/$(php_api_version)/php-${ext}" "/app/vendor/php" 2>/dev/null || true | indent
+                fetch_package "ext/$(php_api_version)/php-${ext}" "/app/vendor/php" 2>/dev/null | indent || true
             fi
         done
     fi
@@ -142,7 +142,8 @@ function install_composer_deps() {
             --prefer-dist \
             --optimize-autoloader \
             --no-interaction \
-            --no-dev
+            --no-dev \
+            2>&1
         cd "$cwd"
     } | indent
 }
