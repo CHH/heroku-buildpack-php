@@ -1,5 +1,27 @@
 # Changelog
 
+## v0.4.0, 2012-04-28
+
+### New features
+
+* Update PHP to 5.5.24
+* Improve the nginx config to support SSL endpoints
+* Add a way to authenticate github api calls for composer by setting an oauth token in ``COMPOSER_GITHUB_TOKEN``
+* Add support for the Yii framework
+* Add support for the composer cakephp package to detect Cakephp
+* Add support of extension with dependencies in the compile script
+* Add support for the AMQP extension. Add ``ext-amqp`` to your requirements in your composer.json to enable it
+* Add support for the SSH2 extension. Add ``ext-ssh2`` to your requirements in your composer.json to enable it
+* Add support for the FTP extension. Add ``ext-ftp`` to your requirements in your composer.json to enable it
+
+### Bug fixes
+
+* Made the build scripts compatible with Linux
+* Don't use the fifo for logs as it does not work on logplex
+* Show script name and line number when errors occur to make buildpack errors easier to debug
+* Update the build scripts to avoid using vulcan, which does not work anymore
+* Update the sorting of versions to handle them properly
+
 ## v0.3.7, 2015-04-28
 
 ### Changes
