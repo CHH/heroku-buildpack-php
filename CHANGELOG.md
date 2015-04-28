@@ -1,5 +1,12 @@
 # Changelog
 
+## v0.3.7, 2015-04-28
+
+### Changes
+
+* Use the official repo for pecl/memcache
+* Use the heroku env variables for the newrelic config
+
 ## v0.3.6, 2014-03-26
 
 ### Changes
