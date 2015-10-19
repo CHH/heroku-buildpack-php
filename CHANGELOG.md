@@ -1,6 +1,10 @@
 # Changelog
 
-## v0.4.0, 2012-04-28
+## v0.4.1, 2015-10-19
+
+* Autotune the PHP-FPM configuration based on the dyno size
+
+## v0.4.0, 2015-04-28
 
 ### New features
 
