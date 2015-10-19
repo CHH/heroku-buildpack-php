@@ -13,6 +13,11 @@ if [ -z "$S3_BUCKET" ]; then
     exit 1
 fi
 
+if [ -z "$TARGET_STACK" ]; then
+    echo "TARGET_STACK must be set" >&2
+    exit 1
+fi
+
 tempdir="$( mktemp -t librabbitmq_XXXX )"
 rm -rf $tempdir
 mkdir -p $tempdir
@@ -46,6 +51,6 @@ popd
 s3cmd put \
     --verbose --acl-public \
     "$tempdir/librabbitmq-${rabbitmq_version}.tgz" \
-    "s3://$S3_BUCKET/package/librabbitmq-${rabbitmq_version}.tgz"
+    "s3://$S3_BUCKET/develop/$TARGET_STACK/package/librabbitmq-${rabbitmq_version}.tgz"
 
 "$basedir/package-checksum" "librabbitmq-${rabbitmq_version}"

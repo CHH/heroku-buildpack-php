@@ -13,6 +13,16 @@ source "$basedir/../conf/buildpack.conf"
 
 export PATH=${basedir}/../vendor/bin:$PATH
 
+if [ -z "$S3_BUCKET" ]; then
+    echo "Must set S3_BUCKET environment variable" >&2
+    exit 1
+fi
+
+if [ -z "$TARGET_STACK" ]; then
+    echo "TARGET_STACK must be set" >&2
+    exit 1
+fi
+
 if [ -z "$nginx_version" ]; then
     echo "Usage: $0 <version>" >&2
     exit $E_ARG_MISSING
@@ -41,7 +51,7 @@ tar -xzvf "pcre-${pcre_version}.tar.gz"
 
 echo "-----> Downloading dependency zlib ${zlib_version}"
 
-curl -LO "http://${S3_BUCKET}.s3.amazonaws.com/zlib/zlib-${zlib_version}.tar.gz"
+curl -LO "https://${S3_BUCKET}.s3.amazonaws.com/zlib/zlib-${zlib_version}.tar.gz"
 tar -xzvf "zlib-${zlib_version}.tar.gz"
 
 echo "-----> Downloading NGINX ${nginx_version}"
@@ -64,12 +74,12 @@ tar czf "$tempdir/nginx-${nginx_version}.tgz" *
 
 popd
 
-echo "-----> Uploading package to s3://$S3_BUCKET/package/nginx-${nginx_version}.tgz"
+echo "-----> Uploading package to s3://$S3_BUCKET/develop/$TARGET_STACK/package/nginx-${nginx_version}.tgz"
 
 s3cmd put --verbose \
     --acl-public \
     "$tempdir/nginx-${nginx_version}.tgz" \
-    "s3://$S3_BUCKET/package/nginx-${nginx_version}.tgz"
+    "s3://$S3_BUCKET/develop/$TARGET_STACK/package/nginx-${nginx_version}.tgz"
 
 "$basedir/manifest" nginx
 "$basedir/package-checksum" "nginx-${nginx_version}"

@@ -32,8 +32,8 @@ function fetch_package() {
 
     mkdir -p "$location"
 
-    local checksum_url="http://${S3_BUCKET}.s3.amazonaws.com/package/${package}.md5"
-    local package_url="http://${S3_BUCKET}.s3.amazonaws.com/package/${package}.tgz"
+    local checksum_url="${S3_URL}/package/${package}.md5"
+    local package_url="${S3_URL}/package/${package}.tgz"
     local checksum=$(curl "$checksum_url" 2> /dev/null)
     local cache_checksum=
 
@@ -86,12 +86,12 @@ function install_composer_deps() {
     mkdir -p $COMPOSER_CACHE_DIR
     mkdir -p "$target/vendor/composer/bin"
 
-    local checksum=$(curl --silent "http://${S3_BUCKET}.s3.amazonaws.com/composer/composer.phar.md5")
+    local checksum=$(curl --silent "https://${S3_BUCKET}.s3.amazonaws.com/composer/composer.phar.md5")
 
     status "Vendoring Composer"
     if [ ! -f "$CACHE_DIR/composer.phar.md5" ] || [ "$(cat $CACHE_DIR/composer.phar.md5)" != "$checksum" ]; then
         echo "Updating Composer" | indent
-        curl --silent "http://${S3_BUCKET}.s3.amazonaws.com/composer/composer.phar" > "$CACHE_DIR/composer.phar" | indent
+        curl --silent "https://${S3_BUCKET}.s3.amazonaws.com/composer/composer.phar" > "$CACHE_DIR/composer.phar" | indent
         chmod a+x "$CACHE_DIR/composer.phar"
         echo "$checksum" > $CACHE_DIR/composer.phar.md5
     fi
@@ -265,16 +265,30 @@ function package_newrelic_enabled() {
 
 export_env_dir "$3"
 
+STACK=${STACK:-cedar} # Anvil has none
+
+BUILDPACK_URL=${BUILDPACK_URL:-} # Anvil has none
+BUILDPACK_BRANCH=$(expr "$BUILDPACK_URL" : '^.*/heroku-buildpack-php#\(..*\)$' || expr "$BUILDPACK_URL" : '^.*/heroku-buildpack-php\.git#\(..*\)$' || true) # POSIX expr doesn't understand ".+" or "(\.git)?"
+BUILDPACK_BRANCH=${BUILDPACK_BRANCH:-master}
+
+if [[ "$BUILDPACK_BRANCH" != v* && "$BUILDPACK_BRANCH" != "master" ]]; then
+    BUILDPACK_VERSION="develop"
+else
+    BUILDPACK_VERSION="master"
+fi
+
+S3_URL="https://${S3_BUCKET}.s3.amazonaws.com/${BUILDPACK_VERSION}/${STACK}"
+
 # Download jq binary for JSON processing
 export PATH="$HOME/bin:$PATH"
-curl "http://${S3_BUCKET}.s3.amazonaws.com/jq/jq" -L -s -o - > "$HOME/bin/jq"
+curl "https://${S3_BUCKET}.s3.amazonaws.com/jq/jq" -L -s -o - > "$HOME/bin/jq"
 chmod +x "$HOME/bin/jq"
 
 DEFAULT_PHP="5.5.24"
 DEFAULT_NGINX="1.4.4"
 
-AVAILABLE_PHP_VERSIONS=$(curl "http://${S3_BUCKET}.s3.amazonaws.com/manifest.php" 2> /dev/null)
-AVAILABLE_NGINX_VERSIONS=$(curl "http://${S3_BUCKET}.s3.amazonaws.com/manifest.nginx" 2> /dev/null)
+AVAILABLE_PHP_VERSIONS=$(curl "${S3_URL}/manifest.php" 2> /dev/null)
+AVAILABLE_NGINX_VERSIONS=$(curl "${S3_URL}/manifest.nginx" 2> /dev/null)
 
 MCRYPT_VERSION="2.5.8"
 PHP_VERSION="default"

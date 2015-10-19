@@ -9,7 +9,7 @@ curl -L "https://github.com/andreiz/php-memcached/archive/${php_memcached_versio
     | tar xzv
 
 mkdir -p /app/vendor/libmemcached
-curl "https://s3-eu-west-1.amazonaws.com/chh-heroku-buildpack-php/package/libmemcached-1.0.17.tgz" \
+curl "${S3_URL}/package/libmemcached-1.0.17.tgz" \
     | tar xzv -C /app/vendor/libmemcached
 
 cd php-memcached-${php_memcached_version}

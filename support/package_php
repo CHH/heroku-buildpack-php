@@ -8,6 +8,16 @@ source "$basedir/../conf/buildpack.conf"
 
 export PATH=${basedir}/../vendor/bin:$PATH
 
+if [ -z "$S3_BUCKET" ]; then
+    echo "Must set S3_BUCKET environment variable" >&2
+    exit 1
+fi
+
+if [ -z "$TARGET_STACK" ]; then
+    echo "TARGET_STACK must be set" >&2
+    exit 1
+fi
+
 if [ -z "$1" ]; then
     echo "Usage: $0 <version>" >&2
     exit 1
@@ -29,7 +39,7 @@ cd $tempdir
 
 echo "-----> Downloading dependency zlib ${zlib_version}"
 
-curl -LO "http://$S3_BUCKET.s3.amazonaws.com/zlib/zlib-${PHP_ZLIB_VERSION}.tar.gz"
+curl -LO "https://$S3_BUCKET.s3.amazonaws.com/zlib/zlib-${PHP_ZLIB_VERSION}.tar.gz"
 tar -xzvf "zlib-${PHP_ZLIB_VERSION}.tar.gz"
 
 echo "-----> Downloading PHP $php_version"
@@ -39,8 +49,8 @@ tar -xzvf "php-${php_version}.tar.gz"
 echo "-----> Downloading dependencies (libmcrypt, libicu)"
 
 mkdir -p "/app/vendor/php/zlib" "/app/vendor/libmcrypt" "/app/vendor/libicu"
-curl "http://${S3_BUCKET}.s3.amazonaws.com/package/libicu-51.tgz" | tar xzv -C /app/vendor/libicu
-curl "http://${S3_BUCKET}.s3.amazonaws.com/package/libmcrypt-${mcrypt_version}.tgz" | tar xzv -C /app/vendor/libmcrypt
+curl "https://${S3_BUCKET}.s3.amazonaws.com/develop/$TARGET_STACK/package/libicu-51.tgz" | tar xzv -C /app/vendor/libicu
+curl "https://${S3_BUCKET}.s3.amazonaws.com/develop/$TARGET_STACK/package/libmcrypt-${mcrypt_version}.tgz" | tar xzv -C /app/vendor/libmcrypt
 export LD_LIBRARY_PATH=/app/vendor/libicu/lib
 export PATH="/app/vendor/libicu/bin:$PATH"
 
@@ -117,7 +127,7 @@ echo "-----> Moving package to S3"
 s3cmd put \
     --verbose --acl-public \
     "$tempdir/php-${php_version}.tgz" \
-    "s3://$S3_BUCKET/package/php-${php_version}.tgz"
+    "s3://$S3_BUCKET/develop/$TARGET_STACK/package/php-${php_version}.tgz"
 
 "$basedir/manifest" php
 "$basedir/package-checksum" "php-${php_version}"

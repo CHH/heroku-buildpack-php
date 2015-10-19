@@ -13,6 +13,11 @@ if [ -z "$S3_BUCKET" ]; then
     exit 1
 fi
 
+if [ -z "$TARGET_STACK" ]; then
+    echo "TARGET_STACK must be set" >&2
+    exit 1
+fi
+
 tempdir="$( mktemp -t libmemcached_XXXX )"
 rm -rf $tempdir
 mkdir -p $tempdir
@@ -41,7 +46,7 @@ tar czf "$tempdir/libmemcached-${memcached_version}.tgz" *
 
 popd
 
-s3_path=s3://$S3_BUCKET/package/libmemcached-${memcached_version}.tgz
+s3_path=s3://$S3_BUCKET/develop/$TARGET_STACK/package/libmemcached-${memcached_version}.tgz
 
 echo "-----> Uploading package to ${s3_path}"
 
