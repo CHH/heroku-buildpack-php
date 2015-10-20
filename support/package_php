@@ -93,7 +93,10 @@ cd php-${php_version}
     --disable-debug
 make
 make install
+
+echo "-----> Preparing PECL and PEAR..."
 /app/vendor/php/bin/pear config-set php_dir /app/vendor/php
+/app/vendor/php/bin/pecl channel-update pecl.php.net
 
 echo "-----> Installing OPCache"
 
