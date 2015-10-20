@@ -77,6 +77,10 @@ The classic PHP configuration is used as fallback when no framework was detected
 This is also used when an `index.php` file was found in the root of your
 project and no `composer.json`.
 
+### Bedrock
+
+Is used when the `extra.heroku.framework` key is set to `bedrock` in the `composer.json`.
+
 ### Magento
 
 Is used when the `extra.heroku.framework` key is set to `magento` in the `composer.json`.

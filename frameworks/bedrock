@@ -1,0 +1,29 @@
+#!/bin/bash
+
+BUILD_DIR="$2"
+basedir="$( cd -P "$( dirname "$0" )" && pwd )"
+
+function sets_framework_bedrock() {
+    [ $(jq --raw-output '.extra.heroku.framework' < "$BUILD_DIR/composer.json") == "bedrock" ]
+}
+
+case "$1" in
+    detect)
+        if [ ! -f "$BUILD_DIR/composer.json" ]; then
+            exit 1
+        fi
+
+        if sets_framework_bedrock; then
+            echo "-----> Detected Bedrock WordPress app"
+            exit 0
+        else
+            exit 1
+        fi
+        ;;
+    compile)
+        echo "-----> Setting up Bedrock WordPress app"
+        cp "$basedir/../conf/nginx/bedrock.conf.erb" "$BUILD_DIR/conf/site.conf.erb"
+        mkdir -p $BUILD_DIR/web/app/uploads
+        chmod a+w -R $BUILD_DIR/web/app/uploads
+        ;;
+esac
