@@ -112,11 +112,11 @@ echo "-----> Preparing PECL and PEAR..."
 
 echo "-----> Installing OPCache"
 
-if [[ "$php_version" =~ 5.5 ]]; then
-    echo "zend_extension=opcache.so" >> /app/vendor/php/etc/conf.d/opcache.ini
-else
+if [[ "$php_version" =~ "5.3." || "$php_version" =~ "5.4." ]]; then
     /app/vendor/php/bin/pecl install ZendOpcache-beta
    echo "zend_extension=$(/app/vendor/php/bin/php-config --extension-dir)/opcache.so" >> /app/vendor/php/etc/conf.d/opcache.ini
+else
+    echo "zend_extension=opcache.so" >> /app/vendor/php/etc/conf.d/opcache.ini
 fi
 
 echo "-----> Building the archive"
