@@ -20,4 +20,4 @@ cd php-memcached-${php_memcached_version}
 
 make
 cp modules/memcached.so "$EXT_DIR/memcached.so"
-echo "extension=memcached.so" > "$PREFIX/etc/conf.d/memcached.ini"
+echo "extension=memcached.so" > "$CONF_DIR/memcached.ini"

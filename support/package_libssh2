@@ -23,6 +23,8 @@ rm -rf $tempdir
 mkdir -p $tempdir
 cd $tempdir
 
+rm -rf /app/vendor/libssh2
+
 libssh2_version=1.4.3
 
 echo "-----> Downloading libssh2"

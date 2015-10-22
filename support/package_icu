@@ -25,6 +25,8 @@ rm -rf $tempdir
 mkdir -p $tempdir
 cd $tempdir
 
+rm -rf /app/vendor/libicu
+
 echo "-----> Downloading libicu"
 
 curl -L "$download_url" | tar xzv

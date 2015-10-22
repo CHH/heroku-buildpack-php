@@ -14,4 +14,4 @@ cd sundown-${sundown_version}
 
 make
 cp modules/sundown.so "$EXT_DIR/sundown.so"
-echo "extension=sundown.so" > "$PREFIX/etc/conf.d/sundown.ini"
+echo "extension=sundown.so" > "$CONF_DIR/sundown.ini"

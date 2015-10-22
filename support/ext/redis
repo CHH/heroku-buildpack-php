@@ -15,4 +15,4 @@ cd phpredis-${phpredis_version}
 
 make
 cp modules/redis.so "$EXT_DIR/redis.so"
-echo "extension=redis.so" > "$PREFIX/etc/conf.d/redis.ini"
+echo "extension=redis.so" > "$CONF_DIR/redis.ini"

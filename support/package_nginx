@@ -44,6 +44,8 @@ rm -rf $tempdir
 mkdir -p $tempdir
 cd $tempdir
 
+rm -rf /app/vendor/nginx
+
 echo "-----> Downloading dependency PCRE ${pcre_version}"
 
 curl -LO "http://sourceforge.net/projects/pcre/files/pcre/${pcre_version}/pcre-${pcre_version}.tar.gz"

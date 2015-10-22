@@ -14,4 +14,4 @@ cd imagick-${imagick_version}
 
 make
 cp modules/imagick.so "$EXT_DIR/imagick.so"
-echo "extension=imagick.so" > "$PREFIX/etc/conf.d/imagick.ini"
+echo "extension=imagick.so" > "$CONF_DIR/imagick.ini"

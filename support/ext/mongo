@@ -15,4 +15,4 @@ cd mongo-php-driver-${mongo_version}
 
 make
 cp modules/mongo.so "$EXT_DIR/mongo.so"
-echo "extension=mongo.so" > "$PREFIX/etc/conf.d/mongo.ini"
+echo "extension=mongo.so" > "$CONF_DIR/mongo.ini"

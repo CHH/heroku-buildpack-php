@@ -20,4 +20,4 @@ cd amqp-${amqp_version}
 
 make
 cp modules/amqp.so "$EXT_DIR/amqp.so"
-echo "extension=amqp.so" > "$PREFIX/etc/conf.d/amqp.ini"
+echo "extension=amqp.so" > "$CONF_DIR/amqp.ini"

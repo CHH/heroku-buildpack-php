@@ -40,18 +40,22 @@ build_ext() {
 
     cd "$tempdir"
 
+    # clean any previous state to be sure we don't include unwanted things
+    rm -rf /app/vendor/php
+
     mkdir -p /app/vendor/php
-    mkdir -p "/tmp/out/$ext_dir"
-    mkdir -p "/tmp/out/etc/conf.d"
+    mkdir -p "/$tempdir/out/$ext_dir"
+    mkdir -p "/$tempdir/out/etc/conf.d"
+
     curl -L "$php_package" | tar -xzv -C /app/vendor/php
 
     echo "-----> Compiling the extension"
 
-    PREFIX="/tmp/out" EXT_DIR="/tmp/out/$ext_dir" S3_URL="$s3_url" ./build.sh
+    CONF_DIR="/$tempdir/out/etc/conf.d" EXT_DIR="/$tempdir/out/$ext_dir" S3_URL="$s3_url" ./build.sh
 
     echo "-----> Building the archive"
 
-    pushd /tmp/out/
+    pushd "/$tempdir/out/"
 
     tar czf "$tempdir/php-${ext_name}.tgz" *
 

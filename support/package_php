@@ -37,6 +37,8 @@ rm -rf $tempdir
 mkdir -p $tempdir
 cd $tempdir
 
+rm -rf /app/vendor/php
+
 echo "-----> Downloading dependency zlib ${zlib_version}"
 
 curl -LO "https://$S3_BUCKET.s3.amazonaws.com/zlib/zlib-${PHP_ZLIB_VERSION}.tar.gz"

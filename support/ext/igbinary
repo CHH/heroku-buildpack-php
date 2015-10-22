@@ -15,4 +15,4 @@ cd "igbinary-${igbinary_version}"
 
 make
 cp modules/igbinary.so "$EXT_DIR/igbinary.so"
-echo "extension=igbinary.so" > "$PREFIX/etc/conf.d/igbinary.ini"
+echo "extension=igbinary.so" > "$CONF_DIR/igbinary.ini"

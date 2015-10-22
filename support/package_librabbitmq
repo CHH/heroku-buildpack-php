@@ -23,6 +23,8 @@ rm -rf $tempdir
 mkdir -p $tempdir
 cd $tempdir
 
+rm -rf /app/vendor/librabbitmq
+
 rabbitmq_version=0.5.2
 
 echo "-----> Downloading librabbitmq"
