@@ -14,4 +14,4 @@ cd pecl-caching-memcache-${php_memcache_version}
 
 make
 cp modules/memcache.so "$EXT_DIR/memcache.so"
-echo "extension=memcache.so" > "$PREFIX/etc/conf.d/memcache.ini"
+echo "extension=memcache.so" > "$CONF_DIR/memcache.ini"

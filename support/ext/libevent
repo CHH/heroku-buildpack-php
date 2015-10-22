@@ -14,4 +14,4 @@ cd libevent-${libevent_version}
 
 make
 cp modules/libevent.so "$EXT_DIR/libevent.so"
-echo "extension=libevent.so" > "$PREFIX/etc/conf.d/libevent.ini"
+echo "extension=libevent.so" > "$CONF_DIR/libevent.ini"

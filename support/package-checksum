@@ -11,6 +11,11 @@ if [ -z "$S3_BUCKET" ]; then
     exit $E_S3_BUCKET_MISSING
 fi
 
+if [ -z "$TARGET_STACK" ]; then
+    echo "TARGET_STACK must be set" >&2
+    exit 1
+fi
+
 package="$1"
 
 tempdir="$( mktemp -t s3_XXXX )"
@@ -20,7 +25,7 @@ cd $tempdir
 
 echo "-----> Creating checksum for ${package}"
 
-s3cmd get "s3://$S3_BUCKET/package/${package}.tgz" "${package}.tgz"
+s3cmd get "s3://$S3_BUCKET/develop/$TARGET_STACK/package/${package}.tgz" "${package}.tgz"
 if hash md5sum 2>/dev/null; then
     md5sum "${package}.tgz" > "${package}.md5"
 else
@@ -28,4 +33,4 @@ else
 fi
 s3cmd put \
     --verbose --acl-public \
-    "${package}.md5" "s3://$S3_BUCKET/package/${package}.md5"
+    "${package}.md5" "s3://$S3_BUCKET/develop/$TARGET_STACK/package/${package}.md5"

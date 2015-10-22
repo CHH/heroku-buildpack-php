@@ -14,4 +14,4 @@ cd apcu-${apcu_version}
 
 make
 cp modules/apcu.so "$EXT_DIR/apcu.so"
-echo "extension=apcu.so" > "$PREFIX/etc/conf.d/apcu.ini"
+echo "extension=apcu.so" > "$CONF_DIR/apcu.ini"

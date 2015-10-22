@@ -7,7 +7,7 @@ ssh2_version=0.12
 libssh2_version=1.4.3
 
 mkdir -p /app/vendor/libssh2
-curl "http://${S3_BUCKET}.s3.amazonaws.com/package/libssh2-${libssh2_version=1.4.3}.tgz" | tar xzv -C /app/vendor/libssh2
+curl "${S3_URL}/package/libssh2-${libssh2_version=1.4.3}.tgz" | tar xzv -C /app/vendor/libssh2
 
 curl -L "http://pecl.php.net/get/ssh2-${ssh2_version}.tgz" \
     | tar xzv
@@ -19,4 +19,4 @@ cd ssh2-${ssh2_version}
 
 make
 cp modules/ssh2.so "$EXT_DIR/ssh2.so"
-echo "extension=ssh2.so" > "$PREFIX/etc/conf.d/ssh2.ini"
+echo "extension=ssh2.so" > "$CONF_DIR/ssh2.ini"

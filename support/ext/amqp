@@ -7,7 +7,7 @@ amqp_version=1.6.0beta2
 librabbitmq_version=0.5.2
 
 mkdir -p /app/vendor/librabbitmq
-curl "http://${S3_BUCKET}.s3.amazonaws.com/package/librabbitmq-${librabbitmq_version}.tgz" | tar xzv -C /app/vendor/librabbitmq
+curl "${S3_URL}/package/librabbitmq-${librabbitmq_version}.tgz" | tar xzv -C /app/vendor/librabbitmq
 
 curl -L "http://pecl.php.net/get/amqp-${amqp_version}.tgz" \
     | tar xzv
@@ -20,4 +20,4 @@ cd amqp-${amqp_version}
 
 make
 cp modules/amqp.so "$EXT_DIR/amqp.so"
-echo "extension=amqp.so" > "$PREFIX/etc/conf.d/amqp.ini"
+echo "extension=amqp.so" > "$CONF_DIR/amqp.ini"
