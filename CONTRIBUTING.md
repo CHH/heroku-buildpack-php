@@ -6,14 +6,9 @@ The `master` branch should always contain production ready code. All
 features which are staged to go into the next release are found in the
 `development` branch.
 
-Releases are done by merging `development` to `master` and creating a
-tag on `master` which follows [Semantic Versioning][].
-
-[Semantic Versioning]: http://semver.org
-
 Features should always live in their own branch. Feature branches start
 with `feature/`, e.g. a name for your feature branch might be `feature/my-awesome-feature`.
-Feature branches should branch off `master`, and get merged to
+Feature branches should branch off `development`, and get merged to
 `development` once they are reviewed.
 
 * * *
@@ -22,6 +17,20 @@ Please submit pull requests to the `development` branch. The
 `development` branch is used to make new releases of this buildpack,
 which are available to _all_ users.
 
+## Releasing new versions
+
+Releases are done by merging `development` to `master` and creating a
+tag on `master` which follows [Semantic Versioning][].
+
+When merging `development` into `master`, the compiled assets for
+master must be updated:
+
+```bash
+$ s3cmd cp --recursive --acl-public s3://chh-heroku-buildpack-php/develop s3://chh-heroku-buildpack-php/master
+```
+
+[Semantic Versioning]: http://semver.org
+
 ## Hacking
 
 ### Setup
@@ -29,7 +38,12 @@ which are available to _all_ users.
 You need the following tools to hack on this project:
 
 * An Amazon S3 bucket
-* An heroku application using the cedar-10 stack (the buildpack is not compatible with the cedar-14 stack) to run the compilation
+* An heroku application to run the compilation
+
+An heroku application is needed for each of the stacks for which you
+want to compile dependencies. An environment variable `TARGET_STACK`
+needs to be set with the stack name being used (``cedar`` for the
+cedar-10 stack, or ``cedar-14`` for the cedar-14 stack)
 
 Setup an S3 Bucket in Amazon. Then note the name of your bucket
 and set it as `S3_BUCKET` in `conf/buildpack.conf`.
@@ -43,9 +57,9 @@ You should then configure the application to be ready to be used for packaging:
 $ heroku git:remote -a buildpack-packaging
 
 # configure the AWS credentials
-$ heroku config:set AWS_ACCESS_KEY='<access key>' AWS_SECRET_KEY='<secret key>'
+$ heroku config:set AWS_ACCESS_KEY='<access key>' AWS_SECRET_KEY='<secret key>' TARGET_STACK='<stack name>'
 
-# deploy the buildpack code to heroku (the development branch here
+# deploy the buildpack code to heroku (the development branch here)
 $ git push heroku development:master
 ```
 
