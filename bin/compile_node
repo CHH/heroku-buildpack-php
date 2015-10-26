@@ -7,6 +7,7 @@ set -o pipefail   # don't ignore exit codes when piping output
 # Configure directories
 build_dir=$1
 cache_basedir=$2
+node_env=$3
 bp_dir=$(cd $(dirname $0); cd ..; pwd)
 
 # Load some convenience functions like status() echo(), indent()
@@ -73,8 +74,8 @@ if test -d $cache_dir; then
   test -d $cache_dir/node_modules && cp -r $cache_dir/node_modules $build_dir/
 fi
 
-status "Installing dependencies"
-npm install --production 2>&1 | indent
+status "Installing dependencies [NODE_ENV=$node_env]"
+npm install --$node_env 2>&1 | indent
 
 status "Pruning unused dependencies"
 npm prune 2>&1 | indent

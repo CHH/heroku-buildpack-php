@@ -158,7 +158,7 @@ function install_node_deps() {
 
     status "NODE (package.json) app detected"
 
-    source ${basedir}/compile_node $BUILD_DIR $CACHE_DIR
+    source ${basedir}/compile_node $BUILD_DIR $CACHE_DIR $NODE_ENV
 
     local node_path='vendor/node'
 
@@ -249,6 +249,10 @@ function package_log_files() {
     jq --raw-output '.extra.heroku["log-files"] // [] | .[]' < "$BUILD_DIR/composer.json"
 }
 
+function package_node_env() {
+    jq --raw-output '.extra.heroku["node-env"] // "production"' < "$BUILD_DIR/composer.json"
+}
+
 function package_compile_cmd() {
     jq --raw-output '.extra.heroku["compile"] // [] | .[]' < "$BUILD_DIR/composer.json"
 }
@@ -299,6 +303,7 @@ if [ -f "$BUILD_DIR/composer.json" ]; then
     FRAMEWORK=$(package_framework)
     PHP_EXTRA_CONFIG=$(package_php_config)
     PHP_INCLUDES=$(package_php_includes)
+    NODE_ENV=$(package_node_env)
     COMPILE_CMD=$(package_compile_cmd)
     NGINX_INCLUDES=$(package_nginx_includes)
     USER_LOG_FILES=$(package_log_files)
