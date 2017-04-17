@@ -146,7 +146,7 @@ For example, to install the Sundown extension:
 Note that the extension requirements defined by dependencies are not taken into account there.
 It must be required by the project itself.
 
-##Logging
+## Logging
 
 This buildpack defines default log files by framework.
 It also defines log files nginx and php.
